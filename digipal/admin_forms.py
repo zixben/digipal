@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db.models import Count
 from django import forms
-from models import Allograph, AllographComponent, Alphabet, Annotation, \
+from digipal.models import Allograph, AllographComponent, Alphabet, Annotation, \
     Appearance, Aspect, \
     CatalogueNumber, Category, Character, CharacterForm, Collation, Component, County, \
     ComponentFeature, CurrentItem, \

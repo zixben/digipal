@@ -143,7 +143,7 @@ class TextUnits(object):
         filters = {}
         for path, value in self.filters.iteritems():
             if path.startswith('content_xml'):
-                filters[re.sub(ur'content_xml_*', '', path)] = value
+                filters[re.sub(u'content_xml_*', '', path)] = value
         if filters:
             ret = ret.filter(**filters)
         return ret
@@ -176,7 +176,7 @@ class TextUnit(object):
 
     @property
     def id(self):
-        return ur'%s:%s' % (self.content_xml.id, self.unitid)
+        return u'%s:%s' % (self.content_xml.id, self.unitid)
 
     def get_absolute_url(self, qs=None, metas=None,
                          location_type=None, location=None):
@@ -229,13 +229,13 @@ class TextContent(models.Model):
     languages = models.ManyToManyField(
         'digipal.Language', blank=True, related_name='text_contents')
     type = models.ForeignKey(
-        'TextContentType', blank=False, null=False, related_name='text_contents')
+        'TextContentType', blank=False, null=False, related_name='text_contents', on_delete=models.CASCADE)
     item_part = models.ForeignKey(
-        'digipal.ItemPart', blank=False, null=False, related_name='text_contents')
+        'digipal.ItemPart', blank=False, null=False, related_name='text_contents', on_delete=models.CASCADE)
     text = models.ForeignKey('digipal.Text', blank=True,
-                             null=True, related_name='text_contents')
+                             null=True, related_name='text_contents', on_delete=models.CASCADE)
     attribution = models.ForeignKey(
-        'digipal.ContentAttribution', blank=True, null=True
+        'digipal.ContentAttribution', blank=True, null=True, on_delete=models.CASCADE
     )
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
@@ -318,7 +318,7 @@ class TextContentXMLStatus(digipal.models.NameModel):
 
 class TextContentXMLCopy(models.Model):
     source = models.ForeignKey(
-        'TextContentXML', blank=True, null=True, related_name='versions')
+        'TextContentXML', blank=True, null=True, related_name='versions', on_delete=models.CASCADE)
     ahash = models.CharField(max_length=100, blank=True, null=True)
     content = models.BinaryField(blank=False, null=False)
 
@@ -367,12 +367,12 @@ class TextContentXMLCopy(models.Model):
 
 class TextContentXML(models.Model):
     status = models.ForeignKey(
-        'TextContentXMLStatus', blank=False, null=False, related_name='text_content_xmls')
+        'TextContentXMLStatus', blank=False, null=False, related_name='text_content_xmls', on_delete=models.CASCADE)
     text_content = models.ForeignKey(
-        'TextContent', blank=False, null=False, related_name='text_content_xmls')
+        'TextContent', blank=False, null=False, related_name='text_content_xmls', on_delete=models.CASCADE)
     content = models.TextField(blank=True, null=True)
     last_image = models.ForeignKey(
-        'digipal.Image', blank=True, null=True, related_name='text_content_xmls')
+        'digipal.Image', blank=True, null=True, related_name='text_content_xmls', on_delete=models.CASCADE)
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)
@@ -441,7 +441,7 @@ class TextContentXML(models.Model):
 
 class TextAnnotation(models.Model):
     annotation = models.ForeignKey(
-        'digipal.Annotation', blank=False, null=False, related_name='textannotations')
+        'digipal.Annotation', blank=False, null=False, related_name='textannotations', on_delete=models.CASCADE)
     elementid = models.CharField(max_length=255, blank=False, null=False)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)
@@ -469,7 +469,7 @@ class TextAnnotation(models.Model):
 
 class EntryHand(models.Model):
     item_part = models.ForeignKey(
-        'digipal.ItemPart', blank=False, null=False, related_name='entry_hands')
+        'digipal.ItemPart', blank=False, null=False, related_name='entry_hands', on_delete=models.CASCADE)
     entry_number = models.CharField(
         max_length=20, blank=False, null=False, db_index=True)
     hand_label = models.CharField(

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from django.contrib.auth.decorators import login_required
-from django.core import urlresolvers
+from django.urls import reverse
 from django.db import transaction
 from django.http import HttpResponse, Http404
-from django.shortcuts import get_object_or_404, render_to_response
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.template import RequestContext
 import json
 from collections import OrderedDict
@@ -46,7 +47,7 @@ def get_content_type_data(request, content_type, ids=None, only_features=False):
     # Support for JSONP responses
     jsonpcallback = request.GET.get('@callback', None)
     if jsonpcallback is not None:
-        if not re.match(ur'(?i)^\w+$', jsonpcallback):
+        if not re.match(u'(?i)^\w+$', jsonpcallback):
             # invalid name format for the callback
             data = {'success': False, 'errors': [
                 'Invalid JSONP callback name format.'], 'results': []}
@@ -285,7 +286,7 @@ def image(request, image_id):
                 data_allographs[hand_label][allograph_name] = []
             data_allographs[hand_label][allograph_name].append(a)
 
-    image_link = urlresolvers.reverse(
+    image_link = reverse(
         'admin:digipal_image_change', args=(image.id,))
     form = ImageAnnotationForm(auto_id=False)
     form.fields['hand'].queryset = image.hands.all()
@@ -338,7 +339,7 @@ def image(request, image_id):
     if vector_id:
         context['vector_id'] = vector_id
 
-    return render_to_response('digipal/image_annotation.html', context, context_instance=RequestContext(request))
+    return render(request, 'digipal/image_annotation.html', context)
 
 
 def get_allograph(request, graph_id):

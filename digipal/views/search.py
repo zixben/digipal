@@ -1,4 +1,4 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext
 from django.db.models import Q
 import json
@@ -82,7 +82,7 @@ def search_index_view(request):
             # kill process
             try:
                 res = os.kill(pid, signal.SIGKILL)
-            except OSError, e:
+            except OSError as e:
                 # Process doesn't exist
                 if e.errno == 3:
                     pass
@@ -162,8 +162,8 @@ def search_index_view(request):
         ret = redirect(reverse('search_index'))
 
     if ret is None:
-        ret = render_to_response(
-            template, context, context_instance=RequestContext(request)
+        ret = render(
+            request, template, context,
         )
     return ret
 
@@ -215,7 +215,7 @@ def record_view(request, content_type='', objectid='', tabid=''):
                 template = 'errors/404.html'
             break
 
-    return render_to_response(template, context, context_instance=RequestContext(request))
+    return render(request, template, context)
 
 
 def index_view(request, content_type=''):
@@ -247,7 +247,7 @@ def index_view(request, content_type=''):
 
     template = 'pages/record_index.html'
 
-    return render_to_response(template, context, context_instance=RequestContext(request))
+    return render(request, template, context)
 
 
 def search_ms_image_view(request):
@@ -326,8 +326,7 @@ def search_ms_image_view(request):
         request, '', True, [image_search_form])
 
     hand_filters.chrono('template:')
-    ret = render_to_response('search/search_ms_image.html',
-                             context, context_instance=RequestContext(request))
+    ret = (request, 'search/search_ms_image.html', context)
     hand_filters.chrono(':template')
 
     hand_filters.chrono(':BROWSE')
@@ -453,8 +452,7 @@ def search_record_view(request):
     hand_filters.chrono(':SEARCH LOGIC')
     hand_filters.chrono('SEARCH TEMPLATE:')
 
-    ret = render_to_response('search/search_record.html',
-                             context, context_instance=RequestContext(request))
+    ret = render(request, 'search/search_record.html', context)
 
     hand_filters.chrono(':SEARCH TEMPLATE')
 

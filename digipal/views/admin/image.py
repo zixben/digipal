@@ -4,14 +4,13 @@ import re
 from django import http, template
 from django.shortcuts import render
 from django.template import RequestContext
-from django.shortcuts import render_to_response
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import admin
 from django.utils.text import capfirst
-from django.utils.translation import ugettext_lazy, ugettext as _
+from django.utils.translation import gettext_lazy as _
+#from django.utils.translation import ugettext_lazy, ugettext as _
 from django.utils.safestring import mark_safe
-import htmlentitydefs
-from django.core import urlresolvers
+import html.entities
 from django.forms.formsets import formset_factory
 import json
 from django.http import HttpResponse, Http404, HttpResponseBadRequest
@@ -49,13 +48,13 @@ def get_ms_id_from_image_names(manuscripts, folios):
         im_path = folio.iipimage.name
 
         # remove the extension
-        im_path = re.sub(ur'\.[^.]{2,4}$', '', im_path)
+        im_path = re.sub(u'\.[^.]{2,4}$', '', im_path)
 
         # only keep the image file name and the parent folder
         parts = im_path.split('/')
         for i in range(max(0, len(parts) - 2), len(parts)):
             part = parts[i]
-            for term in re.findall(ur'[^\W_]+', part):
+            for term in re.findall(u'[^\W_]+', part):
                 pattern[term] = pattern.get(term, 0) + 1
 
     # keep only the terms with frequency > threshold
@@ -194,13 +193,13 @@ def image_bulk_edit(request, url=None):
 
     # if action == 'operations':
 
-    print '-' * 80
+    print('-' * 80)
 
     if action == 'change_values' and context['show_duplicates']:
-        print request.POST
+        print(request.POST)
         # change image
         for key, val in request.POST.iteritems():
-            image_id = re.sub(ur'^replace-image-(\d+)$', ur'\1', key)
+            image_id = re.sub(u'^replace-image-(\d+)$', u'\1', key)
             if image_id != key:
                 new_image_id = val
                 if image_id != new_image_id:
@@ -224,7 +223,7 @@ def image_bulk_edit(request, url=None):
             if action == 'operations':
                 name = folio.iipimage.name
                 # remove file extension
-                name = re.sub(ur'\.\w\w\w$', ur'', name)
+                name = re.sub(u'\.\w\w\w$', u'', name)
                 number = re.findall(r'(?i)0*(\d{1,3})\D*$', name)
                 if str(request.POST.get('manuscript_set', '0')) == '1':
                     folio.item_part = manuscript

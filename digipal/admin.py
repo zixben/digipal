@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.admin.models import LogEntry
 from django.db.models import Count
 from django import forms
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from digipal.models import Allograph, AllographComponent, Alphabet, Annotation, \
     Appearance, Aspect, \
     CatalogueNumber, Category, Character, CharacterForm, Collation, Component, County, \
@@ -24,15 +24,16 @@ from digipal.models import Allograph, AllographComponent, Alphabet, Annotation, 
     CarouselItem, ApiTransform, AuthenticityCategory, KeyVal, ContentAttribution
 from mezzanine.conf import settings
 import reversion
-import django_admin_customisations
+#import django_admin_customisations
 from mezzanine.core.admin import StackedDynamicInlineAdmin
 import re
-import admin_filters
-import admin_inlines
-import admin_forms
+from reversion.admin import VersionAdmin
+import digipal.admin_filters
+import digipal.admin_inlines
+import digipal.admin_forms
 
 
-class DigiPalModelAdmin(reversion.VersionAdmin):
+class DigiPalModelAdmin(VersionAdmin):
     '''
         An extension of DigiPalModelAdmin (itself an extension of ModelAdmin)
         which:
@@ -102,7 +103,7 @@ class GraphForm(forms.ModelForm):
                 group_field._set_queryset(Graph.objects.filter(
                     annotation__image=obj.annotation.image).exclude(id=obj.id))
         except Annotation.DoesNotExist:
-            print 'ERROR'
+            print('ERROR')
 
 
 class ImageForm(forms.ModelForm):
@@ -128,7 +129,7 @@ class ImageForm(forms.ModelForm):
                 repository_url = reverse("admin:digipal_repository_change",
                                          args=[repository.id])
                 permission_field.empty_label = 'Inherited: %s' % permission
-                permission_field.help_text += ur'''<br/>To inherit from the
+                permission_field.help_text += u'''<br/>To inherit from the
                     default permission set in the
                     <a target="_blank" href="%s">repository</a>, please
                     select the first option.<br/>''' % repository_url
@@ -170,8 +171,8 @@ class AllographAdmin(DigiPalModelAdmin):
     list_editable = ['hidden']
 
     filter_horizontal = ['aspects']
-    inlines = [admin_inlines.AllographComponentInline,
-               admin_inlines.IdiographInline]
+    inlines = [digipal.admin_inlines.AllographComponentInline,
+               digipal.admin_inlines.IdiographInline]
 
 
 class AlphabetAdmin(DigiPalModelAdmin):
@@ -208,8 +209,8 @@ class AnnotationAdmin(DigiPalModelAdmin):
     list_filter = ['author__username',
                    'graph__idiograph__allograph__character__name',
                    'status', 'type',
-                   admin_filters.AnnotationFilterDuplicateClientid,
-                   admin_filters.AnnotationFilterLinkedToText
+                   digipal.admin_filters.AnnotationFilterDuplicateClientid,
+                   digipal.admin_filters.AnnotationFilterLinkedToText
     ]
 
     CHANGE_FORM_THUMB_MAX_SIZE = 100
@@ -295,7 +296,7 @@ class CharacterAdmin(DigiPalModelAdmin):
     model = Character
 
     filter_horizontal = ['components']
-    inlines = [admin_inlines.AllographInline]
+    inlines = [digipal.admin_inlines.AllographInline]
     list_display = ['name', 'unicode_point', 'form', 'created', 'modified']
     list_display_links = ['name', 'unicode_point', 'form', 'created',
                           'modified']
@@ -352,7 +353,7 @@ class CurrentItemAdmin(DigiPalModelAdmin):
     list_display_links = list_display
     search_fields = ['repository__name',
                      'shelfmark', 'description', 'display_label']
-    list_filter = ['repository', admin_filters.CurrentItemPartNumberFilter]
+    list_filter = ['repository', digipal.admin_filters.CurrentItemPartNumberFilter]
 
     readonly_fields = ('display_label',)
 
@@ -362,15 +363,15 @@ class CurrentItemAdmin(DigiPalModelAdmin):
                 ('Legacy', {'fields': ('legacy_id',)}),
     )
 
-    inlines = [admin_inlines.ItemPartInline,
-               admin_inlines.CurrentItemOwnerInline]
+    inlines = [digipal.admin_inlines.ItemPartInline,
+               digipal.admin_inlines.CurrentItemOwnerInline]
     filter_horizontal = ['owners']
 
 
 class DateAdmin(DigiPalModelAdmin):
     model = Date
 
-    inlines = [admin_inlines.DateEvidenceInlineFromDate]
+    inlines = [digipal.admin_inlines.DateEvidenceInlineFromDate]
     list_display = ['sort_order', 'date', 'created', 'modified']
     list_display_links = ['sort_order', 'date', 'created', 'modified']
     search_fields = ['date']
@@ -404,7 +405,7 @@ class DescriptionAdmin(DigiPalModelAdmin):
     search_fields = ['historical_item__display_label',
                      'source__name', 'description']
 
-    list_filter = ['source', admin_filters.DescriptionFilter]
+    list_filter = ['source', digipal.admin_filters.DescriptionFilter]
 
 
 class FeatureAdmin(DigiPalModelAdmin):
@@ -428,11 +429,11 @@ class GraphAdmin(DigiPalModelAdmin):
     model = Graph
 
     filter_horizontal = ['aspects']
-    inlines = [admin_inlines.GraphComponentInline]
+    inlines = [digipal.admin_inlines.GraphComponentInline]
     list_display = ['id', 'hand', 'idiograph', 'created', 'modified']
     list_display_links = list_display
 
-    list_filter = [admin_filters.GraphFilterNoAnnotation]
+    list_filter = [digipal.admin_filters.GraphFilterNoAnnotation]
 
     actions = ['action_update_group']
 
@@ -457,7 +458,7 @@ class HairAdmin(DigiPalModelAdmin):
 
 class HandAdmin(DigiPalModelAdmin):
     model = Hand
-    form = admin_forms.HandForm
+    form = digipal.admin_forms.HandForm
 
     filter_horizontal = ['images']
     list_display = ['id', 'item_part', 'label', 'num', 'scragg', 'script', 'scribe',
@@ -469,15 +470,15 @@ class HandAdmin(DigiPalModelAdmin):
     search_fields = ['id', 'legacy_id', 'scragg', 'label', 'num',
                      'em_title', 'label', 'item_part__display_label',
                      'display_note', 'internal_note']
-    list_filter = ['latin_only', admin_filters.HandItempPartFilter,
-                   admin_filters.HandFilterSurrogates, admin_filters.HandGlossNumFilter,
-                   admin_filters.HandGlossTextFilter, admin_filters.HandImageNumberFilter]
+    list_filter = ['latin_only', digipal.admin_filters.HandItempPartFilter,
+                   digipal.admin_filters.HandFilterSurrogates, digipal.admin_filters.HandGlossNumFilter,
+                   digipal.admin_filters.HandGlossTextFilter, digipal.admin_filters.HandImageNumberFilter]
     list_editable = ['num']
 
-    fieldsets = admin_forms.fieldsets_hand
+    fieldsets = digipal.admin_forms.fieldsets_hand
 
-    inlines = [admin_inlines.HandDescriptionInline, admin_inlines.DateEvidenceInline,
-               admin_inlines.PlaceEvidenceInline, admin_inlines.ProportionInline]
+    inlines = [digipal.admin_inlines.HandDescriptionInline, digipal.admin_inlines.DateEvidenceInline,
+               digipal.admin_inlines.PlaceEvidenceInline, digipal.admin_inlines.ProportionInline]
 
     def response_change(self, request, obj, *args, **kwargs):
         image_from_desc = request.POST.get('image_from_desc', False)
@@ -500,9 +501,9 @@ class HistoricalItemAdmin(DigiPalModelAdmin):
                     'historical_item_format', 'created', 'modified']
     list_display_links = list_display
     list_filter = ['historical_item_type', 'historical_item_format',
-                   admin_filters.HistoricalItemDescriptionFilter, admin_filters.HistoricalItemKerFilter,
-                   admin_filters.HistoricalItemGneussFilter, admin_filters.HistoricalItemItemPartNumberFilter,
-                   admin_filters.HistoricalCatalogueNumberFilter]
+                   digipal.admin_filters.HistoricalItemDescriptionFilter, digipal.admin_filters.HistoricalItemKerFilter,
+                   digipal.admin_filters.HistoricalItemGneussFilter, digipal.admin_filters.HistoricalItemItemPartNumberFilter,
+                   digipal.admin_filters.HistoricalCatalogueNumberFilter]
 
     fieldsets = (
                 (None, {'fields': ('display_label',
@@ -519,9 +520,9 @@ class HistoricalItemAdmin(DigiPalModelAdmin):
 
     filter_horizontal = ['categories', 'owners']
 
-    inlines = [admin_inlines.ItemPartItemInlineFromHistoricalItem, admin_inlines.CatalogueNumberInline,
-               admin_inlines.ItemDateInline, admin_inlines.ItemOriginInline, admin_inlines.HistoricalItemOwnerInline,
-               admin_inlines.CollationInline, admin_inlines.DecorationInline, admin_inlines.DescriptionInline, admin_inlines.ItemLayoutInline]
+    inlines = [digipal.admin_inlines.ItemPartItemInlineFromHistoricalItem, digipal.admin_inlines.CatalogueNumberInline,
+               digipal.admin_inlines.ItemDateInline, digipal.admin_inlines.ItemOriginInline, digipal.admin_inlines.HistoricalItemOwnerInline,
+               digipal.admin_inlines.CollationInline, digipal.admin_inlines.DecorationInline, digipal.admin_inlines.DescriptionInline, digipal.admin_inlines.ItemLayoutInline]
 
 
 class HistoricalItemTypeAdmin(DigiPalModelAdmin):
@@ -536,8 +537,8 @@ class IdiographAdmin(DigiPalModelAdmin):
     model = Idiograph
 
     filter_horizontal = ['aspects']
-    inlines = [admin_inlines.IdiographComponentInline,
-               admin_inlines.GraphInline]
+    inlines = [digipal.admin_inlines.IdiographComponentInline,
+               digipal.admin_inlines.GraphInline]
     list_display = ['allograph', 'scribe', 'created', 'modified']
     list_display_links = ['allograph', 'scribe', 'created', 'modified']
     search_fields = ['allograph__name']
@@ -546,7 +547,7 @@ class IdiographAdmin(DigiPalModelAdmin):
 class InstitutionAdmin(DigiPalModelAdmin):
     model = Institution
 
-    inlines = [admin_inlines.OwnerInline, admin_inlines.ScribeInline]
+    inlines = [digipal.admin_inlines.OwnerInline, digipal.admin_inlines.ScribeInline]
     list_display = ['institution_type', 'name', 'founder', 'place', 'created',
                     'modified']
     list_display_links = ['institution_type', 'name', 'founder', 'place',
@@ -609,8 +610,8 @@ class ItemPartAdmin(DigiPalModelAdmin):
                      'historical_items__display_label', 'current_item__display_label',
                      'subdivisions__display_label', 'group__display_label',
                      'type__name', 'keywords_string', 'notes']
-    list_filter = ('type', 'authenticities__category', admin_filters.ItemPartHIFilter, admin_filters.ItemPartImageNumberFilter,
-                   admin_filters.ItemPartMembersNumberFilter, admin_filters.ItemPartHasGroupGroupFilter)
+    list_filter = ('type', 'authenticities__category', digipal.admin_filters.ItemPartHIFilter, digipal.admin_filters.ItemPartImageNumberFilter,
+                   digipal.admin_filters.ItemPartMembersNumberFilter, digipal.admin_filters.ItemPartHasGroupGroupFilter)
 
     readonly_fields = ('display_label', 'historical_label')
     fieldsets = (
@@ -626,14 +627,14 @@ class ItemPartAdmin(DigiPalModelAdmin):
     )
     filter_horizontal = ['owners']
     inlines = [
-        admin_inlines.ItemPartItemInlineFromItemPart,
-        admin_inlines.ItemSubPartInline,
-        admin_inlines.ItemPartAuthenticityInline,
-        admin_inlines.HandInline,
-        admin_inlines.ImageInline,
-        admin_inlines.ItemPartOwnerInline,
-        admin_inlines.PartLayoutInline,
-        admin_inlines.TextItemPartInline
+        digipal.admin_inlines.ItemPartItemInlineFromItemPart,
+        digipal.admin_inlines.ItemSubPartInline,
+        digipal.admin_inlines.ItemPartAuthenticityInline,
+        digipal.admin_inlines.HandInline,
+        digipal.admin_inlines.ImageInline,
+        digipal.admin_inlines.ItemPartOwnerInline,
+        digipal.admin_inlines.PartLayoutInline,
+        digipal.admin_inlines.TextItemPartInline
     ]
 
 #     def get_inline_instances(self, request, *args, **kwargs):
@@ -690,7 +691,7 @@ class LayoutAdmin(DigiPalModelAdmin):
 class MeasurementAdmin(DigiPalModelAdmin):
     model = Measurement
 
-    inlines = [admin_inlines.ProportionInline]
+    inlines = [digipal.admin_inlines.ProportionInline]
     list_display = ['label', 'created', 'modified']
     list_display_links = ['label', 'created', 'modified']
     search_fields = ['label']
@@ -715,8 +716,8 @@ class OwnerAdmin(DigiPalModelAdmin):
                 ('legacy', {'fields': ('legacy_id',)}),
     )
 
-    inlines = [admin_inlines.OwnerHistoricalItemInline,
-               admin_inlines.OwnerItemPartInline, admin_inlines.OwnerCurrentItemInline]
+    inlines = [digipal.admin_inlines.OwnerHistoricalItemInline,
+               digipal.admin_inlines.OwnerItemPartInline, digipal.admin_inlines.OwnerCurrentItemInline]
 
     def get_content_type(self, obj):
         ret = unicode(obj.content_type)
@@ -751,7 +752,7 @@ class OntographAdmin(DigiPalModelAdmin):
     list_filter = ['ontograph_type', 'nesting_level']
     search_fields = ['name', 'ontograph_type']
 
-    inlines = [admin_inlines.CharacterInline]
+    inlines = [digipal.admin_inlines.CharacterInline]
 
 
 class OntographTypeAdmin(DigiPalModelAdmin):
@@ -802,8 +803,8 @@ class ImageAdmin(DigiPalModelAdmin):
     actions = ['bulk_editing', 'action_regen_display_label',
                'bulk_natural_sorting', 'action_find_nested_annotations']
 
-    list_filter = ['annotation_status', 'media_permission__label', admin_filters.ImageLocus, admin_filters.ImageAnnotationNumber, admin_filters.ImageWithFeature, admin_filters.ImageWithHand,
-                   admin_filters.ImageFilterNoItemPart, admin_filters.ImageFilterDuplicateShelfmark, admin_filters.ImageFilterDuplicateFilename]
+    list_filter = ['annotation_status', 'media_permission__label', digipal.admin_filters.ImageLocus, digipal.admin_filters.ImageAnnotationNumber, digipal.admin_filters.ImageWithFeature, digipal.admin_filters.ImageWithHand,
+                   digipal.admin_filters.ImageFilterNoItemPart, digipal.admin_filters.ImageFilterDuplicateShelfmark, digipal.admin_filters.ImageFilterDuplicateFilename]
 
     readonly_fields = ('display_label', 'folio_number',
                        'folio_side', 'width', 'height', 'size')
@@ -818,7 +819,7 @@ class ImageAdmin(DigiPalModelAdmin):
                  'fields': ('annotation_status', 'internal_notes', 'transcription')}),
                 ('Keywords', {'fields': ('keywords',)}),
     )
-    inlines = [admin_inlines.HandsInline]
+    inlines = [digipal.admin_inlines.HandsInline]
 
     def get_iipimage_field(self, obj):
         from django.template.defaultfilters import truncatechars
@@ -845,7 +846,7 @@ class ImageAdmin(DigiPalModelAdmin):
         return SortedChangeList
 
     def get_dims(self, image):
-        return ur'%s x %s' % (image.width, image.height)
+        return u'%s x %s' % (image.width, image.height)
     get_dims.short_description = 'Dims'
     get_dims.admin_order_field = 'width'
 
@@ -905,7 +906,7 @@ class ImageAdmin(DigiPalModelAdmin):
 class PersonAdmin(DigiPalModelAdmin):
     model = Person
 
-    inlines = [admin_inlines.OwnerInline]
+    inlines = [digipal.admin_inlines.OwnerInline]
     list_display = ['name', 'created', 'modified']
     list_display_links = ['name', 'created', 'modified']
     search_fields = ['name']
@@ -935,8 +936,8 @@ class PlaceAdmin(DigiPalModelAdmin):
                 ('Coordinates', {'fields': ('eastings', 'northings')}),
                 ('Legacy', {'fields': ('legacy_id',)}),
     )
-    inlines = [admin_inlines.InstitutionInline,
-               admin_inlines.PlaceEvidenceInline]
+    inlines = [digipal.admin_inlines.InstitutionInline,
+               digipal.admin_inlines.PlaceEvidenceInline]
 
 
 class PlaceEvidenceAdmin(DigiPalModelAdmin):
@@ -988,7 +989,7 @@ class ScribeAdmin(DigiPalModelAdmin):
     model = Scribe
 
     filter_horizontal = ['reference']
-    inlines = [admin_inlines.HandInline, admin_inlines.IdiographInline]
+    inlines = [digipal.admin_inlines.HandInline, digipal.admin_inlines.IdiographInline]
     list_display = ['name', 'date', 'scriptorium', 'created', 'modified']
     list_display_links = ['name', 'date', 'scriptorium', 'created', 'modified']
     search_fields = ['legacy_id', 'name', 'date']
@@ -998,7 +999,7 @@ class ScriptAdmin(DigiPalModelAdmin):
     model = Script
 
     filter_horizontal = ['allographs']
-    inlines = [admin_inlines.ScriptComponentInline]
+    inlines = [digipal.admin_inlines.ScriptComponentInline]
     list_display = ['name', 'created', 'modified']
     list_display_links = ['name', 'created', 'modified']
     search_fields = ['name']
@@ -1054,8 +1055,8 @@ class TextAdmin(DigiPalModelAdmin):
     search_fields = ['name']
     ordering = ['name']
 
-    inlines = [admin_inlines.TextItemPartInline,
-               admin_inlines.CatalogueNumberInline, admin_inlines.DescriptionInline]
+    inlines = [digipal.admin_inlines.TextItemPartInline,
+               digipal.admin_inlines.CatalogueNumberInline, digipal.admin_inlines.DescriptionInline]
 
 
 class CarouselItemAdmin(DigiPalModelAdmin):
@@ -1096,7 +1097,7 @@ class StewartRecordAdmin(DigiPalModelAdmin):
     list_display_links = ['id', 'scragg', 'sp', 'ker',
                           'gneuss', 'stokes_db', 'repository', 'shelf_mark']
     list_filter = [StewartRecordFilterMatched,
-                   admin_filters.StewartRecordFilterLegacy, admin_filters.StewartRecordFilterMerged]
+                   digipal.admin_filters.StewartRecordFilterLegacy, digipal.admin_filters.StewartRecordFilterMerged]
     search_fields = ['id', 'scragg', 'sp', 'ker',
                      'gneuss', 'stokes_db', 'repository', 'shelf_mark']
 
@@ -1152,7 +1153,7 @@ class RequestLogAdmin(admin.ModelAdmin):
     search_fields = ['id', 'request', 'result_count', 'created']
     ordering = ['-id']
 
-    list_filter = [admin_filters.RequestLogFilterEmpty]
+    list_filter = [digipal.admin_filters.RequestLogFilterEmpty]
 
     def field_terms(self, record):
         return re.sub('^.*terms=([^&#?]*).*$', r'\1', record.request)

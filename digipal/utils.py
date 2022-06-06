@@ -4,18 +4,18 @@ import re
 import os
 import lxml.etree as ET
 from lxml.etree import XMLSyntaxError
-from django.shortcuts import render, render_to_response
-from django.db.models.query import EmptyResultSet
+from django.shortcuts import render
+#from django.db.models.query import EmptyResultSet
 psutil = None
 try:
     import psutil
 except Exception:
     pass
 
-#_nsre = re.compile(ur'(?iu)([0-9]+|(?:\b[mdclxvi]+\b))')
-REGEXP_ROMAN_NUMBER = re.compile(ur'(?iu)\b[ivxlcdm]+\b')
-_nsre_romans = re.compile(ur'(?iu)(?:\.\s*)([ivxlcdm]+\b)')
-_nsre = re.compile(ur'(?iu)([0-9]+)')
+#_nsre = re.compile(u'(?iu)([0-9]+|(?:\b[mdclxvi]+\b))')
+REGEXP_ROMAN_NUMBER = re.compile(u'(?iu)\b[ivxlcdm]+\b')
+_nsre_romans = re.compile(u'(?iu)(?:\.\s*)([ivxlcdm]+\b)')
+_nsre = re.compile(u'(?iu)([0-9]+)')
 
 
 def total_seconds(timedelta):
@@ -58,14 +58,14 @@ def natural_sort_key(s, roman_numbers=False, is_locus=False):
         s = ''
 
     if is_locus:
-        s = re.sub(ur'(?i)\b(cover)\b', '0', s)
-        s = re.sub(ur'(?i)\b(face|recto|front)\b', '100', s)
-        s = re.sub(ur'(?i)\b(dorse|verso|back)\b', '200', s)
-        s = re.sub(ur'(?i)\bseal\b', '300', s)
+        s = re.sub(u'(?i)\b(cover)\b', '0', s)
+        s = re.sub(u'(?i)\b(face|recto|front)\b', '100', s)
+        s = re.sub(u'(?i)\b(dorse|verso|back)\b', '200', s)
+        s = re.sub(u'(?i)\bseal\b', '300', s)
         # For Exon
         # e.g. 64r < 64br < 64bv (b = bis)
         # =>     v < w (w because it comes after r & v)
-        s = re.sub(ur'(?i)(\d)\s*(b|bis)\s*(r|v)\b', ur'\1w\3', s)
+        s = re.sub(u'(?i)(\d)\s*(b|bis)\s*(r|v)\b', u'\1w\3', s)
 
     if roman_numbers:
         while True:
@@ -150,7 +150,7 @@ def update_query_string(url, updates, url_wins=False):
     from urlparse import urlparse, urlunparse, parse_qs
 
     # Convert string format into a dictionary
-    if isinstance(updates, basestring):
+    if isinstance(updates, str):
         updates_dict = parse_qs(updates, True)
     else:
         from copy import deepcopy
@@ -174,10 +174,10 @@ def update_query_string(url, updates, url_wins=False):
     query_dict = parse_qs(urlencode(query_dict, True))
 
     # remove temporary parameters __
-    #query_dict = {k: v for k, v in query_dict.iteritems() if not k.startswith('__')}
+    #query_dict = {k: v for k, v in query_dict.items() if not k.startswith('__')}
     qd = query_dict
     query_dict = {}
-    for k, v in qd.iteritems():
+    for k, v in qd.items():
         if not k.startswith('__'):
             query_dict[k] = v
 
@@ -207,7 +207,7 @@ def get_str_from_call_stack(separator='; '):
     import re
     tb = traceback.extract_stack()
     # ret = '; '.join(['%s (%s:%s)' % (call[2],
-    # re.sub(ur'^.*[\\/]([^/\\]+)\.py$', ur'\1', call[0]), call[1]) for call
+    # re.sub(u'^.*[\\/]([^/\\]+)\.py$', u'\1', call[0]), call[1]) for call
     # in tb])
     ret = separator.join(['%s (%s:%s)' % (call[2], call[0], call[1])
                           for call in tb])
@@ -223,7 +223,7 @@ def urlencode(dict, doseq=0):
     '''
     import urllib
     d = {}
-    for k, v in dict.iteritems():
+    for k, v in dict.items():
         d[k] = []
         for v2 in dict[k]:
             if isinstance(v2, unicode):
@@ -249,24 +249,24 @@ def get_tokens_from_phrase(phrase, lowercase=False):
         phrase = phrase.lower()
 
     # Remove field scopes. E.g. repository:London => London
-    phrase = re.sub(ur'(?u)\w+:', ur'', phrase)
+    phrase = re.sub(u'(?u)\w+:', u'', phrase)
 
     phrase = phrase.strip()
 
     # extract the quoted pieces
-    for part in re.findall(ur'"([^"]+)"', phrase):
+    for part in re.findall(u'"([^"]+)"', phrase):
         ret.append(part)
 
     # remove them from the phrase
-    phrase = re.sub(ur'"[^"]+"', '', phrase)
+    phrase = re.sub(u'"[^"]+"', '', phrase)
 
     # JIRA 358: search for 8558-8563 => no highlight if we don't remove non-characters before tokenising
     # * is for searches like 'digi*'
-    phrase = re.sub(ur'(?u)[^\w*]', ' ', phrase)
+    phrase = re.sub(u'(?u)[^\w*]', ' ', phrase)
 
     # add the remaining tokens
     if phrase:
-        ret.extend([t for t in re.split(ur'\s+', phrase.lower().strip())
+        ret.extend([t for t in re.split(u'\s+', phrase.lower().strip())
                     if t.lower() not in ['and', 'or', 'not']])
 
     return ret
@@ -298,18 +298,18 @@ def get_regexp_from_terms(terms, as_list=False):
                     else:
                         t += u's?'
         #             if len(t) > 1:
-        #                 t += ur'?'
-        #             t = ur'\b%ss?\b' % t
-                t = ur'\b%s\b' % t
+        #                 t += u'?'
+        #             t = u'\b%ss?\b' % t
+                t = u'\b%s\b' % t
 
                 # convert all \* into \W*
                 # * is for searches like 'digi*'
-                t = t.replace(ur'\*', ur'\w*')
+                t = t.replace(u'\*', u'\w*')
 
                 ret.append(t)
 
     if not as_list:
-        ret = ur'|'.join(ret)
+        ret = u'|'.join(ret)
 
     return ret
 
@@ -352,7 +352,7 @@ def get_int_from_roman_number(input):
     ...
     ValueError: input is not a valid roman numeral: IL
     """
-    if not isinstance(input, basestring):
+    if not isinstance(input, str):
         return None
     input = input.upper()
     nums = ['M', 'D', 'C', 'L', 'X', 'V', 'I']
@@ -407,13 +407,14 @@ def set_left_joins_in_queryset(qs):
 
 def get_str_from_queryset(queryset):
     # https://code.djangoproject.com/ticket/22973
-    try:
-        ret = unicode(queryset.query)
-    except EmptyResultSet:
-        ret = ur'SQL QUERY for EmptyResultSet'
-    ret = re.sub(
-        ur'(INNER|FROM|AND|OR|WHERE|GROUP|ORDER|LEFT|RIGHT|HAVING)', ur'\n\1', ret)
-    ret = re.sub(ur'(INNER|AND|OR|LEFT|RIGHT)', ur'\t\1', ret)
+    #try:
+    #    ret = unicode(queryset.query)
+    # Do we really need this? Luca
+    #except EmptyResultSet:
+    #    ret = u'SQL QUERY for EmptyResultSet'
+    #ret = re.sub(
+        #u'(INNER|FROM|AND|OR|WHERE|GROUP|ORDER|LEFT|RIGHT|HAVING)', u'\n\1', ret)
+    #ret = re.sub(u'(INNER|AND|OR|LEFT|RIGHT)', u'\t\1', ret)
     return ret.encode('ascii', 'ignore')
 
 
@@ -509,7 +510,7 @@ def get_unicode_from_xml(xmltree, encoding='utf-8',
         ret = ET.tostring(xmltree, encoding=encoding).decode('utf-8')
         if xmltree.tail is not None and ret[0] == '<':
             # remove the tail
-            ret = re.sub(ur'[^>]+$', '', ret)
+            ret = re.sub(u'[^>]+$', '', ret)
 
         if remove_root:
             ret = re.sub('(?musi).*<root>', '', ret)
@@ -528,7 +529,7 @@ def get_xml_from_unicode(document, ishtml=False, add_root=False):
     #        single containing element.
 
     if document and add_root:
-        document = ur'<root>%s</root>' % document
+        document = u'<root>%s</root>' % document
 
     parser = None
     if ishtml:
@@ -664,9 +665,9 @@ def get_midpoint_from_date_range(astr=None, arange=None):
     if astr:
         # try harder... if we have a single date in the input we pick that one
         # Ca. 1090 => 1090
-        patterns = [ur'(?i)^(?:c|ca)\.? (\d+)$']
+        patterns = [u'(?i)^(?:c|ca)\.? (\d+)$']
         for pattern in patterns:
-            s = re.sub(pattern, ur'\1', astr)
+            s = re.sub(pattern, u'\1', astr)
             if s != astr:
                 ret = int(s)
                 break
@@ -707,61 +708,61 @@ def get_range_from_date_simple(str):
     # remove day
     # eg. Saturday 5 August 1245 => 5 August 1245
     str = re.sub(
-        ur'(?iu)(monday|tuesday|wednesday|thursday|friday|saturday|sunday)', u'', str)
+        u'(?iu)(monday|tuesday|wednesday|thursday|friday|saturday|sunday)', u'', str)
 
     # remove day month
     # eg. 11 November 1170 X 24 March 1201 => 1170 X 1201
-    str = re.sub(ur'(?iu)((\d{1,2})\s)?(autumn|fall|summer|winter|spring|jan(\.|\s)|feb(\.|\s)|mar(\.|\s)|apr(\.|\s)|jun(\.|\s)|jul(\.|\s)|aug(\.|\s)|sept(\.|\s)|oct(\.|\s)|nov(\.|\s)|dec\.|january|february|march|april|may|june|july|august|september|october|november|december),?', u'', str)
+    str = re.sub(u'(?iu)((\d{1,2})\s)?(autumn|fall|summer|winter|spring|jan(\.|\s)|feb(\.|\s)|mar(\.|\s)|apr(\.|\s)|jun(\.|\s)|jul(\.|\s)|aug(\.|\s)|sept(\.|\s)|oct(\.|\s)|nov(\.|\s)|dec\.|january|february|march|april|may|june|july|august|september|october|november|december),?', u'', str)
 
     # expand s. => Saec.
-    str = re.sub(ur'\bs\.\s', u'Saec. ', str)
+    str = re.sub(u'\bs\.\s', u'Saec. ', str)
 
     # early 12th => Saec. viii ex.
-    # str = re.sub(ur'\bs\.\s', u'Saec. ', str)
+    # str = re.sub(u'\bs\.\s', u'Saec. ', str)
 
     # convert circa => ca
-    str = re.sub(ur'\bcirca\b', u'Ca', str)
+    str = re.sub(u'\bcirca\b', u'Ca', str)
 
     # expand c.1205 OR c 1205 => c. 1205
-    str = re.sub(ur'\bc(?:\.|\s)(\d{4,4})', ur'c. \1', str)
+    str = re.sub(u'\bc(?:\.|\s)(\d{4,4})', u'c. \1', str)
 
     # expand c. => ca
-    str = re.sub(ur'\bc\.\s', u'Ca ', str)
+    str = re.sub(u'\bc\.\s', u'Ca ', str)
 
     # undated (early 1200s)
-    str = re.sub(ur'^\s*undated\s+\((.*)\)\s*$', ur'\1', str)
+    str = re.sub(u'^\s*undated\s+\((.*)\)\s*$', u'\1', str)
 
     # remove prob.
-    str = re.sub(ur'(prob.|probably|by)\s', '', str).strip()
+    str = re.sub(u'(prob.|probably|by)\s', '', str).strip()
 
     # remove ?, A.D.
-    str = re.sub(ur'\?|A\.D\.', '', str).strip()
+    str = re.sub(u'\?|A\.D\.', '', str).strip()
 
     # remove (...)
-    str = re.sub(ur'\([^)]+\)', '', str).strip()
+    str = re.sub(u'\([^)]+\)', '', str).strip()
 
     # 845 for 830 => 830
-    str = re.sub(ur'.*\sfor\s', '', str).strip()
+    str = re.sub(u'.*\sfor\s', '', str).strip()
 
     # 1234 x => after 1234
     # x 1234 => before 1234
-    str = re.sub(ur'^\s*x\s*(\d{1,4})\s*$', ur'before \1', str).strip()
-    str = re.sub(ur'^(\d{1,4})\s*x\s*$', ur'after \1', str).strip()
+    str = re.sub(u'^\s*x\s*(\d{1,4})\s*$', u'before \1', str).strip()
+    str = re.sub(u'^(\d{1,4})\s*x\s*$', u'after \1', str).strip()
 
     str = str.strip()
 
     # 1080
-    if re.match(ur'\d+$', str):
+    if re.match(u'\d+$', str):
         return [int(str), int(str)]
 
     # 1035/6 => (1035, 1036)
-    m = re.match(ur'(\d+)/(\d+)$', str)
+    m = re.match(u'(\d+)/(\d+)$', str)
     if m:
         ret = [int(m.group(1)), int(m.group(1))]
         if len(m.group(2)) < len(m.group(1)):
             ret[1] = int(m.group(1)[0:-len(m.group(2))] + m.group(2))
 
-    m = re.match(ur'(?iu)(before|after)\s(\d+)$', str)
+    m = re.match(u'(?iu)(before|after)\s(\d+)$', str)
     if m:
         if m.group(1) == 'before':
             ret[1] = int(m.group(2))
@@ -769,9 +770,9 @@ def get_range_from_date_simple(str):
             ret[0] = int(m.group(2))
 
     # Saec. x/xi or xi in. [  980.0,  1030.0]
-    parts = re.split(ur'\bor\b', str)
+    parts = re.split(u'\bor\b', str)
     if len(parts) == 1:
-        parts = re.split(ur'and', str)
+        parts = re.split(u'and', str)
     if len(parts) > 1:
         # combine different dates
         #dates = [ret]
@@ -787,14 +788,14 @@ def get_range_from_date_simple(str):
 
     # Ca 1075 [ 1070.0,  1080.0]
     # Ca 1086 [ 1080.0,  1090.0]
-    m = re.match(ur'(?iu)ca\.?\s*(\d+)$', str)
+    m = re.match(u'(?iu)ca\.?\s*(\d+)$', str)
     if m:
         n = int(m.group(1))
         str = 'Ca %sx%s' % (n - 5, n + 5)
 
     # 1066x1087 => [1066, 1087]
     # Ca 820x840 => [820, 840]
-    m = re.match(ur'(?iu)(?:ca\s)?(\d+)\s*[-x\xd7]\s*(\d+)$', str)
+    m = re.match(u'(?iu)(?:ca\s)?(\d+)\s*[-x\xd7]\s*(\d+)$', str)
     if m:
         ret = [int(m.group(1)), int(m.group(2))]
 
@@ -808,18 +809,18 @@ def get_range_from_date_simple(str):
             if ret[1] % 5:
                 ret[1] = ret[1] - (ret[1] % 5) + 5
     # 107    1080s    1080.0    1085.0    1090.0
-    m = re.match(ur'(?iu)(\d+0)s$', str)
+    m = re.match(u'(?iu)(\d+0)s$', str)
     if m:
         ret = [int(m.group(1)), int(m.group(1)) + 10]
 
     # Saec. x1
-    m = re.match(ur'(?iu)Saec. ([ivx]+)(.*)$', str)
+    m = re.match(u'(?iu)Saec. ([ivx]+)(.*)$', str)
     if m:
         mod = m.group(2).strip()
         century = get_int_from_roman_number(m.group(1))
         ret = [(century - 1) * 100, century * 100]
         # Saec. x1/3 [  900.0,   933.0]
-        m2 = re.match(ur'(\d)/(\d)$', mod)
+        m2 = re.match(u'(\d)/(\d)$', mod)
         if m2:
             dur = 100.0 / int(m2.group(2))
             ret[1] = ret[0] + (int(m2.group(1)) * dur)
@@ -847,7 +848,7 @@ def get_range_from_date_simple(str):
             ret[0] = ret[0] + 50
 
         #Saec. x/xi [  980.0,  1020.0]
-        m2 = re.match(ur'/([ivx]+)$', mod)
+        m2 = re.match(u'/([ivx]+)$', mod)
         if m2:
             century2 = get_int_from_roman_number(m2.group(1))
             if century2 == century + 1:
@@ -940,7 +941,7 @@ def get_dict_from_string(string, sep=',', keep_blanks=False):
     '''
     ret = []
     if string:
-        if isinstance(string, basestring):
+        if isinstance(string, str):
             ret = string.split(sep)
         if isinstance(string, list) or isinstance(string, tuple):
             ret = string
@@ -1014,7 +1015,7 @@ def expand_folio_range(frange, errors=None):
         errors = []
 
     import re
-    match = re.match(ur'(\d+)(r|v)(\d+)?(?:-(?:(\d+)(r|v))?(\d+)?)?', frange)
+    match = re.match(u'(\d+)(r|v)(\d+)?(?:-(?:(\d+)(r|v))?(\d+)?)?', frange)
     if match:
         # frange = '140r20-1r2'
         # match.groups() = ('140', 'r', '20', '1', 'v', '2')
@@ -1125,16 +1126,16 @@ def convert_xml_to_html(xml):
     # () 5. display notes at the bottom of the desc
 
     ret = re.sub(
-        ur'<c>', ur'<span data-dpt="record" data-dpt-model="character">', ret)
+        u'<c>', u'<span data-dpt="record" data-dpt-model="character">', ret)
 
-    for el in re.findall(ur'(?ui)<[^>]+>', xml):
-        if re.search(ur'(?ui)</?(p|div|span)\b', el):
+    for el in re.findall(u'(?ui)<[^>]+>', xml):
+        if re.search(u'(?ui)</?(p|div|span)\b', el):
             continue
 
         nel = el
-        nel = re.sub(ur'(?ui)([^\s>]+)(\s*=\s*")', ur'data-dpt-\1\2', nel)
-        nel = re.sub(ur'(?ui)</([^\s>]+)', ur'</span', nel)
-        nel = re.sub(ur'(?ui)<([^/\s>]+)', ur'<span data-dpt="\1"', nel)
+        nel = re.sub(u'(?ui)([^\s>]+)(\s*=\s*")', u'data-dpt-\1\2', nel)
+        nel = re.sub(u'(?ui)</([^\s>]+)', u'</span', nel)
+        nel = re.sub(u'(?ui)<([^/\s>]+)', u'<span data-dpt="\1"', nel)
 
         ret = ret.replace(el, nel)
 
@@ -1150,7 +1151,7 @@ class ProgressBar(object):
         self.max = 1.0 * amax
         self.max_width = max_width
         self.width = 0
-        print '_' * int(self.max_width)
+        print('_' * int(self.max_width))
 
     def complete(self):
         self.update(1, 1)
@@ -1186,7 +1187,7 @@ def re_sub_fct(content, apattern, fct, are=None, show_bar=False):
                 break
 
             replacement = fct(match)
-            content = ur'%s%s%s' % (content[0:match.start(
+            content = u'%s%s%s' % (content[0:match.start(
                 0)], replacement, content[match.end(0):])
             pos = match.start(0) + len(replacement)
             if show_bar:
@@ -1338,7 +1339,7 @@ def run_in_thread_advanced(
 
     if print_results:
         for thread in threads:
-            print repr(thread.res)
+            print(repr(thread.res))
 
     return threads
 
@@ -1398,16 +1399,16 @@ def get_plain_text_from_xmltext(xml_str, keep_links=False):
 
     if keep_links:
         ret = regex.sub(
-            ur'<a[^>]+href="(.*?)"[^>]*>(.*?)</a>',
-            ur'\2 [\1]',
+            u'<a[^>]+href="(.*?)"[^>]*>(.*?)</a>',
+            u'\2 [\1]',
             ret)
 
-    ret = regex.sub(ur'<span data-dpt="abbr">.*?</span>', ur'', ret)
-    ret = regex.sub(ur'<span data-dpt="location".*?</span>', ur'', ret)
+    ret = regex.sub(u'<span data-dpt="abbr">.*?</span>', u'', ret)
+    ret = regex.sub(u'<span data-dpt="location".*?</span>', u'', ret)
 
     # Remove deleted elements
     # <span data-dpt="del" data-dpt-type="supplied">di</span>
-    ret = regex.sub(ur'(?musi)<span data-dpt="del"[^>]*>[^<]*</span>', '', ret)
+    ret = regex.sub(u'(?musi)<span data-dpt="del"[^>]*>[^<]*</span>', '', ret)
 
     ret = ret.replace(u'</p>', ' ')
 
@@ -1421,17 +1422,17 @@ def get_plain_text_from_xmltext(xml_str, keep_links=False):
     ret = ret.replace(u'〈', '').replace(u'〉', '').replace(u'¦', '')
 
     # used between words in MOA
-    ret = ret.replace(ur'', ';')
+    ret = ret.replace(u'', ';')
 
     # MS line breaks:
-    ret = regex.sub(ur'(?musi)-\s*\|', u'#HY#', ret)
+    ret = regex.sub(u'(?musi)-\s*\|', u'#HY#', ret)
     # insert a CR to preserve rendering and also avoid joining words
     # accross the MS line break.
     ret = ret.replace(u'|', u'\r')
     # reunite hyphenated parts even when they are separated by spaces
-    ret = regex.sub(ur'\s*#HY#\s*', u'', ret)
+    ret = regex.sub(u'\s*#HY#\s*', u'', ret)
 
-    ret = regex.sub(ur'(?musi)\s+', ' ', ret)
+    ret = regex.sub(u'(?musi)\s+', ' ', ret)
 
     return ret
 
@@ -1525,7 +1526,7 @@ def call_management_command(command, *args, **kwargs):
     command_django = '%s %s %s' % (
         command,
         ' '.join(args),
-        (' '.join(['--%s=%s' % (k, v) for k, v in kwargs.iteritems()]))
+        (' '.join(['--%s=%s' % (k, v) for k, v in kwargs.items()]))
     )
 
     # shell command line
@@ -1592,7 +1593,7 @@ def packager_cancel():
         import signal
         try:
             res = os.kill(pid, signal.SIGKILL)
-        except OSError, e:
+        except OSError as e:
             # Process doesn't exist
             if e.errno == 3:
                 pass
@@ -1624,20 +1625,20 @@ def json_loads(data):
     def convert_dates(dic):
         if isinstance(dic, list):
             for i in range(0, len(dic)):
-                if isinstance(dic[i], basestring):
+                if isinstance(dic[i], str):
                     # 2016-10-28T13:27:38.944298+00:00
                     v = dic[i]
-                    if re.match(ur'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*', v):
-                        v = re.sub('(\+\d{2}):(\d{2})$', ur'\1\2', v)
+                    if re.match(u'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*', v):
+                        v = re.sub('(\+\d{2}):(\d{2})$', u'\1\2', v)
                         dic[i] = parse_datetime(v)
                 elif isinstance(dic[i], dict) or isinstance(dic[i], list):
                     convert_dates(dic[i])
         if isinstance(dic, dict):
-            for k, v in dic.iteritems():
-                if isinstance(v, basestring):
+            for k, v in dic.items():
+                if isinstance(v, str):
                     # 2016-10-28T13:27:38.944298+00:00
-                    if re.match(ur'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*', v):
-                        v = re.sub('(\+\d{2}):(\d{2})$', ur'\1\2', v)
+                    if re.match(u'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*', v):
+                        v = re.sub('(\+\d{2}):(\d{2})$', u'\1\2', v)
                         dic[k] = parse_datetime(v)
                 elif isinstance(v, dict) or isinstance(v, list):
                     convert_dates(v)
@@ -1772,8 +1773,8 @@ def read_all_lines_from_csv(
             # heading line
             if not columns:
                 for c in line:
-                    c = re.sub(ur'[^a-z0-9]', '', c.lower())
-                    if c and re.search(ur'^\d', c):
+                    c = re.sub(u'[^a-z0-9]', '', c.lower())
+                    if c and re.search(u'^\d', c):
                         c = u'n%s' % c
                     columns.append(c)
                 continue
@@ -1819,7 +1820,7 @@ def get_short_uid(adatetime=None):
     ret = '%s%s%s%s%s%s' % (b64[ret.month], b64[ret.day], b64[ret.hour], b64[ret.minute],
                             b64[ret.second], num_encode(long('%s%s' % (ret.year - 2000, ret.microsecond))))
     #ret = ret.isoformat()
-    # ret = long(re.sub(ur'\D', '', ret))
+    # ret = long(re.sub(u'\D', '', ret))
     #ret = str(ret)
     #ret = base64.b64encode(str(ret), 'ascii')
     # return parseInt((new Date()).toISOString().replace(/\D/g,
@@ -1913,9 +1914,9 @@ def is_display_narrow(request):
     ret = False
 
     # TODO: test and make it more robust
-    # print u'\n'.join([ur'%s = %s' % (k,v) for k,v in
-    # request.META.iteritems()])
-    ret = bool(re.search(ur'(?i)\b(mobile|opera mini|android|iphone|webos)\b',
+    # print u'\n'.join([u'%s = %s' % (k,v) for k,v in
+    # request.META.items()])
+    ret = bool(re.search(u'(?i)\b(mobile|opera mini|android|iphone|webos)\b',
                          request.META.get('HTTP_USER_AGENT')))
 
     return ret
@@ -1956,7 +1957,14 @@ def get_latest_docker_version(cached_days=1):
         info['last_checked'] = now
         content = ''
         version_url = 'https://raw.githubusercontent.com/kcl-ddh/digipal/master/build/__init__.py'
-        import urllib2
+
+        try:
+            # For Python 3.0 and later
+            from urllib.request import urlopen
+        except ImportError:
+            # Fall back to Python 2's urllib2
+            from urllib2 import urlopen
+
         try:
             response = urllib2.urlopen(version_url)
             content = response.read()
@@ -1964,7 +1972,7 @@ def get_latest_docker_version(cached_days=1):
             pass
 
         if content:
-            version = re.findall(ur"__version__\s*=\s*'([^']+)'", content)
+            version = re.findall(u"__version__\s*=\s*'([^']+)'", content)
             if version:
                 info['version'] = version[0]
 

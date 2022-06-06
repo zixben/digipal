@@ -53,7 +53,7 @@ class SearchContentType(object):
         # A code (e.g. K. 402, Royal 7.C.xii)
         # See JIRA 358
         self.FT_CODE = TEXT(analyzer=SimpleAnalyzer(
-            ur'[.\s()\u2013\u2014-]', True))
+            u'[.\s()\u2013\u2014-]', True))
         # An ID (e.g. 708-AB)
         self.FT_ID = ID()
 
@@ -97,8 +97,8 @@ class SearchContentType(object):
         ''' Populate the given [context] dictionary with those entries:
                 'records': a list of record instances
                 'content_type': content type object e.g. SearchManuscripts
-                'message': an intro message e.g. 'list of manuscript with images' 
-                'active_letters': a list of letters for the pagination. 
+                'message': an intro message e.g. 'list of manuscript with images'
+                'active_letters': a list of letters for the pagination.
                     If we have records starting with b then ('b' in context['active_letters'])
         '''
         ret = context
@@ -219,12 +219,12 @@ class SearchContentType(object):
             # prev
             if index > 0:
                 ret['previous_url'] = re.sub(
-                    ur'\d+', '%s' % context['results'][index - 1], web_path) + query_string
+                    u'\d+', '%s' % context['results'][index - 1], web_path) + query_string
 
             # next
             if index < (ret['total'] - 1):
                 ret['next_url'] = re.sub(
-                    ur'\d+', '%s' % context['results'][index + 1], web_path) + query_string
+                    u'\d+', '%s' % context['results'][index + 1], web_path) + query_string
 
             # TODO: the URL of the search page shoudn't be hard-coded here
             ret['index1'] = index + 1
@@ -238,7 +238,7 @@ class SearchContentType(object):
     def get_fields_info(self):
         '''
             Returns a dictionary of searchable fields.
-            It is a mapping between the fields in the Django Data Model and 
+            It is a mapping between the fields in the Django Data Model and
             the Whoosh index.
 
             Format:
@@ -257,14 +257,14 @@ class SearchContentType(object):
 
             Where:
 
-                field_path: is a django query set path from the current model 
+                field_path: is a django query set path from the current model
                     instance to the desired field
                     e.g. display_label or related_record__display_label
 
                 whoosh: sub dictionary tells Whoosh how to index or query the field
                     type: one of the predefined types declared in _init_field_types()
                     name: the name of the field in Whoosh schema
-                    boost: optional parameter to boost the importance of a field (1.0 is normal, 
+                    boost: optional parameter to boost the importance of a field (1.0 is normal,
                             2.0 is twice as important). Boosting is applied at query time only;
                             not at indexing time.
                             Convention:
@@ -276,17 +276,17 @@ class SearchContentType(object):
                             rather than indexed by Whoosh
                     virtual: optional; if True the field does not exist in the DB.
                             e.g. 'type' or 'sort_order'
-                    store_only: optional parameter; if True the field is stored 
+                    store_only: optional parameter; if True the field is stored
                             in the Whoosh index but not searchable
 
-                advanced: optional; if True the field can be searched on using the 
-                            value from the HTTP request GET parameter with the 
-                            same name. 
+                advanced: optional; if True the field can be searched on using the
+                            value from the HTTP request GET parameter with the
+                            same name.
                             E.g. ...?whoosh_field_name=123
 
-                long_text: optional; if True, the value will be broken into 
-                    separate terms by the indexer; False to treat the value as 
-                    a whole. This is used for the autocomplete index only.                  
+                long_text: optional; if True, the value will be broken into
+                    separate terms by the indexer; False to treat the value as
+                    a whole. This is used for the autocomplete index only.
         '''
 
         ret = {}
@@ -308,9 +308,9 @@ class SearchContentType(object):
         return []
 
     def get_sorted_records(self, records):
-        ''' Returns a list of django records with all the searchable instances 
+        ''' Returns a list of django records with all the searchable instances
             of this content type.
-            The order of the returned list will influence the order of 
+            The order of the returned list will influence the order of
             display on the result sets.
         '''
         import re
@@ -323,14 +323,14 @@ class SearchContentType(object):
             # obtained from get_sort_fields()
             def sort_order(record):
                 if isinstance(record, dict):
-                    sort_key = ' '.join([ur'%s' % record[field]
+                    sort_key = ' '.join([u'%s' % record[field]
                                          for field in sort_fields])
                 else:
                     sort_key = ' '.join(
-                        [ur'%s' % eval('record.' + field.replace('__', '.')) for field in sort_fields])
+                        [u'%s' % eval('record.' + field.replace('__', '.')) for field in sort_fields])
                 # remove non-words characters at the beginning
                 # e.g. 'Hemming' -> Hemming
-                sort_key = re.sub(ur'(?u)^\W+', ur'', sort_key)
+                sort_key = re.sub(u'(?u)^\W+', u'', sort_key)
                 return natural_sort_key(sort_key, True)
             records = sorted(records, key=lambda record: sort_order(record))
 
@@ -359,7 +359,7 @@ class SearchContentType(object):
             for k in fields:
                 if not fields[k]['whoosh'].get('ignore', False) and not fields[k]['whoosh'].get('virtual', False):
                     val = u'%s' % k
-                    for field_name in re.findall(ur'\w+', k):
+                    for field_name in re.findall(u'\w+', k):
                         if isinstance(record, dict):
                             v = record[field_name]
                         else:
@@ -387,7 +387,7 @@ class SearchContentType(object):
 
             if document:
                 if verbose:
-                    print document
+                    print(document)
                 writer.add_document(**document)
 
         return ret
@@ -396,7 +396,7 @@ class SearchContentType(object):
         ''' Returns an array with all the records
             Each record is an dictionary of field_name -> value
             The output is sorted according to get_sort_fields
-            and natural sort. 
+            and natural sort.
         '''
         import re
 
@@ -409,7 +409,7 @@ class SearchContentType(object):
         django_fields = self.get_sort_fields()
         for k in fields:
             if not fields[k]['whoosh'].get('ignore', False) and not fields[k]['whoosh'].get('virtual', False):
-                django_fields.extend(re.findall(ur'\w+', k))
+                django_fields.extend(re.findall(u'\w+', k))
 
         # Retrieve all the records from the database
         # Values turns individual results into dictionary of requested fields names and values
@@ -514,14 +514,14 @@ class SearchContentType(object):
             ret = {}
             exclude_list_lower = [strip_tags(s.lower()) for s in exclude_list]
 
-            for m in re.finditer(ur'(?ui)\b%s(?:[^|]{0,40}\|\||[\w-]*\b)' % re.escape(utils.remove_accents(phrase)), settings.suggestions_index_canonical):
+            for m in re.finditer(u'(?ui)\b%s(?:[^|]{0,40}\|\||[\w-]*\b)' % re.escape(utils.remove_accents(phrase)), settings.suggestions_index_canonical):
                 m = settings.suggestions_index[m.start(0):m.end(0)]
                 m = m.strip('|')
                 if m.endswith(')') and '(' not in m:
                     m = m[:-1]
                 if m.endswith(']') and '[' not in m:
                     m = m[:-1]
-                if ur'%s%s' % (prefix, m.lower()) not in exclude_list_lower:
+                if u'%s%s' % (prefix, m.lower()) not in exclude_list_lower:
                     ret[m.lower()] = m
             ret = ret.values()
             chrono(':regexp')
@@ -545,7 +545,7 @@ class SearchContentType(object):
                 ret = ret[0:limit]
 
             # Add the prefix to all the results
-            ret = [(ur'%s<strong>%s</strong>' % (prefix, r)) for r in ret]
+            ret = [(u'%s<strong>%s</strong>' % (prefix, r)) for r in ret]
 
         return ret
 
@@ -557,7 +557,7 @@ class SearchContentType(object):
         if query and limit > 0:
 
             # Run a whoosh search
-            whoosh_query = ur'"%s"*' % query
+            whoosh_query = u'"%s"*' % query
             results = self.search_whoosh(
                 whoosh_query, matched_terms=True, index_name='autocomplete')
             terms = {}
@@ -587,8 +587,8 @@ class SearchContentType(object):
                 ret = ret[0:limit]
 
             # Add the prefix to all the results
-            #ret = [ur'%s%s' % (prefix, r.decode('utf8')) for r in ret]
-            ret = [(ur'%s%s' % (prefix, r)).title() for r in ret]
+            #ret = [u'%s%s' % (prefix, r.decode('utf8')) for r in ret]
+            ret = [(u'%s%s' % (prefix, r)).title() for r in ret]
 
         return ret
 
@@ -648,7 +648,7 @@ class SearchContentType(object):
 
     def _get_available_views(self):
         ''' Returns a list of available tabs to display on the search result.
-            Can be overridden. 
+            Can be overridden.
 
             Example:
                 ret = [
@@ -659,7 +659,7 @@ class SearchContentType(object):
         return []
 
     def get_views(self):
-        ''' Like get_available_views() 
+        ''' Like get_available_views()
             but also sets a field 'active' = True|False to each view in the list.
         '''
         ret = self._get_available_views()
@@ -719,15 +719,15 @@ class SearchContentType(object):
         # expand
         import re
         for k in expansions:
-            query = re.sub(ur'\b(%s)\b' % re.escape(
-                k), ur'(\1 OR "%s")' % expansions[k], query)
+            query = re.sub(u'\b(%s)\b' % re.escape(
+                k), u'(\1 OR "%s")' % expansions[k], query)
 
         return query
 
     def _build_queryset(self, request, term):
         '''
             Returns an ordered list or record ids that match the query in the http request.
-            The ids are retrieved using Whoosh or Django QuerySet or both.            
+            The ids are retrieved using Whoosh or Django QuerySet or both.
         '''
 
         # TODO: single search for all types.
@@ -782,10 +782,10 @@ class SearchContentType(object):
             # Build the query
             # filter the content type (e.g. manuscripts) and other whoosh
             # fields
-            query = ur''
+            query = u''
             if term or query_advanced:
-                query = (ur'%s %s' % (term, query_advanced)).strip()
-            query = (query + ur' type:%s' % self.key).strip()
+                query = (u'%s %s' % (term, query_advanced)).strip()
+            query = (query + u' type:%s' % self.key).strip()
 
             # Run the search
             results = self.search_whoosh(query)
@@ -850,8 +850,8 @@ class SearchContentType(object):
 
     def bulk_load_records(self, recordids):
         '''Read all the records from the database
-            This can be overridden to significantly optimise the template 
-            rendering by pre-fetching the related records.  
+            This can be overridden to significantly optimise the template
+            rendering by pre-fetching the related records.
         '''
         return (self.get_model()).objects.in_bulk(recordids)
 
@@ -868,7 +868,7 @@ class SearchContentType(object):
         return ret
 
     def get_whoosh_dict(self):
-        ''' 
+        '''
             Returns a sorted dictionary of hits from the last search
             OrderedDict ret such that ret[record.id] = hit
         '''
@@ -876,7 +876,7 @@ class SearchContentType(object):
 
     def _get_query_terms(self, lowercase=False):
         '''
-            Returns a list of tokens found in the search query. 
+            Returns a list of tokens found in the search query.
         '''
         from digipal.utils import get_tokens_from_phrase
         ret = get_tokens_from_phrase(self.query_phrase, lowercase)
@@ -920,10 +920,10 @@ from django.template.defaultfilters import slugify
 
 def get_form_field_from_queryset(values, label, is_model_choice_field=False, aid=None, other_choices=[], is_key_id=False):
     ''' Returns a choice field from a set of values
-        If is_model_choice_field is True a forms.ModelChoiceField is returned, 
+        If is_model_choice_field is True a forms.ModelChoiceField is returned,
         otherwise a forms.ChoiceField is returned.
         Note that forms.ModelChoiceField will run the query each time the form is rendered.
-        Whereas forms.ChoiceField will have its choices effectively cached for the whole 
+        Whereas forms.ChoiceField will have its choices effectively cached for the whole
         duration of the web application lifetime. Which is more efficient but might be
         an issue if the applicaiton is not restarted after a database update.
     '''

@@ -1,5 +1,5 @@
 {% extends "admin/base.html" %}
-{% load mezzanine_tags i18n staticfiles %}
+{% load mezzanine_tags i18n static %}
 
 {% block title %}{{ title }} | Mezzanine{% endblock %}
 
@@ -44,21 +44,21 @@ jQuery(function($) {
 {% comment %}
     GN: added he following style element.
     ALl the rest in this document is the original Mezzanine template.
-    We change the colors to help preventing editing in the wrong project 
+    We change the colors to help preventing editing in the wrong project
     by mistake.
 {% endcomment %}
 <style>
-    {{ settings.ADMIN_STYLES }} 
+    {{ settings.ADMIN_STYLES }}
     .dropdown-menu-menu li, .dropdown-menu li {font-size: 10.5px;}
     .dropdown-menu li {padding-left: 6px; padding-right: 6px; border-right: 1px solid lightgrey;}
     .cloned li {font-size: 12px; padding-top: 8px; padding-bottom: 8px !important;}
-    /* Cancel the nowrap class as it was making the changelist table wider 
+    /* Cancel the nowrap class as it was making the changelist table wider
     than the screen */
     .result-list td.nowrap {white-space: normal;}
     body.change-form select {
         width: auto;
     }
-    
+
     /* Avoid very wide input text boxes on the change list */
     div.result-list table input[type=text] {
         width: 6em;

@@ -1,13 +1,13 @@
 {% extends "admin/change_form.html" %}
-{% load i18n admin_urls admin_static admin_modify %}
+{% load i18n admin_urls static admin_modify %}
 
 {% block extrahead %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static "digipal/scripts/libs/jquery-ui/jquery-ui.custom.min.css" %}">
-    <script type="text/javascript" src="{% static "digipal/scripts/libs/jquery-ui/jquery-ui.custom.min.js" %}"></script>
-    
+    <link rel="stylesheet" href="{% static 'digipal/scripts/libs/jquery-ui/jquery-ui.custom.min.css' %}">
+    <script type="text/javascript" src="{% static 'digipal/scripts/libs/jquery-ui/jquery-ui.custom.min.js' %}"></script>
+
     {{ media }}
-    
+
     <script type="text/javascript">
         (function($) {
             $(function() {
@@ -19,7 +19,7 @@
                         {% endif %}
                     {% endfor %}
                 {% endfor %}
-                
+
                 $('#quickform input').on('change keyup', function() {
                     $(this).toggleClass('invalid', false);
                 });
@@ -52,12 +52,12 @@
                 margin-left: 0;
             }
         }
-        
+
         /*Hide admin language dropdown*/
         #id_language_chzn {
             display:none;
         }
-        
+
         input.vTextField {
             width: 20em;
         }
@@ -72,12 +72,12 @@
 
 <div id="content-main">
 
-    <p>For Item definition please refer to 
+    <p>For Item definition please refer to
         <a href="https://github.com/kcl-ddh/digipal/wiki/Items-and-their-Parts" target="_blank">
         the introduction to the Items and their Parts.
         </a>
     </p>
-    
+
     <form id="quickform" action="#container" method="post">
         {% csrf_token %}
         <div>
@@ -90,7 +90,7 @@
                                     <label for="field-{{ field.key }}" class="{% if field.required %}required{% endif %}">
                                         {{ field.label }}
                                     </label>
-                                    <input type="text" class="vTextField" id="field-{{ field.key }}" name="{{ field.key }}" 
+                                    <input type="text" class="vTextField" id="field-{{ field.key }}" name="{{ field.key }}"
                                         {% if field.eg %}placeholder=""{% endif %} value="{{ field.value }}"
                                         />
                                     <br/>
@@ -107,7 +107,7 @@
                 </fieldset>
             {% endfor %}
         </div>
-        
+
         <div class="submit-row">
             <!-- input type="submit" value="Save" class="default" name="_save" -->
             <!-- input class="change-view-save-another" type="submit" value="Save and add another" name="_addanother" -->

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from models import Allograph, AllographComponent, Alphabet, Annotation, \
+from digipal.models import Allograph, AllographComponent, Alphabet, Annotation, \
     Appearance, Aspect, \
     CatalogueNumber, Category, Character, CharacterForm, Collation, Component, County, \
     ComponentFeature, CurrentItem, \
@@ -21,7 +21,7 @@ from models import Allograph, AllographComponent, Alphabet, Annotation, \
 from mezzanine.conf import settings
 from mezzanine.core.admin import StackedDynamicInlineAdmin
 import re
-import admin_forms
+import digipal.admin_forms
 
 #########################
 #                       #
@@ -34,7 +34,7 @@ import admin_forms
     This is to avoid running one database query per FK dropdown
     per form in an inline formset. This saves a a lot of time on
     change forms that have a lot of related records or inlines
-    with many foreign key drop downs. 
+    with many foreign key drop downs.
 '''
 
 
@@ -300,8 +300,8 @@ class CharacterInline(DigiPalInline):
 
 class HandsInline(admin.StackedInline):
     model = Hand.images.through
-    form = admin_forms.HandsInlineForm
-    formset = admin_forms.HandsInlineFormSet
+    form = digipal.admin_forms.HandsInlineForm
+    formset = digipal.admin_forms.HandsInlineFormSet
 
 
 class InstitutionInline(DigiPalInline):
@@ -317,8 +317,8 @@ class ScriptComponentInline(DigiPalInline):
 class HandInline(DigiPalInlineDynamic):
     model = Hand
     extra = 5
-    form = admin_forms.HandForm
+    form = digipal.admin_forms.HandForm
 
     filter_horizontal = ['images']
 
-    fieldsets = admin_forms.fieldsets_hand
+    fieldsets = digipal.admin_forms.fieldsets_hand

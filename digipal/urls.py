@@ -1,11 +1,14 @@
-from django.conf.urls import patterns, include, url
 from mezzanine.conf import settings
 from django.contrib import admin
-from mezzanine.core.views import direct_to_template
-from patches import mezzanine_patches, compressor_patch
+from django.conf.urls import include
+from django.urls import path
+from mezzanine.core.views import direct_to_template, search
+from digipal.patches import mezzanine_patches, compressor_patch
 from digipal.models import CarouselItem
 from digipal.signals import init_signals
-from index import count
+from django.contrib.auth import views as auth_views
+from digipal.views.robots import robots_view
+#from index import count
 admin.autodiscover()
 
 # apply mezzanine patches at this stage. Before that would be troublesome (importing mezzanine would reimport digipal, etc)
@@ -15,16 +18,30 @@ compressor_patch()
 
 init_signals()
 
-statistic = count()
+#statistic = count()
 
 # TODO: find a better way to import those urls. We don't want digipal -> digipal_text
-urlpatterns = patterns('', ('^', include('digipal_text.urls')))
 
+urlpatterns = [
+    path('', include('digipal_text.urls')),
+    path('admin', include('digipal.urls_admin')),
+    path('admin', include(admin.site.urls)),
+    path('digipal', include('digipal.urls_digipal')),
+    #path('login', django.contrib.auth.views.login, name='login'),
+    #path('logout', django.contrib.auth.views.logout, name='logout'),
+    path('accounts', include('django.contrib.auth.urls')),
+    path('robots.txt', robots_view),
+    path('tinymce', include('tinymce.urls')),
+    path('blog/search', search),
+]
+
+#urlpatterns = patterns('', ('^', include('digipal_text.urls')))
+"""
 urlpatterns += patterns('',
-    url(r'^admin/', include('digipal.urls_admin')),
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin', include('digipal.urls_admin')),
+    url(r'^admin', include(admin.site.urls)),
 
-    url(r'^digipal/', include('digipal.urls_digipal')),
+    url(r'^digipal', include('digipal.urls_digipal')),
 
     url(r'^login/$', 'django.contrib.auth.views.login', name='login'),
     url(r'^logout/$', 'django.contrib.auth.views.logout', name='logout'),
@@ -44,26 +61,27 @@ urlpatterns += patterns('',
         },
         name = 'home'
     ),
-    url(r'^tinymce/', include('tinymce.urls')),
+    url(r'^tinymce', include('tinymce.urls')),
 
     url(r'^blog/search/$', 'mezzanine.core.views.search'),
 
     #url(r'^doc/(?P<path>.*)$', 'digipal.views.doc.doc_view'),
 )
 
+
 if settings.LIGHTBOX:
     urlpatterns += patterns('',
-        url(r'^lightbox/', include('lightbox.urls'))
+        path('lightbox', include('lightbox.urls'))
     )
 
+"""
+
 # Server media in debug mode
-if settings.DEBUG:
-    urlpatterns += patterns('',
-        (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),
-    )
+#if settings.DEBUG:
+#    urlpatterns += (path('media/<path>', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT, 'show_indexes': True}),)
 
 # ADD YOUR OWN URLPATTERNS *ABOVE* THE LINE BELOW.
 # ``mezzanine.urls`` INCLUDES A *CATCH ALL* PATTERN
 # FOR PAGES, SO URLPATTERNS ADDED BELOW ``mezzanine.urls``
 # WILL NEVER BE MATCHED!
-urlpatterns += patterns('', ('^', include('mezzanine.urls')))
+#urlpatterns += patterns('', ('^', include('mezzanine.urls')))

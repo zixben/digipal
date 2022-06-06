@@ -1,29 +1,25 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import include
+from django.urls import path
 from mezzanine.conf import settings
+from digipal.views.admin import general, idiograph, quickforms, quickforms, image, stewart
+urlpatterns = [
+    path('<app_label>digipal)/<model_name>/<object_id>/context', general.context_view),
+    path('<app_label>digipal)/instances', general.instances_view),
+    path('<app_label>digipal)/<model_name>/import', general.import_view),
 
-urlpatterns = patterns('digipal.views.admin.general',
-    (r'(?P<app_label>digipal)/(?P<model_name>[^/]+)/(?P<object_id>[^/]+)/context/', 'context_view'),
-    (r'(?P<app_label>digipal)/instances/', 'instances_view'),
-    (r'(?P<app_label>digipal)/(?P<model_name>[^/]+)/import/', 'import_view'),
-)
+    path('digipal/stewartrecord/match', stewart.stewart_match, name='stewart_match'),
+    path('digipal/stewartrecord/import', stewart.stewart_import, name='stewart_import'),
 
-urlpatterns += patterns('digipal.views.admin.stewart',
-    url(r'digipal/stewartrecord/match', 'stewart_match', name='stewart_match'),
-    url(r'digipal/stewartrecord/import', 'stewart_import', name='stewart_import'),
-)
-
-urlpatterns += patterns('digipal.views.admin.idiograph',
-    (r'digipal/idiograph_editor/$', 'idiograph_editor'),
-    (r'digipal/idiograph_editor/get_idiographs', 'get_idiographs'),
-    (r'digipal/idiograph_editor/get_allographs', 'get_allographs'),
-    (r'digipal/idiograph_editor/get_idiograph', 'get_idiograph'),
-    (r'digipal/idiograph_editor/save_idiograph', 'save_idiograph'),
-    (r'digipal/idiograph_editor/update_idiograph', 'update_idiograph'),
-    (r'digipal/idiograph_editor/delete_idiograph', 'delete_idiograph'),
-)
+    path('digipal/idiograph_editor', idiograph.idiograph_editor),
+    path('digipal/idiograph_editor/get_idiographs', idiograph.get_idiographs),
+    path('digipal/idiograph_editor/get_allographs', idiograph.get_allographs),
+    path('digipal/idiograph_editor/get_idiograph', idiograph.get_idiograph),
+    path('digipal/idiograph_editor/save_idiograph', idiograph.save_idiograph),
+    path('digipal/idiograph_editor/update_idiograph', idiograph.update_idiograph),
+    path('digipal/idiograph_editor/delete_idiograph', idiograph.delete_idiograph)
+]
 
 if getattr(settings, 'USE_ITEM_PART_QUICK_ADD_FORM'):
-    urlpatterns += patterns('digipal.views.admin.quickforms',
-        (r'digipal/itempart/add/?', 'add_itempart_view'),
+    urlpatterns += (
+        path('digipal/itempart/add/?', quickforms.add_itempart_view),
     )
-

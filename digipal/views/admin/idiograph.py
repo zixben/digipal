@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseBadRequest
 from django.db import transaction
 from django.forms.formsets import formset_factory
 from digipal.forms import ScribeAdminForm, OnlyScribe
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext
 import json
 
@@ -23,8 +23,7 @@ def idiograph_editor(request):
         'scribeForm': onlyScribeForm
     }
 
-    return render_to_response('admin/digipal/idiograph_editor.html', newContext,
-                              context_instance=RequestContext(request))
+    return render(request, 'admin/digipal/idiograph_editor.html', newContext)
 
 
 @staff_member_required

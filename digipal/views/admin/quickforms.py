@@ -2,7 +2,6 @@
 import re
 from django.shortcuts import render
 from django.template import RequestContext
-from django.shortcuts import render_to_response
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import admin
 from django.utils.safestring import mark_safe
@@ -70,7 +69,7 @@ def add_itempart_view(request):
     if request.method == "POST":
         try:
             itempart = add_itempart(request)
-        except ExceptionAddItemPart, e:
+        except ExceptionAddItemPart as e:
             messages.add_message(request, messages.ERROR, e.message)
         else:
             # add a confirmation message

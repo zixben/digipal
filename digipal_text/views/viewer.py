@@ -128,23 +128,23 @@ def tinymce_generated_css_view(request, item_partid=0):
 
         if tei:
             xml = tei
-            xml = re.sub(ur'(\w+)\s*=', ur'data-dpt-\1=', xml)
-            xml = re.sub(ur'<\/(\w+)', ur'</' + tag, xml)
-            xml = re.sub(ur'<(\w+)', ur'<' + tag + ur' data-dpt="\1"', xml)
+            xml = re.sub(u'(\w+)\s*=', u'data-dpt-\1=', xml)
+            xml = re.sub(u'<\/(\w+)', u'</' + tag, xml)
+            xml = re.sub(u'<(\w+)', u'<' + tag + u' data-dpt="\1"', xml)
         if not xml:
             continue
 
         # print(xml)
         selector = re.sub(
-            ur'''([\w-]+)\s*=\s*(["'][^"']+["'])''', ur'[\1=\2]', xml)
-        selector = re.sub(ur'[\s<]', ur'', selector)
-        selector = re.sub(ur'>.*', ur'', selector)
+            u'''([\w-]+)\s*=\s*(["'][^"']+["'])''', u'[\1=\2]', xml)
+        selector = re.sub(u'[\s<]', u'', selector)
+        selector = re.sub(u'>.*', u'', selector)
 
         color_int = 0
         color_darker = color
         try:
             color_int = int(color.replace('#', ''), 16)
-        except ValueError, e:
+        except ValueError as e:
             pass
         if color_int:
             color_darker = max(0, color_int - 0x808080)
@@ -470,7 +470,7 @@ def get_all_master_locations(context, request):
     for tcx in TextContentXML.objects.filter(
             text_content__item_part=context['item_part']).iterator():
         for m in re.findall(
-                ur'<span data-dpt="location" data-dpt-loctype="(.*?)">(.*?)</span>', tcx.content or ''):
+                u'<span data-dpt="location" data-dpt-loctype="(.*?)">(.*?)</span>', tcx.content or ''):
             if m[0] in ret:
                 label = strip_tags(m[1]).strip()
                 ret[m[0]].add(label)
@@ -546,7 +546,7 @@ def text_api_view_text(request, item_partid, content_type, location_type,
             ret['locations'][ltype] = []
             if text_content_xml.content:
                 for entry in re.findall(
-                        ur'(?:<span data-dpt="location" data-dpt-loctype="' + ltype + '">)([^<]+)', text_content_xml.content):
+                        u'(?:<span data-dpt="location" data-dpt-loctype="' + ltype + '">)([^<]+)', text_content_xml.content):
                     ret['locations'][ltype].append(entry)
             if not ret['locations'][ltype]:
                 del ret['locations'][ltype]
@@ -583,7 +583,7 @@ def text_api_view_text(request, item_partid, content_type, location_type,
             # we make a copy if the new content removes 10% of the content
             # this might be due to a bug in the UI
             if len(record_content) < (0.9 * len_previous_record_content):
-                print 'Auto copy (smaller content)'
+                print('Auto copy (smaller content)')
                 text_content_xml.save_copy()
 
             # set the new content
@@ -772,7 +772,7 @@ def get_fragment_extent(content, location_type, location=None, from_pos=0):
             loc_end = content.find('</span>', span0 + len(location_pattern))
             if loc_end > -1:
                 location = content[span0 + len(location_pattern):loc_end]
-                location = re.sub(ur'<.*?>', '', location)
+                location = re.sub(u'<.*?>', '', location)
                 location = location.strip()
 
         if span0 > -1:
@@ -1154,7 +1154,7 @@ def find_image(request, item_partid, location_type, location,
 
     image = None
     if location:
-        imageid = re.sub(ur'^#(\d+)$', ur'\1', location)
+        imageid = re.sub(u'^#(\d+)$', u'\1', location)
         if imageid and imageid != location:
             # e.g. location = #100
             image = Image.objects.filter(id=imageid).first()
@@ -1246,7 +1246,7 @@ def text_api_view_search(request, item_partid, content_type,
     ret['location_type'] = location_type
     ret['location'] = location
 
-    ret['content'] = ur'''<form class="text-search-form" method="GET" style="margin:0.2em">
+    ret['content'] = u'''<form class="text-search-form" method="GET" style="margin:0.2em">
         <p>Query: <input type="text" class="control" name="query" value="%s"/><input type="submit" name="s" value="Search"/></p>
         <p>%s entries</p>
         <ul>

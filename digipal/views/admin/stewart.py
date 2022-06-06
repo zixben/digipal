@@ -3,13 +3,13 @@ from digipal.models import *
 import re
 from django import http, template
 from django.template import RequestContext
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import admin
 from django.utils.text import capfirst
-from django.utils.translation import ugettext_lazy, ugettext as _
+from django.utils.translation import gettext_lazy as _
 from django.utils.safestring import mark_safe
-import htmlentitydefs
+import html.entities
 from django.db.models import Q
 
 from django.http import HttpResponse, Http404
@@ -123,9 +123,9 @@ def add_matching_hand_to_result(result, steward_record, hand, reason, highlight=
         hand.highlighted = highlight
     if steward_record.locus:
         locus = steward_record.locus.replace(u'\u2013', u'-').strip('[] ')
-        if hand.label and re.search(ur'(?i)\W%s\W' % re.escape(locus), hand.label.replace(u'\u2013', u'-')):
+        if hand.label and re.search(u'(?i)\W%s\W' % re.escape(locus), hand.label.replace(u'\u2013', u'-')):
             hand.highlighted = True
-        if hand.description and re.search(ur'(?i)\W%s\W' % re.escape(locus), hand.description.replace(u'\u2013', u'-')):
+        if hand.description and re.search(u'(?i)\W%s\W' % re.escape(locus), hand.description.replace(u'\u2013', u'-')):
             hand.highlighted = True
 
     result[hand.match_id] = hand

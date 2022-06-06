@@ -12,19 +12,19 @@ import re
 import string
 import unicodedata
 import cgi
-import iipfield.fields
-import iipfield.storage
+import digipal.iipfield.fields
+import digipal.iipfield.storage
 from django.utils.html import conditional_escape, escape
 from tinymce.models import HTMLField
 from django.db import transaction
 from mezzanine.generic.fields import KeywordsField
 import logging
 from django.utils.text import slugify
-import utils as dputils
+import digipal.utils as dputils
 from digipal.utils import sorted_natural
 from collections import OrderedDict
 
-from patches import admin_patches, whoosh_patches
+from digipal.patches import admin_patches, whoosh_patches
 # need to call it here because get_image_path() is called in the model
 
 
@@ -155,7 +155,7 @@ class MediaPermission(models.Model):
         return ret
 
     def __unicode__(self):
-        return ur'%s [%s]' % (self.label, self.get_permission_label())
+        return r'%s [%s]' % (self.label, self.get_permission_label())
 
 # Aspect on legacy db
 
@@ -207,8 +207,8 @@ class Component(models.Model):
 
 
 class ComponentFeature(models.Model):
-    component = models.ForeignKey('Component', blank=False, null=False)
-    feature = models.ForeignKey('Feature', blank=False, null=False)
+    component = models.ForeignKey('Component', blank=False, null=False, on_delete=models.CASCADE)
+    feature = models.ForeignKey('Feature', blank=False, null=False, on_delete=models.CASCADE,)
     set_by_default = models.BooleanField(null=False, default=False)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(
@@ -258,7 +258,7 @@ class OntographType(models.Model):
 
 class Ontograph(models.Model):
     name = name = models.CharField(max_length=128)
-    ontograph_type = models.ForeignKey(OntographType, verbose_name='type')
+    ontograph_type = models.ForeignKey(OntographType, verbose_name='type', on_delete=models.CASCADE,)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
                                     editable=False)
@@ -294,8 +294,8 @@ class Character(models.Model):
     name = models.CharField(max_length=128, unique=True)
     unicode_point = models.CharField(
         max_length=32, unique=False, blank=True, null=True)
-    form = models.ForeignKey(CharacterForm, blank=False, null=False)
-    ontograph = models.ForeignKey(Ontograph)
+    form = models.ForeignKey(CharacterForm, blank=False, null=False, on_delete=models.CASCADE)
+    ontograph = models.ForeignKey(Ontograph, on_delete=models.CASCADE)
     components = models.ManyToManyField(Component, blank=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
@@ -316,7 +316,7 @@ class Character(models.Model):
 
 class Allograph(models.Model):
     name = models.CharField(max_length=128)
-    character = models.ForeignKey(Character)
+    character = models.ForeignKey(Character, on_delete=models.CASCADE)
     default = models.BooleanField(default=False)
     aspects = models.ManyToManyField(Aspect, blank=True)
     hidden = models.BooleanField(
@@ -352,8 +352,8 @@ class Allograph(models.Model):
 
 class AllographComponent(models.Model):
     allograph = models.ForeignKey(
-        Allograph, related_name="allograph_components")
-    component = models.ForeignKey(Component)
+        Allograph, related_name="allograph_components", on_delete=models.CASCADE)
+    component = models.ForeignKey(Component, on_delete=models.CASCADE)
     features = models.ManyToManyField(Feature, blank=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
@@ -379,11 +379,11 @@ class ModelWithDate(models.Model):
     def is_date_precise(self):
         ret = False
         date = self.get_date_sort()
-        # if re.search(ur'\d{3,4}$', date) and not re.search(ur'(?i)circa',
-        # date) and not re.search(ur'(?i)\bx\b', date) and not
-        # re.search(ur'(?i)\bc\b', date):
-        if re.match(ur'\d{1,2}\s+\w+\s+\d{4}$', date) and not re.search(ur'(?i)circa',
-                                                                        date) and not re.search(ur'(?i)\bx\b', date) and not re.search(ur'(?i)\bc\b', date):
+        # if re.search(u'\d{3,4}$', date) and not re.search(u'(?i)circa',
+        # date) and not re.search(u'(?i)\bx\b', date) and not
+        # re.search(u'(?i)\bc\b', date):
+        if re.match(u'\d{1,2}\s+\w+\s+\d{4}$', date) and not re.search(u'(?i)circa',
+                                                                        date) and not re.search(u'(?i)\bx\b', date) and not re.search(u'(?i)\bc\b', date):
             ret = True
         return ret
 
@@ -443,8 +443,8 @@ class Script(models.Model):
 
 
 class ScriptComponent(models.Model):
-    script = models.ForeignKey(Script)
-    component = models.ForeignKey(Component)
+    script = models.ForeignKey(Script, on_delete=models.CASCADE)
+    component = models.ForeignKey(Component, on_delete=models.CASCADE)
     features = models.ManyToManyField(Feature)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
@@ -485,23 +485,23 @@ class Owner(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
 
     # deprecated, use repository
-    institution = models.ForeignKey('Institution', blank=True, null=True, default=None, related_name='owners',
+    institution = models.ForeignKey('Institution', blank=True, null=True, default=None, on_delete=models.CASCADE, related_name='owners',
                                     help_text='Please select either an institution or a person. Deprecated, please use `Repository` instead.')
     # deprecated, use repository
-    person = models.ForeignKey('Person', blank=True, null=True, default=None,
+    person = models.ForeignKey('Person', blank=True, null=True, default=None, on_delete=models.CASCADE,
                                related_name='owners',
                                help_text='Please select either an institution or a person. Deprecated, please use `Repository` instead.')
 
-    repository = models.ForeignKey('Repository', blank=True, null=True, default=None, related_name='owners',
+    repository = models.ForeignKey('Repository', blank=True, null=True, default=None, related_name='owners', on_delete=models.CASCADE,
                                    help_text='`Repository` actually represents the institution, person or library owning the item.')
 
     date = models.CharField(max_length=128)
     display_label = models.CharField(
         max_length=250, blank=True, null=False, default='')
     evidence = models.TextField()
-    rebound = models.NullBooleanField()
-    annotated = models.NullBooleanField()
-    dubitable = models.NullBooleanField()
+    rebound = models.BooleanField(null=True)
+    annotated = models.BooleanField(null=True)
+    dubitable = models.BooleanField(null=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(
         auto_now=True, editable=False)
@@ -564,8 +564,8 @@ class Date(models.Model):
     weight = models.FloatField()
     band = models.IntegerField(blank=True, null=True)
     additional_band = models.IntegerField(blank=True, null=True)
-    post_conquest = models.NullBooleanField()
-    s_xi = models.NullBooleanField()
+    post_conquest = models.BooleanField(null=True)
+    s_xi = models.BooleanField(null=True)
     min_weight = models.FloatField(blank=True, null=True)
     max_weight = models.FloatField(blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
@@ -663,16 +663,16 @@ class Language(models.Model):
 
 class HistoricalItem(ModelWithDate):
     legacy_id = models.IntegerField(blank=True, null=True)
-    historical_item_type = models.ForeignKey(HistoricalItemType)
-    historical_item_format = models.ForeignKey(Format, blank=True, null=True)
+    historical_item_type = models.ForeignKey(HistoricalItemType, on_delete=models.CASCADE)
+    historical_item_format = models.ForeignKey(Format, blank=True, null=True, on_delete=models.CASCADE)
 
     name = models.CharField(max_length=256, blank=True, null=True)
     categories = models.ManyToManyField(Category, blank=True)
-    hair = models.ForeignKey(Hair, blank=True, null=True)
-    language = models.ForeignKey(Language, blank=True, null=True)
+    hair = models.ForeignKey(Hair, blank=True, null=True, on_delete=models.CASCADE)
+    language = models.ForeignKey(Language, blank=True, null=True, on_delete=models.CASCADE)
     url = models.URLField(blank=True, null=True)
-    vernacular = models.NullBooleanField()
-    neumed = models.NullBooleanField()
+    vernacular = models.BooleanField(null=True)
+    neumed = models.BooleanField(null=True)
     owners = models.ManyToManyField(Owner, blank=True)
     catalogue_number = models.CharField(max_length=128, editable=False)
     display_label = models.CharField(max_length=128)
@@ -840,10 +840,10 @@ class Source(models.Model):
 
 class CatalogueNumber(models.Model):
     historical_item = models.ForeignKey(HistoricalItem,
-                                        related_name='catalogue_numbers', blank=True, null=True)
+                                        related_name='catalogue_numbers', blank=True, null=True, on_delete=models.CASCADE)
     text = models.ForeignKey(
-        'Text', related_name='catalogue_numbers', blank=True, null=True)
-    source = models.ForeignKey(Source)
+        'Text', related_name='catalogue_numbers', blank=True, null=True, on_delete=models.CASCADE)
+    source = models.ForeignKey(Source, on_delete=models.CASCADE)
     number = models.CharField(max_length=100)
     number_slug = models.SlugField(max_length=100, blank=True, null=True)
     url = models.URLField(blank=True, null=True)
@@ -927,8 +927,8 @@ def cataloguenumber_delete_signal(sender, instance, using, **kwargs):
 
 
 class Collation(models.Model):
-    historical_item = models.ForeignKey(HistoricalItem)
-    fragment = models.NullBooleanField()
+    historical_item = models.ForeignKey(HistoricalItem, on_delete=models.CASCADE)
+    fragment = models.BooleanField(null=True)
     leaves = models.IntegerField(blank=True, null=True)
     front_flyleaves = models.IntegerField(blank=True, null=True)
     back_flyleaves = models.IntegerField(blank=True, null=True)
@@ -945,10 +945,10 @@ class Collation(models.Model):
 
 # Manuscripts in legacy db
 class Decoration(models.Model):
-    historical_item = models.ForeignKey(HistoricalItem)
-    illustrated = models.NullBooleanField()
-    decorated = models.NullBooleanField()
-    illuminated = models.NullBooleanField()
+    historical_item = models.ForeignKey(HistoricalItem, on_delete=models.CASCADE)
+    illustrated = models.BooleanField(null=True)
+    decorated = models.BooleanField(null=True)
+    illuminated = models.BooleanField(null=True)
     num_colours = models.IntegerField(blank=True, null=True)
     colours = models.CharField(max_length=256, blank=True, null=True)
     num_inks = models.IntegerField(blank=True, null=True)
@@ -970,11 +970,11 @@ class Decoration(models.Model):
 
 class Description(models.Model):
     '''A HI description'''
-    historical_item = models.ForeignKey(HistoricalItem, blank=True, null=True)
+    historical_item = models.ForeignKey(HistoricalItem, blank=True, null=True, on_delete=models.CASCADE)
     text = models.ForeignKey(
-        'Text', related_name='descriptions', blank=True, null=True)
+        'Text', related_name='descriptions', blank=True, null=True, on_delete=models.CASCADE)
 
-    source = models.ForeignKey(Source)
+    source = models.ForeignKey(Source, on_delete=models.CASCADE)
 
     description = HTMLField(blank=True, null=True)
     comments = models.TextField(blank=True, null=True)
@@ -1023,9 +1023,9 @@ class Description(models.Model):
 
 
 class Layout(models.Model):
-    historical_item = models.ForeignKey(HistoricalItem, blank=True, null=True)
+    historical_item = models.ForeignKey(HistoricalItem, blank=True, null=True, on_delete=models.CASCADE)
     item_part = models.ForeignKey(
-        'ItemPart', blank=True, null=True, related_name='layouts')
+        'ItemPart', blank=True, null=True, related_name='layouts', on_delete=models.CASCADE)
     page_height = models.IntegerField(blank=True, null=True)
     page_width = models.IntegerField(blank=True, null=True)
     frame_height = models.IntegerField(blank=True, null=True)
@@ -1033,12 +1033,12 @@ class Layout(models.Model):
     tramline_width = models.IntegerField(blank=True, null=True)
     lines = models.IntegerField(blank=True, null=True)
     columns = models.IntegerField(blank=True, null=True)
-    on_top_line = models.NullBooleanField()
-    multiple_sheet_rulling = models.NullBooleanField()
-    bilinear_ruling = models.NullBooleanField()
+    on_top_line = models.BooleanField(null=True)
+    multiple_sheet_rulling = models.BooleanField(null=True)
+    bilinear_ruling = models.BooleanField(null=True)
     comments = models.TextField(blank=True, null=True)
-    hair_arrangement = models.ForeignKey(Hair, blank=True, null=True)
-    insular_pricking = models.NullBooleanField()
+    hair_arrangement = models.ForeignKey(Hair, blank=True, null=True, on_delete=models.CASCADE)
+    insular_pricking = models.BooleanField(null=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
                                     editable=False)
@@ -1053,14 +1053,14 @@ class Layout(models.Model):
 # MsOrigin in legacy db
 class ItemOrigin(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
-    historical_item = models.ForeignKey(HistoricalItem)
+    historical_item = models.ForeignKey(HistoricalItem, on_delete=models.CASCADE)
     evidence = models.TextField(blank=True, null=True, default='')
-    dubitable = models.NullBooleanField()
+    dubitable = models.BooleanField(null=True)
 
     place = models.ForeignKey(
-        'Place', null=True, blank=True, related_name='item_origins')
+        'Place', null=True, blank=True, related_name='item_origins', on_delete=models.CASCADE)
     institution = models.ForeignKey(
-        'Institution', null=True, blank=True, related_name='item_origins')
+        'Institution', null=True, blank=True, related_name='item_origins', on_delete=models.CASCADE)
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
@@ -1102,12 +1102,12 @@ class ItemOrigin(models.Model):
 class Archive(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
 
-    content_type = models.ForeignKey(ContentType)
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
 
-    historical_item = models.ForeignKey(HistoricalItem)
-    dubitable = models.NullBooleanField()
+    historical_item = models.ForeignKey(HistoricalItem, on_delete=models.CASCADE)
+    dubitable = models.BooleanField(null=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
                                     editable=False)
@@ -1174,14 +1174,14 @@ class Place(models.Model):
     other_names = models.CharField(max_length=256, blank=True, null=True)
     eastings = models.FloatField(blank=True, null=True)
     northings = models.FloatField(blank=True, null=True)
-    region = models.ForeignKey(Region, blank=True, null=True)
+    region = models.ForeignKey(Region, blank=True, null=True, on_delete=models.CASCADE)
     current_county = models.ForeignKey(County,
                                        related_name='county_current',
-                                       blank=True, null=True)
+                                       blank=True, null=True, on_delete=models.CASCADE)
     historical_county = models.ForeignKey(County,
                                           related_name='county_historical',
-                                          blank=True, null=True)
-    type = models.ForeignKey(PlaceType, blank=True, null=True)
+                                          blank=True, null=True, on_delete=models.CASCADE)
+    type = models.ForeignKey(PlaceType, blank=True, null=True, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
                                     editable=False)
@@ -1232,21 +1232,21 @@ class Repository(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
     name = models.CharField(max_length=256)
     short_name = models.CharField(max_length=64, blank=True, null=True)
-    place = models.ForeignKey(Place)
+    place = models.ForeignKey(Place, on_delete=models.CASCADE)
     url = models.URLField(blank=True, null=True)
-    comma = models.NullBooleanField(null=True)
+    comma = models.BooleanField(null=True)
     # legacy.`Overseas?`
-    british_isles = models.NullBooleanField(null=True)
+    british_isles = models.BooleanField(null=True)
 
     type = models.ForeignKey('OwnerType', null=True,
-                             blank=True, default=None, related_name='repositories')
+                             blank=True, default=None, related_name='repositories', on_delete=models.CASCADE)
 
     part_of = models.ForeignKey('self', null=True,
-                                blank=True, default=None, related_name='parts')
+                                blank=True, default=None, related_name='parts', on_delete=models.CASCADE)
 
-    digital_project = models.NullBooleanField(null=True)
+    digital_project = models.BooleanField(null=True)
     copyright_notice = HTMLField(blank=True, null=True)
-    media_permission = models.ForeignKey(MediaPermission, null=True,
+    media_permission = models.ForeignKey(MediaPermission, null=True, on_delete=models.CASCADE,
                                          blank=True, default=None,
                                          help_text='''The default permission scheme for images originating
             from this repository.<br/> The Pages can override the
@@ -1301,7 +1301,7 @@ class Repository(models.Model):
 
 class CurrentItem(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
-    repository = models.ForeignKey(Repository)
+    repository = models.ForeignKey(Repository, on_delete=models.CASCADE)
     shelfmark = models.CharField(max_length=128)
     description = models.TextField(blank=True, null=True)
     display_label = models.CharField(max_length=128)
@@ -1380,15 +1380,15 @@ class InstitutionType(models.Model):
 # PlaceText in legacy db
 class Institution(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
-    institution_type = models.ForeignKey(InstitutionType)
+    institution_type = models.ForeignKey(InstitutionType, on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
     founder = models.ForeignKey(Person, related_name='person_founder',
-                                blank=True, null=True)
+                                blank=True, null=True, on_delete=models.CASCADE)
     reformer = models.ForeignKey(Person, related_name='person_reformer',
-                                 blank=True, null=True)
+                                 blank=True, null=True, on_delete=models.CASCADE)
     patron = models.ForeignKey(Person, related_name='person_patron',
-                               blank=True, null=True)
-    place = models.ForeignKey(Place)
+                               blank=True, null=True, on_delete=models.CASCADE)
+    place = models.ForeignKey(Place, on_delete=models.CASCADE)
     foundation = models.CharField(max_length=128, blank=True, null=True)
     refoundation = models.CharField(max_length=128, blank=True, null=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
@@ -1407,7 +1407,7 @@ class Scribe(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
     name = models.CharField(max_length=128, unique=True)
     date = models.CharField(max_length=128, blank=True, null=True)
-    scriptorium = models.ForeignKey(Institution, blank=True, null=True)
+    scriptorium = models.ForeignKey(Institution, blank=True, null=True, on_delete=models.CASCADE)
     reference = models.ManyToManyField(Reference, blank=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
@@ -1429,9 +1429,9 @@ class Scribe(models.Model):
 
 
 class Idiograph(models.Model):
-    allograph = models.ForeignKey(Allograph)
+    allograph = models.ForeignKey(Allograph, on_delete=models.CASCADE)
     scribe = models.ForeignKey(
-        Scribe, related_name="idiographs", blank=True, null=True)
+        Scribe, related_name="idiographs", blank=True, null=True, on_delete=models.CASCADE)
     aspects = models.ManyToManyField(Aspect, blank=True)
     display_label = models.CharField(max_length=128, editable=False)
     created = models.DateTimeField(auto_now_add=True, editable=False)
@@ -1456,8 +1456,8 @@ class Idiograph(models.Model):
 
 
 class IdiographComponent(models.Model):
-    idiograph = models.ForeignKey(Idiograph)
-    component = models.ForeignKey(Component)
+    idiograph = models.ForeignKey(Idiograph, on_delete=models.CASCADE)
+    component = models.ForeignKey(Component, on_delete=models.CASCADE)
     features = models.ManyToManyField(Feature)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
@@ -1473,12 +1473,12 @@ class IdiographComponent(models.Model):
 # MsDate in legacy db
 class HistoricalItemDate(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
-    historical_item = models.ForeignKey(HistoricalItem)
-    date = models.ForeignKey(Date)
+    historical_item = models.ForeignKey(HistoricalItem, on_delete=models.CASCADE)
+    date = models.ForeignKey(Date, on_delete=models.CASCADE)
     evidence = models.TextField()
-    vernacular = models.NullBooleanField()
-    addition = models.NullBooleanField()
-    dubitable = models.NullBooleanField()
+    vernacular = models.BooleanField(null=True)
+    addition = models.BooleanField(null=True)
+    dubitable = models.BooleanField(null=True)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
                                     editable=False)
@@ -1510,10 +1510,10 @@ class ItemPart(models.Model):
     historical_items = models.ManyToManyField(
         HistoricalItem, through='ItemPartItem', related_name='item_parts')
     current_item = models.ForeignKey(
-        CurrentItem, blank=True, null=True, default=None)
+        CurrentItem, blank=True, null=True, default=None, on_delete=models.CASCADE)
 
     # the reference to a grouping part and the locus of this part in the group
-    group = models.ForeignKey('self', related_name='subdivisions', null=True,
+    group = models.ForeignKey('self', related_name='subdivisions', null=True, on_delete=models.CASCADE,
                               blank=True, help_text='the item part which contains this one')
     group_locus = models.CharField(
         max_length=64, blank=True, null=True, help_text='the locus of this part in the group')
@@ -1528,7 +1528,7 @@ class ItemPart(models.Model):
         help_text='A custom label for this part. If blank the shelfmark will be used as a label.',
     )
     pagination = models.BooleanField(blank=False, null=False, default=False)
-    type = models.ForeignKey(ItemPartType, null=True, blank=True)
+    type = models.ForeignKey(ItemPartType, null=True, blank=True, on_delete=models.CASCADE)
     owners = models.ManyToManyField(Owner, blank=True)
     notes = models.TextField(blank=True, null=True)
 
@@ -1645,7 +1645,7 @@ class ItemPart(models.Model):
                     ret = get_list_as_string(
                         self.group.historical_label, ', ', self.group_locus
                     )
-            except Exception, e:
+            except Exception as e:
                 if not 'maximum recursion' in e.message:
                     raise e
                 ret = '[ERROR: circular reference among item groups]'
@@ -1714,8 +1714,8 @@ ItemPart.webpath_key = 'Manuscripts'
 
 class ItemPartItem(models.Model):
     historical_item = models.ForeignKey(
-        HistoricalItem, related_name='partitions')
-    item_part = models.ForeignKey(ItemPart, related_name='constitutionalities')
+        HistoricalItem, related_name='partitions', on_delete=models.CASCADE)
+    item_part = models.ForeignKey(ItemPart, related_name='constitutionalities', on_delete=models.CASCADE)
     locus = models.CharField(max_length=64, blank=True, null=False, default='')
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
@@ -1755,7 +1755,7 @@ class ItemPartItem(models.Model):
                     group_label = '%s, %s' % (
                         ipi.historical_item.name, ipi.locus)
             if group_label:
-                ret += ur' [part of %s: %s]' % (
+                ret += u' [part of %s: %s]' % (
                     self.item_part.group.type, group_label)
 
         return ret
@@ -1763,11 +1763,11 @@ class ItemPartItem(models.Model):
 
 class ItemPartAuthenticity(models.Model):
     item_part = models.ForeignKey(
-        'ItemPart', related_name="authenticities", blank=False, null=False)
+        'ItemPart', related_name="authenticities", blank=False, null=False, on_delete=models.CASCADE)
     category = models.ForeignKey(
-        'AuthenticityCategory', related_name="itempart_authenticity", blank=False, null=False)
+        'AuthenticityCategory', related_name="itempart_authenticity", blank=False, null=False, on_delete=models.CASCADE)
     source = models.ForeignKey(
-        'Source', related_name="itempart_authenticity", blank=True, null=True)
+        'Source', related_name="itempart_authenticity", blank=True, null=True, on_delete=models.CASCADE)
     note = models.TextField(blank=True, null=True, default=None)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(
@@ -1789,9 +1789,9 @@ class AuthenticityCategory(NameModel):
 
 class TextItemPart(models.Model):
     item_part = models.ForeignKey(
-        'ItemPart', related_name="text_instances", blank=False, null=False)
+        'ItemPart', related_name="text_instances", blank=False, null=False, on_delete=models.CASCADE)
     text = models.ForeignKey(
-        'Text', related_name="text_instances", blank=False, null=False)
+        'Text', related_name="text_instances", blank=False, null=False, on_delete=models.CASCADE)
     locus = models.CharField(max_length=20, blank=True, null=True)
     date = models.CharField(max_length=128, blank=True, null=True)
     name = models.CharField(max_length=200, blank=True, null=True)
@@ -1845,7 +1845,7 @@ class ImageAnnotationStatus(models.Model):
 
 class Image(models.Model):
     item_part = models.ForeignKey(
-        ItemPart, related_name='images', null=True, blank=True, default=None)
+        ItemPart, related_name='images', null=True, blank=True, default=None, on_delete=models.CASCADE)
 
     locus = models.CharField(max_length=64, blank=True, null=False, default='')
     # r|v|vr|n=none|NULL=unspecified
@@ -1859,22 +1859,22 @@ class Image(models.Model):
     # eg. self.image.url => self.iipimage.name
     image = models.ImageField(upload_to=settings.UPLOAD_IMAGES_URL, blank=True,
                               null=True)
-    iipimage = iipfield.fields.ImageField(upload_to=iipfield.storage.get_image_path,
-                                          blank=True, null=True, storage=iipfield.storage.image_storage, max_length=200)
+    iipimage = digipal.iipfield.fields.ImageField(upload_to=digipal.iipfield.storage.get_image_path,
+                                          blank=True, null=True, storage=digipal.iipfield.storage.image_storage, max_length=200)
 
     display_label = models.CharField(max_length=128)
     # optional the display label provided by the user
     custom_label = models.CharField(max_length=128, blank=True, null=True,
                                     help_text='Leave blank unless you want to customise the value of the display label field')
 
-    media_permission = models.ForeignKey(MediaPermission, null=True, blank=True, default=None,
+    media_permission = models.ForeignKey(MediaPermission, null=True, blank=True, default=None, on_delete=models.CASCADE,
                                          help_text='''This field determines if the image is publicly visible and the reason if not.''')
 
     transcription = models.TextField(blank=True, null=True)
     internal_notes = models.TextField(blank=True, null=True)
 
     annotation_status = models.ForeignKey(
-        ImageAnnotationStatus, related_name='images', null=True, blank=True, default=None)
+        ImageAnnotationStatus, related_name='images', null=True, blank=True, default=None, on_delete=models.CASCADE)
 
     # THESE FIELDS SHOULD NOT BE READ DIRECTLY,
     # please call self.dimension instead.
@@ -1921,7 +1921,7 @@ class Image(models.Model):
             ret = u'Untitled Image #%s' % self.id
             if self.iipimage:
                 ret += u' (%s)' % re.sub(
-                    ur'^.*?([^/]+)/([^/.]+)[^/]+$', ur'\1, \2', self.iipimage.name)
+                    u'^.*?([^/]+)/([^/.]+)[^/]+$', u'\1, \2', self.iipimage.name)
         return ret
 
     def get_annotation_count(self):
@@ -2154,7 +2154,7 @@ class Image(models.Model):
         self.folio_side = None
         self.locus = (self.locus or '').strip()
         if self.locus:
-            matches = re.findall(ur'(\d+)', self.locus)
+            matches = re.findall(u'(\d+)', self.locus)
             if matches:
                 self.folio_number = matches[0]
             else:
@@ -2166,12 +2166,12 @@ class Image(models.Model):
                     self.folio_number = '0'
 
             locus = u'%s' % self.locus
-            locus = re.sub(ur'(?i)face', 'recto', locus)
-            locus = re.sub(ur'(?i)dorse', 'verso', locus)
-            locus = re.sub(ur'(?i)recto', 'r', locus)
-            locus = re.sub(ur'(?i)verso', 'v', locus)
+            locus = re.sub(u'(?i)face', 'recto', locus)
+            locus = re.sub(u'(?i)dorse', 'verso', locus)
+            locus = re.sub(u'(?i)recto', 'r', locus)
+            locus = re.sub(u'(?i)verso', 'v', locus)
 
-            matches = re.findall(ur'(?:[^a-z]|^)([rv])(?:[^a-z]|$)', locus)
+            matches = re.findall(u'(?:[^a-z]|^)([rv])(?:[^a-z]|$)', locus)
             if matches:
                 self.folio_side = matches[0]
         else:
@@ -2250,7 +2250,7 @@ class Image(models.Model):
     def get_relative_or_absolute_url(cls, url):
         ret = url
         if settings.IMAGE_URLS_RELATIVE:
-            ret = re.sub(ur'(?i)(^https?://[^/]+)', '', ret)
+            ret = re.sub(u'(?i)(^https?://[^/]+)', '', ret)
         return ret
 
     def thumbnail_with_link(self, height=None, width=None):
@@ -2307,7 +2307,7 @@ class Image(models.Model):
         dims = [float(v) for v in self.dimensions()]
         if max(dims) == 0:
             return (0, 0)
-        matches = re.search(ur'(WID|HEI)=(\d*)', region_url)
+        matches = re.search(u'(WID|HEI)=(\d*)', region_url)
         if matches:
             d = 0
             if matches.group(1) == 'HEI':
@@ -2315,7 +2315,7 @@ class Image(models.Model):
             requested_dim = float(matches.group(2))
             dims[1 - d] = dims[1 - d] / dims[d] * requested_dim
             dims[d] = requested_dim
-        matches = re.search(ur'RGN=([^&]*)', region_url)
+        matches = re.search(u'RGN=([^&]*)', region_url)
         if matches:
             parts = [float(part) for part in matches.group(1).split(',')]
             parts[2]
@@ -2337,7 +2337,7 @@ class Image(models.Model):
         if not ignore_item_part:
             sort_fields.insert(0, 'item_part__display_label')
         return query_set.extra(select={
-                               'fn': ur'''CASE WHEN digipal_image.folio_number~E'^\\d+$' THEN digipal_image.folio_number::integer ELSE 0 END'''}, ).order_by(*sort_fields)
+                               'fn': u'''CASE WHEN digipal_image.folio_number~E'^\\d+$' THEN digipal_image.folio_number::integer ELSE 0 END'''}, ).order_by(*sort_fields)
 
     def get_duplicates(self):
         '''Returns a list of Images with the same locus and shelfmark.'''
@@ -2410,12 +2410,12 @@ class Hand(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
     num = models.IntegerField(
         help_text='''The order of display of the Hand label. e.g. 1 for Main Hand, 2 for Gloss.''')
-    item_part = models.ForeignKey(ItemPart, related_name='hands')
-    script = models.ForeignKey(Script, blank=True, null=True)
+    item_part = models.ForeignKey(ItemPart, related_name='hands', on_delete=models.CASCADE)
+    script = models.ForeignKey(Script, blank=True, null=True, on_delete=models.CASCADE)
     scribe = models.ForeignKey(
-        Scribe, blank=True, null=True, related_name='hands')
-    assigned_date = models.ForeignKey(Date, blank=True, null=True)
-    assigned_place = models.ForeignKey(Place, blank=True, null=True)
+        Scribe, blank=True, null=True, related_name='hands', on_delete=models.CASCADE)
+    assigned_date = models.ForeignKey(Date, blank=True, null=True, on_delete=models.CASCADE)
+    assigned_place = models.ForeignKey(Place, blank=True, null=True, on_delete=models.CASCADE)
     # This is an absolute hand (or scribe) number, so we can
     # have multiple Hand records with the same scragg.
     scragg = models.CharField(max_length=6, blank=True, null=True)
@@ -2428,17 +2428,17 @@ class Hand(models.Model):
         blank=True, null=True, help_text='An optional note that will be publicly visible on the website.')
     internal_note = models.TextField(
         blank=True, null=True, help_text='An optional note for internal or editorial purpose only. Will not be visible on the website.')
-    appearance = models.ForeignKey(Appearance, blank=True, null=True)
-    relevant = models.NullBooleanField()
-    latin_only = models.NullBooleanField()
-    gloss_only = models.NullBooleanField()
-    membra_disjecta = models.NullBooleanField()
+    appearance = models.ForeignKey(Appearance, blank=True, null=True, on_delete=models.CASCADE)
+    relevant = models.BooleanField(null=True)
+    latin_only = models.BooleanField(null=True)
+    gloss_only = models.BooleanField(null=True)
+    membra_disjecta = models.BooleanField(null=True)
     num_glosses = models.IntegerField(blank=True, null=True)
     num_glossing_hands = models.IntegerField(blank=True, null=True)
-    glossed_text = models.ForeignKey(Category, blank=True, null=True)
-    scribble_only = models.NullBooleanField()
-    imitative = models.NullBooleanField()
-    latin_style = models.ForeignKey(LatinStyle, blank=True, null=True)
+    glossed_text = models.ForeignKey(Category, blank=True, null=True, on_delete=models.CASCADE)
+    scribble_only = models.BooleanField(null=True)
+    imitative = models.BooleanField(null=True)
+    latin_style = models.ForeignKey(LatinStyle, blank=True, null=True, on_delete=models.CASCADE)
     comments = models.TextField(blank=True, null=True)
     images = models.ManyToManyField(Image, blank=True, related_name='hands',
                                     help_text='''Select the images this hand appears in. The list of available images comes from images connected to the Item Part associated to this Hand.''')
@@ -2461,7 +2461,7 @@ class Hand(models.Model):
     selected_locus = models.CharField(
         max_length=100, null=True, blank=True, default='')
     stewart_record = models.ForeignKey(
-        'StewartRecord', null=True, blank=True, related_name='hands')
+        'StewartRecord', null=True, blank=True, related_name='hands', on_delete=models.CASCADE)
 
     def idiographs(self):
         if self.scribe:
@@ -2489,7 +2489,7 @@ class Hand(models.Model):
 
     def get_short_label(self):
         ret = unicode(self)
-        ret = re.sub(ur'\([^)]*\)', ur'', ret)
+        ret = re.sub(u'\([^)]*\)', u'', ret)
         return ret
 
     def __unicode__(self):
@@ -2526,7 +2526,7 @@ class Hand(models.Model):
             from django.core.exceptions import ValidationError
             errors = {}
             errors.setdefault('label', []).append(
-                ur'Insertion failed, another record with the same label and item part already exists')
+                u'Insertion failed, another record with the same label and item part already exists')
             raise ValidationError(errors)
 
     def set_description(self, source_name, description=None,
@@ -2593,9 +2593,9 @@ Hand.images.through.__unicode__ = lambda self: u'%s in %s' % (
 
 class HandDescription(models.Model):
     hand = models.ForeignKey(
-        Hand, related_name="descriptions", blank=True, null=True)
+        Hand, related_name="descriptions", blank=True, null=True, on_delete=models.CASCADE)
     source = models.ForeignKey(
-        Source, related_name="hand_descriptions", blank=True, null=True)
+        Source, related_name="hand_descriptions", blank=True, null=True, on_delete=models.CASCADE)
 
     description = models.TextField(
         help_text='''This field accepts TEI elements.''')
@@ -2612,7 +2612,7 @@ class HandDescription(models.Model):
 
     def get_stints_ranges(self):
         return re.findall(
-            ur'<span[^>]+data-dpt="stint"[^>]+>([^<]+)</span>', self.description or '')
+            u'<span[^>]+data-dpt="stint"[^>]+>([^<]+)</span>', self.description or '')
 
     def get_description_html(self, editorial_view=False):
         '''Returns the description field with additional XML mark-up based on the format
@@ -2654,7 +2654,7 @@ class HandDescription(models.Model):
                     #
                     # We find the annotation with that graph ID
                     #
-                    matchid = re.match(ur'#(\d+)', label)
+                    matchid = re.match(u'#(\d+)', label)
                     if matchid:
                         from digipal.templatetags.html_escape import annotation_img
                         # replacement = annotation_img(annotation,  [width=W]
@@ -2687,18 +2687,18 @@ class HandDescription(models.Model):
         # locus -> reference to an image
         # e.g. 452r7 -> <a href="/digipal/image/<ID>">452r7</a>
         ret = replace_references(
-            ret, ur'(?<!OF\s)\b(\d{1,4}(r|v))[^\s;,\]<]*', loci, 'Image')
+            ret, u'(?<!OF\s)\b(\d{1,4}(r|v))[^\s;,\]<]*', loci, 'Image')
 
         ret = re.sub(
-            ur'<span data-dpt="ref" data-dpt-target="([^"]+)">([^<]+)</span>', ur'<a href="\1">\2</a>', ret)
+            u'<span data-dpt="ref" data-dpt-target="([^"]+)">([^<]+)</span>', u'<a href="\1">\2</a>', ret)
 
         # <span data-dpt-model="hand" data-dpt="record">theta</span>
         ret = replace_references(
-            ret, ur'(?:<span[^>]*data-dpt-model="hand"[^>]*>)([^<]+)(?:</span>)', hands, 'Hand')
+            ret, u'(?:<span[^>]*data-dpt-model="hand"[^>]*>)([^<]+)(?:</span>)', hands, 'Hand')
 
         # <span data-dpt-model="graph" data-dpt="record">#10</span>
         ret = replace_references(
-            ret, ur'(?:<span[^>]*data-dpt-model="graph"[^>]*>)([^<]+)(?:</span>)', {}, 'Annotation')
+            ret, u'(?:<span[^>]*data-dpt-model="graph"[^>]*>)([^<]+)(?:</span>)', {}, 'Annotation')
 
         ip = self.hand.item_part
         if ip:
@@ -2710,10 +2710,10 @@ class HandDescription(models.Model):
                 'search': True, 'viewable': True, 'type': 'code'},
 
             # char
-            link = ur'/digipal/search/facets/?sort=locus&hand_label=%s&repo_city=%s&repo_place=%s&shelfmark=%s&character=\2&img_is_public=1&page=1&result_type=graphs&view=list' % (
+            link = u'/digipal/search/facets/?sort=locus&hand_label=%s&repo_city=%s&repo_place=%s&shelfmark=%s&character=\2&img_is_public=1&page=1&result_type=graphs&view=list' % (
                 self.hand.label, ip.current_item.repository.place.name, ip.current_item.repository.human_readable(), ip.current_item.shelfmark)
-            ret = re.sub(ur'(<span[^>]*data-dpt-model="character"[^>]*>)([^<]+)(</span>)',
-                         ur'<a href="' + link + ur'">\1\2\3</a>', ret)
+            ret = re.sub(u'(<span[^>]*data-dpt-model="character"[^>]*>)([^<]+)(</span>)',
+                         u'<a href="' + link + u'">\1\2\3</a>', ret)
             #/digipal/search/facets/?sort=locus&hand_label=iota&character=s&img_is_public=1&page=1&%40xp_result_type=1&result_type=graphs&view=list
 
         return ret
@@ -2745,17 +2745,17 @@ class Alphabet(models.Model):
 # DateEvidence in legacy db
 class DateEvidence(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
-    hand = models.ForeignKey(Hand, blank=True, null=True, default=None)
+    hand = models.ForeignKey(Hand, blank=True, null=True, default=None, on_delete=models.CASCADE)
     historical_item = models.ForeignKey(
-        'HistoricalItem', related_name='date_evidences', blank=True, null=True, default=None)
-    date = models.ForeignKey(Date, blank=True, null=True)
+        'HistoricalItem', related_name='date_evidences', blank=True, null=True, default=None, on_delete=models.CASCADE)
+    date = models.ForeignKey(Date, blank=True, null=True, on_delete=models.CASCADE)
 
     # is this a firm date (i.e. undisputed)
     is_firm_date = models.BooleanField(null=False, default=False)
     # transcription of the date from a reference
     date_description = models.CharField(max_length=128, blank=True, null=True)
     # the bibliographical reference of the date
-    reference = models.ForeignKey(Reference, blank=True, null=True)
+    reference = models.ForeignKey(Reference, blank=True, null=True, on_delete=models.CASCADE)
     # explanation for the date
     evidence = models.TextField(
         max_length=255, blank=True, null=True, default='')
@@ -2773,13 +2773,13 @@ class DateEvidence(models.Model):
 
 
 class Graph(models.Model):
-    idiograph = models.ForeignKey(Idiograph)
-    hand = models.ForeignKey(Hand, related_name='graphs')
+    idiograph = models.ForeignKey(Idiograph, on_delete=models.CASCADE)
+    hand = models.ForeignKey(Hand, related_name='graphs', on_delete=models.CASCADE)
     aspects = models.ManyToManyField(Aspect, blank=True)
     display_label = models.CharField(max_length=256, editable=False)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)
-    group = models.ForeignKey('Graph', related_name='parts', blank=True,
+    group = models.ForeignKey('Graph', related_name='parts', blank=True, on_delete=models.CASCADE,
                               null=True, help_text=u'Select a graph that contains this one')
 
     @staticmethod
@@ -2795,7 +2795,7 @@ class Graph(models.Model):
     def get_aspect_positions(self):
         ret = []
         for a in self.aspects.all():
-            name = re.sub(ur'(?i)Position\s*:\s*', ur'', a.name)
+            name = re.sub(u'(?i)Position\s*:\s*', u'', a.name)
             if name != a.name:
                 ret.append(name)
         return ret or ['unspecified']
@@ -2809,7 +2809,7 @@ class Graph(models.Model):
             pattern=settings.ARCHETYPE_ANNOTATION_TOOLTIP_LONG)
 
     def get_label(
-            self, pattern=ur'{allograph} by {hand}\n {ip}, {locus}\n ({hi_date})'):
+            self, pattern=u'{allograph} by {hand}\n {ip}, {locus}\n ({hi_date})'):
         '''Return a label by sustituting the fields in the given pattern.
            Error during susbtitution goes to std out and generate UPPERcase field in label.
            Unkown field names are left untouched.
@@ -2836,7 +2836,7 @@ class Graph(models.Model):
                 if key == 'hi_date':
                     r = self.annotation.image.item_part.historical_item.date
                 if key == 'text_date':
-                    r = ur''
+                    r = u''
                     text = self.annotation.image.item_part.historical_item.get_first_text()
                     if text:
                         r = text.date
@@ -2845,9 +2845,9 @@ class Graph(models.Model):
             except Exception as e:
                 print('EXCEPTION: graph.get_label() => "%s"' % e)
                 r = r.upper()
-            return ur'%s' % r
+            return u'%s' % r
 
-        ret = re.sub(ur'\{([^}]+)\}', get_field, ret)
+        ret = re.sub(u'\{([^}]+)\}', get_field, ret)
 
         return ret
 
@@ -2894,8 +2894,8 @@ class Graph(models.Model):
 
 
 class GraphComponent(models.Model):
-    graph = models.ForeignKey(Graph, related_name='graph_components')
-    component = models.ForeignKey(Component)
+    graph = models.ForeignKey(Graph, related_name='graph_components', on_delete=models.CASCADE)
+    component = models.ForeignKey(Component, on_delete=models.CASCADE)
     features = models.ManyToManyField(Feature)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
@@ -2955,7 +2955,7 @@ class AnnotationManager(models.Manager):
 class Annotation(models.Model):
     # TODO: to remove
     #page = models.ForeignKey(Image, related_name='to_be_removed')
-    image = models.ForeignKey(Image, null=True, blank=False)
+    image = models.ForeignKey(Image, null=True, blank=False, on_delete=models.CASCADE)
     # WARNING: this value is derived from geo_json on save()
     # No need to change it directly
     # GN: 23/9/16: shouldn't use it at all anymore
@@ -2965,12 +2965,12 @@ class Annotation(models.Model):
     # Note that it does not affect the shape of the annotation box, only the
     # rendering of the cut out.
     rotation = models.FloatField(blank=False, null=False, default=0.0)
-    status = models.ForeignKey(Status, blank=True, null=True)
+    status = models.ForeignKey(Status, blank=True, null=True, on_delete=models.CASCADE)
     before = models.ForeignKey(Allograph, blank=True, null=True,
-                               related_name='allograph_before')
-    graph = models.OneToOneField(Graph, blank=True, null=True)
+                               related_name='allograph_before', on_delete=models.CASCADE)
+    graph = models.OneToOneField(Graph, blank=True, null=True, on_delete=models.CASCADE)
     after = models.ForeignKey(Allograph, blank=True, null=True,
-                              related_name='allograph_after')
+                              related_name='allograph_after', on_delete=models.CASCADE)
     # GN: try avoid using this field as it may not be useful anymore
     # Use the record id instead
     vector_id = models.TextField(blank=True, null=False, default=u'')
@@ -2979,7 +2979,7 @@ class Annotation(models.Model):
         blank=True, null=True, help_text='An optional note that will be publicly visible on the website.')
     internal_note = HTMLField(
         blank=True, null=True, help_text='An optional note for internal or editorial purpose only. Will not be visible on the website.')
-    author = models.ForeignKey(User, editable=False)
+    author = models.ForeignKey(User, editable=False, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(
         auto_now=True, editable=False)
@@ -3336,13 +3336,13 @@ class Annotation(models.Model):
 
 class PlaceEvidence(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
-    hand = models.ForeignKey(Hand, blank=True, null=True, default=None)
+    hand = models.ForeignKey(Hand, blank=True, null=True, default=None, on_delete=models.CASCADE)
     historical_item = models.ForeignKey(
-        HistoricalItem, blank=True, null=True, default=None)
-    place = models.ForeignKey(Place)
+        HistoricalItem, blank=True, null=True, default=None, on_delete=models.CASCADE)
+    place = models.ForeignKey(Place, on_delete=models.CASCADE)
     written_as = models.CharField(max_length=128, blank=True, null=True)
     place_description = models.CharField(max_length=128, blank=True, null=True)
-    reference = models.ForeignKey(Reference)
+    reference = models.ForeignKey(Reference, on_delete=models.CASCADE)
     evidence = models.TextField()
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True,
@@ -3376,8 +3376,8 @@ class Measurement(models.Model):
 
 class Proportion(models.Model):
     legacy_id = models.IntegerField(blank=True, null=True)
-    hand = models.ForeignKey(Hand)
-    measurement = models.ForeignKey(Measurement)
+    hand = models.ForeignKey(Hand, on_delete=models.CASCADE)
+    measurement = models.ForeignKey(Measurement, on_delete=models.CASCADE)
     description = models.TextField(blank=True, null=True)
     cue_height = models.FloatField()
     value = models.FloatField()
@@ -3458,8 +3458,8 @@ class ContentAttribution(models.Model):
     def get_short_message(self):
         ret = self.short_message or ''
 
-        ret = re.sub(ur'</?(p|div)\b[^>]*>', ur'', ret)
-        ret = re.sub(ur'(<a)\b', ur'\1 target="_blank" ', ret)
+        ret = re.sub(u'</?(p|div)\b[^>]*>', u'', ret)
+        ret = re.sub(u'(<a)\b', u'\1 target="_blank" ', ret)
 
         return ret
 
@@ -3520,7 +3520,7 @@ class StewartRecord(models.Model):
         #     ['h:HAND_ID','ip:IP_ID']
         if matched_hands:
             matched_hands = [hand for hand in matched_hands if re.match(
-                ur'^(ip|h):\d+$', hand)]
+                u'^(ip|h):\d+$', hand)]
         if matched_hands:
             import json
             self.matched_hands = json.dumps(matched_hands)
@@ -3761,7 +3761,7 @@ class StewartRecord(models.Model):
                     hand, 'assigned_place', Place, 'name', self.location)
             if self.adate:
                 messages += self.import_related_object(hand, 'assigned_date', Date, 'date', re.sub(
-                    ur'\s*(?:' + u'\xd7' + ur'|x)\s*', u'\xd7', self.adate))
+                    u'\s*(?:' + u'\xd7' + u'|x)\s*', u'\xd7', self.adate))
 
             # 4. Catalogue numbers
             # Ker, S/P (NOT Scragg, b/c its a hand number)

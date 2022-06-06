@@ -46,7 +46,7 @@ LANGUAGE_CODE = 'en'
 # A boolean that turns on/off debug mode. When set to ``True``, stack traces
 # are displayed for error pages. Should always be set to ``False`` in
 # production. Best set to ``True`` in local_settings.py
-DEBUG = False
+DEBUG = True
 
 # Whether a user's session cookie expires when the Web browser is closed.
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -62,7 +62,7 @@ USE_I18N = False
 USE_L10N = True
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'change-me'
+SECRET_KEY = '1o@^qyrtqv_mj7571%5(p6(==i3gremym7#)i=3r$11slcr#n='
 
 # Tuple of IP addresses, as strings, that:
 #   * See debug comments, when DEBUG is true
@@ -83,12 +83,12 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'digipal',
-        'USER': 'app_digipal',
-        'PASSWORD': 'dppsqlpass',
-        'HOST': '',
-        'PORT': '',
+        'USER': 'digi',
+        'PASSWORD': 'digi',
+        'HOST': 'localhost',
+        'PORT': '5432',
     },
 }
 
@@ -194,6 +194,7 @@ INSTALLED_APPS = (
     'django.contrib.sitemaps',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'django.contrib.messages',
     'mezzanine.boot',
     'mezzanine.conf',
     'mezzanine.core',
@@ -253,13 +254,19 @@ TEMPLATES = [
 # List of middleware classes to use. Order is important; in the request phase,
 # this middleware classes will be applied in the order given, and in the
 # response phase the middleware will be applied in reverse order.
+
+MIDDLEWARE = (
+'django.contrib.messages.middleware.MessageMiddleware',
+'django.middleware.locale.LocaleMiddleware',
+'django.contrib.sessions.middleware.SessionMiddleware',
+'django.contrib.auth.middleware.AuthenticationMiddleware',
+)
 MIDDLEWARE_CLASSES = (
     'digipal.middleware.HttpsAdminMiddleware',
-
+    'django.contrib.messages.middleware.MessageMiddleware',
     'mezzanine.core.middleware.UpdateCacheMiddleware',
-
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
     # Authentication using REMOTE_USER
@@ -804,7 +811,7 @@ def import_local_settings(globs=None):
             globs.update({name: module_dict[name]})
     except ImportError:
         # no local_settings.py
-        print 'WARNING: local_settings.py not found'
+        print('WARNING: local_settings.py not found')
 
 
 import_local_settings()

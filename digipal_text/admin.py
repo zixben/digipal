@@ -3,9 +3,10 @@ from django.contrib.admin import SimpleListFilter
 from django.contrib.admin.models import LogEntry
 from django.db.models import Count
 from django import forms
-from django.core.urlresolvers import reverse
-from models import TextContent, TextContentXML, TextContentXMLStatus, TextContentType
+from django.urls import reverse
+from digipal_text.models import TextContent, TextContentXML, TextContentXMLStatus, TextContentType
 import reversion
+from reversion.admin import VersionAdmin
 from mezzanine.core.admin import StackedDynamicInlineAdmin
 import re
 
@@ -104,7 +105,7 @@ class FilterTCDuplicate(SimpleListFilter):
             return qs
 
 
-class TextContentAdmin(reversion.VersionAdmin):
+class TextContentAdmin(VersionAdmin):
     model = TextContent
     form = TextContentForm
 
@@ -122,7 +123,7 @@ class TextContentAdmin(reversion.VersionAdmin):
     )
 
 
-class TextContentTypeAdmin(reversion.VersionAdmin):
+class TextContentTypeAdmin(VersionAdmin):
     model = TextContentType
 
 
@@ -168,7 +169,7 @@ class FilterCTXEmpty(SimpleListFilter):
             return queryset.extra(where=['length(content) ' + cdt])
 
 
-class TextContentXMLAdmin(reversion.VersionAdmin):
+class TextContentXMLAdmin(VersionAdmin):
     model = TextContentXML
 
     list_display = ['id', 'text_content', 'get_type_name',
@@ -200,7 +201,7 @@ class TextContentXMLAdmin(reversion.VersionAdmin):
 #             )
 
 
-class TextContentXMLStatusAdmin(reversion.VersionAdmin):
+class TextContentXMLStatusAdmin(VersionAdmin):
     model = TextContentXMLStatus
 
     list_display = ['id', 'name', 'sort_order']

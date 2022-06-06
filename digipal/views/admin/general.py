@@ -3,7 +3,7 @@ import re
 from django import http, template
 from django.shortcuts import render
 from django.template import RequestContext
-from django.shortcuts import render_to_response
+#from django.shortcuts import render_to_response
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib import admin
 from django.utils.safestring import mark_safe
@@ -119,14 +119,14 @@ def context_view(request, app_label, model_name, object_id):
 
 
 def get_html_from_obj_tree(element):
-    ret = ur''
+    ret = u''
 
     if element:
         for child in element['children']:
             ret += get_html_from_obj_tree(child)
         if ret:
-            ret = ur'<ul>%s</ul>' % ret
-        ret = ur'<li>%s%s</li>' % (element['html'], ret)
+            ret = u'<ul>%s</ul>' % ret
+        ret = u'<li>%s%s</li>' % (element['html'], ret)
 
     return ret
 
@@ -138,7 +138,7 @@ def get_obj_info(obj, exclude_list=None):
     ret = {
         'obj': obj,
         'type': obj._meta.object_name,
-        'link': ur'/admin/%s/%s/%s/' % (obj._meta.app_label, obj._meta.model_name, obj.id),
+        'link': u'/admin/%s/%s/%s/' % (obj._meta.app_label, obj._meta.model_name, obj.id),
         'children': []
     }
 
@@ -158,12 +158,12 @@ def get_obj_info(obj, exclude_list=None):
         info = ', '.join(info_parts)
 
     if info:
-        info = ur'(%s) ' % info
+        info = u'(%s) ' % info
 
     exclude_list[get_obj_key(obj)] = 1
 
-    ret['html'] = ur'<a href="%s">%s #%s: %s %s</a>[<a href="%s">edit</a>]' % (
-        ret['link'] + ur'context/', ret['type'], obj.id, ret['obj'], info, ret['link'])
+    ret['html'] = u'<a href="%s">%s #%s: %s %s</a>[<a href="%s">edit</a>]' % (
+        ret['link'] + u'context/', ret['type'], obj.id, ret['obj'], info, ret['link'])
 
     for child in get_obj_children(obj):
         if get_obj_key(child) not in exclude_list:
@@ -171,13 +171,13 @@ def get_obj_info(obj, exclude_list=None):
             ret['children'].append(obj_info)
 
     if ret['children']:
-        ret['html'] = ur'<a class="expandable" href="#">[ - ]</a> %s' % ret['html']
+        ret['html'] = u'<a class="expandable" href="#">[ - ]</a> %s' % ret['html']
 
     return ret
 
 
 def get_obj_key(obj):
-    return ur'%s-%s' % (obj._meta.object_name, obj.id)
+    return u'%s-%s' % (obj._meta.object_name, obj.id)
 
 
 def get_obj_children(obj):

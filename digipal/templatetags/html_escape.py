@@ -5,7 +5,7 @@ from django import template
 from digipal import utils as dputils
 import re
 from inspect import getargspec
-from django.template.base import parse_bits
+#from django.template.base import parse_bits
 from django.conf import settings
 
 register = template.Library()
@@ -34,8 +34,8 @@ def sql_query(value):
     e.g. {{ my_query|sql_query }}
     """
     # value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-    value = re.sub(ur'(?musi)\b(select|from|where|order\s+by|and|group|left\s+join|right\s+join)\b',
-                   ur'<br/><strong>\1</strong>', value)
+    value = re.sub(u'(?musi)\b(select|from|where|order\s+by|and|group|left\s+join|right\s+join)\b',
+                   u'<br/><strong>\1</strong>', value)
     return mark_safe(value)
 
 
@@ -49,7 +49,7 @@ def anchorify(value):
     special char varies.
     """
     # value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-    value = re.sub(ur'(?u)[^\w\s-]', u'', value).strip()
+    value = re.sub(u'(?u)[^\w\s-]', u'', value).strip()
     return mark_safe(re.sub(u'[-\s]+', u'-', value))
 
 
@@ -92,16 +92,16 @@ def update_query_params_internal(content, updates, url_wins=False):
         return content
 
     # find all the URLs in content
-    template = ur'%s'
+    template = u'%s'
     matches = []
     if '"' in content or "'" in content:
-        template = ur'href="%s"'
+        template = u'href="%s"'
         # we assume the content is HTML
-        for m in re.finditer(ur'(?:src|href)\s*=\s*(?:"([^"]*?)"|\'([^\']*?)\')', content):
+        for m in re.finditer(u'(?:src|href)\s*=\s*(?:"([^"]*?)"|\'([^\']*?)\')', content):
             matches.append(m)
     else:
         # we assume the content is a single URL
-        m = re.search(ur'^(.*)$', content)
+        m = re.search(u'^(.*)$', content)
         if m:
             matches.append(m)
 
@@ -181,10 +181,10 @@ def tag_terms(value, terms=None):
         # TODO: other issue is highlight of non field values, e.g. (G.) added at the end each description
         #         or headings.
         for re_term in get_regexp_from_terms(terms, True):
-            # value = re.sub(ur'(?iu)(>[^<]*)('+re_term+ur')', ur'\1<span
+            # value = re.sub(u'(?iu)(>[^<]*)('+re_term+u')', u'\1<span
             # class="found-term">\2</span>', u'>'+value)[1:]
             pos = 1
-            pattern = re.compile(ur'(?iu)(>[^<]*?)(' + re_term + ur')')
+            pattern = re.compile(u'(?iu)(>[^<]*?)(' + re_term + u')')
             # print re_term
             while True:
                 # print value_no_accent, pos
@@ -210,7 +210,7 @@ def tag_terms(value, terms=None):
     return value
 
 
-@register.assignment_tag
+@register.simple_tag
 def get_records_from_ids(search_type, recordids):
     '''
         Prepare the records before they are displayed on the search page
@@ -221,7 +221,7 @@ def get_records_from_ids(search_type, recordids):
     return search_type.get_records_from_ids(recordids)
 
 
-@register.assignment_tag
+@register.simple_tag
 def reset_recordids():
     '''
         Reset a variable to []
@@ -251,7 +251,7 @@ def iip_img_a(image, *args, **kwargs):
         are treated.
     '''
 
-    return mark_safe(ur'<a href="%s&amp;RST=*&amp;QLT=100&amp;CVT=JPEG">%s</a>' % (escape(image.full().replace('\\', '/')), iip_img(image, *args, **kwargs)))
+    return mark_safe(u'<a href="%s&amp;RST=*&amp;QLT=100&amp;CVT=JPEG">%s</a>' % (escape(image.full().replace('\\', '/')), iip_img(image, *args, **kwargs)))
 
 
 @register.simple_tag
@@ -355,23 +355,23 @@ def wrap_img(html_img, **kwargs):
         if content_type == 'image':
             type_class = 'imageDatabase'
 
-        ret = ur'''
+        ret = u'''
                 <span %s class="droppable_image %s">
                     %s
                 </span>
         ''' % (' '.join(['%s="%s"' % (name, value) for name, value in attributes.iteritems()]), type_class, ret)
 
     if link_record or record:
-        element = ur'span'
-        attributes = ur' '
+        element = u'span'
+        attributes = u' '
         if link_record:
-            element = ur'a'
-            attributes += ur' href="%s" ' % link_record.get_absolute_url()
+            element = u'a'
+            attributes += u' href="%s" ' % link_record.get_absolute_url()
             if link_record.__class__.__name__.lower() in ['graph']:
-                attributes += ur' rel="nofollow" '
+                attributes += u' rel="nofollow" '
         if record:
             attributes += ' class="folio-image-wrapper" '
-        ret = ur'''<%s %s>%s</%s>''' % (element, attributes, ret, element)
+        ret = u'''<%s %s>%s</%s>''' % (element, attributes, ret, element)
 
     return ret
 
@@ -428,29 +428,29 @@ def img(src, *args, **kwargs):
     style = ''
 
     if 'alt' in kwargs:
-        more += ur' alt="%s" ' % escape(kwargs['alt'])
+        more += u' alt="%s" ' % escape(kwargs['alt'])
 
     for k, v in kwargs.iteritems():
         if k.startswith('a_'):
-            more += ur' %s="%s" ' % (k[2:].replace('_', '-'), escape(v))
+            more += u' %s="%s" ' % (k[2:].replace('_', '-'), escape(v))
 
     if 'cls' in kwargs:
-        more += ur' class="%s" ' % escape(kwargs['cls'])
+        more += u' class="%s" ' % escape(kwargs['cls'])
 
     if 'rotation' in kwargs:
         rotation = float(kwargs['rotation'])
         # #style += ';position:relative;max-width:none;'
         if rotation > 0.0 or kwargs.get('force_rotation', False):
-            style += ur';transform:rotate(%(r)sdeg); -ms-transform:rotate(%(r)sdeg); -webkit-transform:rotate(%(r)sdeg);' % {
+            style += u';transform:rotate(%(r)sdeg); -ms-transform:rotate(%(r)sdeg); -webkit-transform:rotate(%(r)sdeg);' % {
                 'r': rotation}
 
     if kwargs.get('lazy', False):
-        more += ur' data-lazy-img-src="%s" ' % escape(src)
+        more += u' data-lazy-img-src="%s" ' % escape(src)
 
         # a serialised white dot GIF image
-        # src = ur'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
+        # src = u'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='
         # TODO: don't hard-code the path!
-        src = ur'/static/digipal/images/blank.gif'
+        src = u'/static/digipal/images/blank.gif'
 
     frame_css = u''
     padding = int(kwargs.get('padding', '0'))
@@ -458,7 +458,7 @@ def img(src, *args, **kwargs):
         vs = []
         if a in kwargs:
             vs.append(int(kwargs.get(a)))
-            # more += ur' %s="%s" ' % (a, vs[-1])
+            # more += u' %s="%s" ' % (a, vs[-1])
             style += ';%s:%dpx;' % (a, vs[-1])
         if 'frame_' + a in kwargs:
             vs.append(int(kwargs.get('frame_' + a)))
@@ -474,20 +474,20 @@ def img(src, *args, **kwargs):
     if style:
         style = ' style="%s" ' % style
 
-    ret = ur'<img src="%s" %s %s/>' % (escape(src), more, style)
+    ret = u'<img src="%s" %s %s/>' % (escape(src), more, style)
 
     holes_html = u''
     frame_size = [kwargs.get('frame_width', 0), kwargs.get('frame_height', 0)]
     if all(frame_size):
         for hole in kwargs.get('holes', {}).values():
             # [offx, offy, lengthx, lengthy]
-            holes_html += ur'<span class="hole" style="left:%dpx;top:%dpx;width:%dpx;height:%dpx;"></span>' % (
+            holes_html += u'<span class="hole" style="left:%dpx;top:%dpx;width:%dpx;height:%dpx;"></span>' % (
                 hole[0] * frame_size[0], hole[1] * frame_size[1], hole[2] * frame_size[0], hole[3] * frame_size[1])
 
     if frame_css:
         frame_css = ' style="%s" ' % frame_css
 
-    ret = ur'<span class="img-frame" %s>%s%s</span>' % (
+    ret = u'<span class="img-frame" %s>%s%s</span>' % (
         frame_css, holes_html, ret)
 
     ret = wrap_img(ret, **kwargs)
@@ -599,9 +599,9 @@ def image_icon(count, message, url, template_type=None, request=None):
                 count.all(), request).count()
 
         if count:
-            m = re.match(ur'(.*)(COUNT)(\s+)(\w*)(.*)', message)
+            m = re.match(u'(.*)(COUNT)(\s+)(\w*)(.*)', message)
             if m:
-                message = ur'%s%s%s%s%s' % (m.group(1), count, m.group(
+                message = u'%s%s%s%s%s' % (m.group(1), count, m.group(
                     3), plural(m.group(4), count), m.group(5))
             ret = u'''<span class="result-image-count">
                         (<a data-toggle="tooltip" title="%s" href="%s">%s&nbsp;<i class="fa fa-picture-o"></i></a>)
@@ -625,7 +625,7 @@ def mezzanine_page_active(request, page):
     path = request.path.strip('/')
 
     for p in cs:
-        page_path = re.sub(ur'\?.*$', ur'', p.get_absolute_url()).strip('/')
+        page_path = re.sub(u'\?.*$', u'', p.get_absolute_url()).strip('/')
         if page_path in path:
             ret = True
 
@@ -656,7 +656,7 @@ def dplink(parser, token):
     '''
 
     def get_link_from_obj(obj=None):
-        ret = {'content': u'%s' % obj, 'url': ur''}
+        ret = {'content': u'%s' % obj, 'url': u''}
         if obj:
             f = getattr(obj, 'get_absolute_url')
             if f:
@@ -693,10 +693,10 @@ def dplink(parser, token):
     bits = token.split_contents()[1:]
 
     params, varargs, varkw, defaults = getargspec(get_link_from_obj)
-    args, kwargs = parse_bits(
-        parser, bits, params, varargs, varkw, defaults,
-        takes_context=False, name='dplink'
-    )
+    #args, kwargs = parse_bits(
+#        parser, bits, params, varargs, varkw, defaults,
+#        takes_context=False, name='dplink'
+#    )
     return DPLinkNode(nodelist, args, kwargs)
 
 
@@ -717,13 +717,13 @@ def dpfootnotes(html):
 
     # 1. clean up: remove the existing anchors around [1]
     # MOA pollution
-    ret = re.sub(ur'(?musi)<span\s+size="[^"]*"\s*>(.*?)</span>', ur'\1', ret)
+    ret = re.sub(u'(?musi)<span\s+size="[^"]*"\s*>(.*?)</span>', u'\1', ret)
     # remove empty anchors
-    ret = re.sub(ur'(?musi)<a\s+[^>]*?/>\s*(\s*\[\d+\])', ur'\1', ret)
+    ret = re.sub(u'(?musi)<a\s+[^>]*?/>\s*(\s*\[\d+\])', u'\1', ret)
     # remove empty anchors
-    ret = re.sub(ur'(?musi)<a\s+[^>]*>\s*</a>(\s*\[\d+\])', ur'\1', ret)
+    ret = re.sub(u'(?musi)<a\s+[^>]*>\s*</a>(\s*\[\d+\])', u'\1', ret)
     # <a ...>[1] X</a> => [1] X
-    ret = re.sub(ur'(?musi)<a\s+[^>]*>(\s*\[\d+\].*?)</a>', ur'\1', ret)
+    ret = re.sub(u'(?musi)<a\s+[^>]*>(\s*\[\d+\].*?)</a>', u'\1', ret)
 
     # 2. add the new anchors
     def sub_footnote(match):
@@ -745,7 +745,7 @@ def dpfootnotes(html):
 
         return ret
 
-    ret = re.sub(ur'(<p>|<br/>|<li>|<div>)?(\s*)\[(\d+)\]', sub_footnote, ret)
+    ret = re.sub(u'(<p>|<br/>|<li>|<div>)?(\s*)\[(\d+)\]', sub_footnote, ret)
 
     return ret
 

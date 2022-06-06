@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.db.models import Count
 from mezzanine.conf import settings
-import django_admin_customisations
+#import django_admin_customisations
 from digipal.models import Image, HistoricalItem, Hand, Annotation
 import re
 
@@ -37,9 +37,9 @@ class RelatedObjectNumberFilter(SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        select = (ur'''((SELECT COUNT(*) FROM %s fcta WHERE fcta.%s = %s.%s) ''' %
+        select = (u'''((SELECT COUNT(*) FROM %s fcta WHERE fcta.%s = %s.%s) ''' %
                   (self.related_table, self.foreign_key, self.this_table, self.this_key))
-        select += ur'%s )'
+        select += u'%s )'
         if self.value() == '0':
             return queryset.extra(where=[select % ' = 0'])
         if self.value() == '1':

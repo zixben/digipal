@@ -96,11 +96,11 @@ def _call_image_conversion(command, input_path):
     Tidy up by removing the original image at `input_path`.
 
     """
-    print command, input_path
+    print(command, input_path)
     try:
         # subprocess.check_call(shlex.split(command.encode('ascii')))
         os.system(command.encode('ascii'))
-    except subprocess.CalledProcessError, e:
+    except subprocess.CalledProcessError as e:
         os.remove(input_path)
         raise IOError('Failed to convert the page image to .jp2: %s' % e)
     finally:

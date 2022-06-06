@@ -6,22 +6,23 @@ import unicodedata
 from decimal import Decimal, InvalidOperation, Context, ROUND_HALF_UP
 from functools import wraps
 from pprint import pformat
-
-from django.template.base import Variable, Library, VariableDoesNotExist
+from django.template import Library
+from django.template.base import Variable, VariableDoesNotExist
 from mezzanine.conf import settings
 from django.utils import formats
 from django.utils.dateformat import format, time_format
-from django.utils.encoding import force_unicode, iri_to_uri
+from django.utils.encoding import iri_to_uri
 from django.utils.html import (conditional_escape, escapejs,
                                escape, urlize as urlize_impl, linebreaks, strip_tags)
-from django.utils.http import urlquote
+#from django.utils.http import urlquote
 #from django.utils.text import Truncator, wrap, phone2numeric
-from django.utils.safestring import mark_safe, SafeData, mark_for_escaping
+from django.utils.safestring import mark_safe, SafeData
+#, mark_for_escaping
 from django.utils.timesince import timesince, timeuntil
-from django.utils.translation import ugettext, ungettext
+#from django.utils.translation import ugettext, ungettext
 from django.utils.text import normalize_newlines
 from django.template.defaultfilters import stringfilter
-from urllib import unquote
+from urllib.parse import quote
 from hashlib import sha1
 from datetime import datetime
 
@@ -95,17 +96,17 @@ def richfield(val):
         val = u''
 
     # trim the value from empty spaces and lines
-    ret = re.sub(ur'(?usi)^\s+', '', val)
-    ret = re.sub(ur'(?usi)\s+$', '', ret)
+    ret = re.sub(u'(?usi)^\s+', '', val)
+    ret = re.sub(u'(?usi)\s+$', '', ret)
 
     if ret:
         is_xml = (val[0] == u'<')
         if not is_xml:
             # _italics_
-            ret = re.sub(ur'(?musi)_(\w+)_', ur'<em>\1</em>', ret)
+            ret = re.sub(u'(?musi)_(\w+)_', u'<em>\1</em>', ret)
             # this is a plain text field
             # convert to HTML by surrounding lines with <p>
-            ret = u'<p>%s</p>' % (u'</p><p>'.join(re.split(ur'[\r\n]+', ret)),)
+            ret = u'<p>%s</p>' % (u'</p><p>'.join(re.split(u'[\r\n]+', ret)),)
 
     return mark_safe(ret)
 
@@ -133,13 +134,13 @@ def tei(value):
     import re
 
     # tei text transform
-    value = re.sub(ur'(<title level="a">)(.*?)(</title>)', ur"'\1\2\3'", value)
+    value = re.sub(u'(<title level="a">)(.*?)(</title>)', u"'\1\2\3'", value)
 
-    #     value = re.sub(ur'<\s*([^/])\s*>', ur'<span class="tei-\1">', value)
-    # >>> re.findall(ur'(<\s*(\S+)' + ur'\s*(?:(\S+)="([^"]*)")?' * 5 + '>)', r' <t a1="v1" a2="v2">')
+    #     value = re.sub(u'<\s*([^/])\s*>', u'<span class="tei-\1">', value)
+    # >>> re.findall(u'(<\s*(\S+)' + u'\s*(?:(\S+)="([^"]*)")?' * 5 + '>)', r' <t a1="v1" a2="v2">')
     # [('<t a1="v1" a2="v2">', 't', 'a1', 'v1', 'a2', 'v2', '', '', '', '', '', '')]
     elements = re.findall(
-        ur'(<\s*(\w+)' + ur'\s*(?:(\S+)="([^"]*)")?' * 5 + '>)', value)
+        u'(<\s*(\w+)' + u'\s*(?:(\S+)="([^"]*)")?' * 5 + '>)', value)
     for element in elements:
         if element[1][0] == '/':
             continue
@@ -153,14 +154,14 @@ def tei(value):
         element_html += '">'
         value = value.replace(element[0], element_html)
 
-    value = re.sub(ur'<\s*/[^>]*>', ur'</span>', value)
-    value = re.sub(ur'\r?\n', ur'<br/>', value)
+    value = re.sub(u'<\s*/[^>]*>', u'</span>', value)
+    value = re.sub(u'\r?\n', u'<br/>', value)
     value = mark_safe(value)
 
     return value
 
 
-@register.assignment_tag(takes_context=True)
+@register.simple_tag(takes_context=True)
 def load_hands(context, var_name):
     '''
         Usage:

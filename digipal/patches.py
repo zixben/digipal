@@ -3,7 +3,7 @@
     Patches should always be avoided if possible because they are likely to break when the
     patched app gets upgraded. However we don't have direct control over them and it's
     sometimes the most efficient way to quickly include missing features.
-    
+
     Patches are applied at the end of model.py (b/c/ this module is always loaded)
 '''
 
@@ -23,10 +23,10 @@ def mezzanine_patches():
         keyword_exists = True
         try:
             from mezzanine.generic.models import Keyword
-        except Exception, e:
+        except Exception as e:
             keyword_exists = False
             if getattr(settings, 'DEV_SERVER', False):
-                print 'WARNING: import failed (%s) and Mezzanine Blog case-sensitive keywords patch cannot be applied.' % e
+                print('WARNING: import failed (%s) and Mezzanine Blog case-sensitive keywords patch cannot be applied.' % e)
 
         if keyword_exists:
             # patch integrated into the latest mezzanine version
@@ -152,7 +152,7 @@ def admin_patches():
     def _user_has_perm(user, perm, obj):
         # perm =  'digipal.add_allograph'
         if user and not user.is_superuser and user.is_active and perm and \
-                re.sub(ur'\..*$', '', '%s' % perm) in getattr(settings, 'HIDDEN_ADMIN_APPS', ()):
+                re.sub(u'\..*$', '', '%s' % perm) in getattr(settings, 'HIDDEN_ADMIN_APPS', ()):
             return False
         return _user_has_perm_old(user, perm, obj)
 

@@ -3,12 +3,24 @@ from django.forms import ModelForm
 from django.forms.widgets import Textarea, TextInput, HiddenInput, Select, SelectMultiple
 from django.utils.safestring import mark_safe
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from models import Allograph, Hand, Status, Character, Feature, Component, Aspect, Repository, Scribe, Place, Date, HistoricalItem, Institution, Component, Feature
-from models import Script, CurrentItem
-import urllib2
+from digipal.models import Allograph, Hand, Status, Character, Feature, Component, Aspect, Repository, Scribe, Place, Date, HistoricalItem, Institution, Component, Feature
+from digipal.models import Script, CurrentItem
+from django.db import OperationalError, ProgrammingError
+
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
+
 
 class OnlyScribe(forms.Form):
-    status_list = Status.objects.filter(default=True)
+
+    try:
+        status_list = Status.objects.filter(default=True)
+    except (OperationalError, ProgrammingError) as e:
+        status_list=[]
+
+    #status_list = Status.objects.filter(default=True)
     scribe = forms.ModelChoiceField(queryset = Scribe.objects.all())
 
 class ScribeAdminForm(forms.Form):
@@ -42,10 +54,16 @@ class AllographSelect(Select):
         return ret
 
 class ImageAnnotationForm(forms.Form):
-    status_list = Status.objects.filter(default=True)
 
-    if status_list:
-        default_status = status_list[0]
+    try:
+        status_list = Status.objects.filter(default=True)
+    except (OperationalError, ProgrammingError) as e:
+        status_list=[]
+
+    #status_list = Status.objects.filter(default=True)
+
+    #if status_list:
+    #    default_status = status_list[0]
 
     #status = forms.ModelChoiceField(queryset=Status.objects.all(),
     #        initial=default_status)
@@ -131,8 +149,14 @@ class FilterManuscriptsImages(forms.Form):
         empty_label = "Town or City",
         required = False)
 
-    repository = forms.ChoiceField(
+    try:
         choices = [("", "Repository")] + [(m.human_readable(), m.human_readable()) for m in Repository.objects.filter(currentitem__itempart__images__id__gt=0).order_by('place__name', 'name').distinct()],
+    except (OperationalError, ProgrammingError) as e:
+        choices=[]
+
+    repository = forms.ChoiceField(choices=choices,
+        #choices = [("", "Repository")] + [(m.human_readable(), m.human_readable()) for m in Repository.objects.filter(currentitem__itempart__images__id__gt=0).order_by('place__name', 'name').distinct()],
+
         widget = Select(attrs={'id':'repository-select', 'class':'chzn-select', 'data-placeholder':"Choose a Repository"}),
         label = "",
         required = False)
@@ -233,4 +257,3 @@ class SearchPageForm(forms.Form):
         label='',
         widget=HiddenInput()
     )
-
