@@ -119,7 +119,7 @@ CACHE_MIDDLEWARE_KEY_PREFIX = PROJECT_DIRNAME
 # Example: 'http://media.lawrence.com/static/'
 STATIC_URL = '/static/'
 
-DEFAULT_AUTO_FIELD='django.db.models.AutoField' 
+DEFAULT_AUTO_FIELD='django.db.models.AutoField'
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
@@ -205,7 +205,6 @@ INSTALLED_APPS = (
     'mezzanine.forms',
     'mezzanine.pages',
     'mezzanine.galleries',
-    'mezzanine.twitter',
     'pagination',
     'tinymce',
 )
@@ -262,6 +261,7 @@ MIDDLEWARE = (
 'django.middleware.locale.LocaleMiddleware',
 'django.contrib.sessions.middleware.SessionMiddleware',
 'django.contrib.auth.middleware.AuthenticationMiddleware',
+'mezzanine.core.middleware.SitePermissionMiddleware',
 )
 MIDDLEWARE_CLASSES = (
     'digipal.middleware.HttpsAdminMiddleware',
