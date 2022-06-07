@@ -21,8 +21,8 @@ urlpatterns = [
     path('page/<image_id>/graph/<graph_id', get_allograph),
     path('page/<image_id>/hands_list', hands_list),
 
-    path('api/old/<content_type>[a-zA-Z]+)/<ids>([0-9])+((,)*([0-9])*)*)/<only_features>(features)*)$', get_old_api_request),
-    path('api/<content_type>[0-9a-zA-Z_]+)/<ids>[^/]*)/?<only_features>(features)*)/?$', get_content_type_data),
+    path('api/old/<content_type>)/<ids>/<only_features>(features)', get_old_api_request),
+    path('api/<content_type>)/<ids>/<only_features>(features)', get_content_type_data),
 
     path('api/graph/save/<graphs>)', save),
     path('api/graph/save_editorial/<graphs>)', save_editorial),
@@ -55,9 +55,9 @@ urlpatterns = [
     path('page', search_ms_image_view),
     path('search', search_record_view),
     path('quicksearch', search_record_view),
-    path('search/index/?$', search_index_view, name='search_index'),
+    path('search/index', search_index_view, name='search_index'),
     path('search/graph', search_graph_view),
-    path('search/suggestions.json/?$', search_suggestions),
+    path('search/suggestions.json', search_suggestions),
     # Record views
     path('<content_type>hands|manuscripts|scribes|graphs|pages)/<objectid>[^/]+)(/<tabid>[^/]+))?(?:/|$)', record_view),
     path('<content_type>hands|manuscripts|scribes|pages)(?:/|$)', index_view),
@@ -92,7 +92,7 @@ if settings.DEBUG:
        path('test/jqnotebook', jqnotebook_view),
    )
 
-urlpatterns += (path('test/error/?$', server_error_view),)
+urlpatterns += (path('test/error', server_error_view),)
 urlpatterns += (path('test/email', send_email),)
 
 
