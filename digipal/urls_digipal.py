@@ -18,7 +18,7 @@ urlpatterns = [
     path('page/<image_id>/image_allographs', image_allographs),
     path('page/<image_id>/graph/<graph_id>/allographs_by_graph', get_allographs_by_graph),
     path('page/<image_id>/allographs/<allograph_id>/<character_id>/allographs_by_allograph', get_allographs_by_allograph),
-    path('page/<image_id>/graph/<graph_id', get_allograph),
+    path('page/<image_id>/graph/<graph_id>', get_allograph),
     path('page/<image_id>/hands_list', hands_list),
 
     path('api/old/<content_type>)/<ids>/<only_features>(features)', get_old_api_request),

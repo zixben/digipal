@@ -259,7 +259,7 @@ class AppearanceAdmin(DigiPalModelAdmin):
 class AspectAdmin(DigiPalModelAdmin):
     model = Aspect
 
-    filter_horizontal = ['features']
+    #filter_horizontal = ['features'] (commented by Luca 5th May)
     list_display = ['name', 'created', 'modified']
     list_display_links = ['name', 'created', 'modified']
     search_fields = ['name']
@@ -316,7 +316,7 @@ class CollationAdmin(DigiPalModelAdmin):
 class ComponentAdmin(DigiPalModelAdmin):
     model = Component
 
-    filter_horizontal = ['features']
+    #filter_horizontal = ['features'] commented by Luca (5th May)
     list_display = ['name', 'created', 'modified']
     list_display_links = ['name', 'created', 'modified']
     search_fields = ['name']

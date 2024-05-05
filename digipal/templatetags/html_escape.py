@@ -4,7 +4,7 @@ from django.utils.safestring import mark_safe
 from django import template
 from digipal import utils as dputils
 import re
-from inspect import getargspec
+from inspect import getargs
 #from django.template.base import parse_bits
 from django.conf import settings
 
