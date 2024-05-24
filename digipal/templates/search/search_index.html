@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% comment %}
+################################
+#    SEARCH INDEXES            #
+################################
+{% endcomment%}
+{% load pages_tags mezzanine_tags i18n humanize %}
+{% load mezzanine_tags pagination_tags html_escape %}
+
+{% block meta_title %}
+    Search Indexer
+{% endblock %}
+
+{% block extra_css %}
+    {{ block.super }}
+    <style type="text/css">
+        input.big-checkbox {width: 1.5em; height: 1.5em;}
+        .message {
+            margin: 0.5em 0;
+            border-radius: 5px;
+            border: 1px solid grey;
+            background: lightgrey;
+            padding: 0.5em;
+        }
+        .message-info {
+            border: 1px solid orange;
+            background: wheat;
+        }
+        .message-success {
+            border: 1px solid green;
+            background: lightgreen;
+        }
+    </style>
+{% endblock %}
+
+{% block main %}
+
+<p>
+    Use this page to re-index the database content so the search page finds recently edited data. 
+    <span><strong>Please use sparingly</strong>, some indices may take a long time and temporarly degrade the performance of the website for other users.</span>.
+</p>
+
+{% include "search/search_index_fragment.html" %}
+
+<hr>
+
+<h1>Data Package</h1>
+<div id="package-section" class="collapse-not">
+    <form action="" method="POST">
+        {% if packager_pid %}
+            <p>Packaging in progress...</p>
+            <button type="submit" class="btn btn-danger action-cancel" name="action" value="package.cancel">
+                Cancel packaging
+            </button>
+        {% else %}
+            <button type="submit" class="btn btn-primary action-create" name="action" value="package.create">
+                Package your content
+            </button>
+            &nbsp;
+            {% if package_url %}
+                <a href="{{ package_url }}" target="_blank" class="btn btn-primary action-reindex">
+                    Download the package
+                </a>
+                &nbsp;
+                <button type="submit" class="btn btn-primary action-reindex" name="action" value="package.remove">
+                    Remove the package
+                </button>
+            {% endif %}
+        {% endif %}
+        {% if package_url %}
+            <p>Size: {{ package_stat.st_size|filesizeformat }} | Created: {{ package_created }}</p>
+        {% endif %}
+        <p><em>
+            A package is a compressed file that contains a copy of all the content of your Archetype instance.
+            It can be used as a backup or to migrate your content to another instance.
+            A package can be very large and may consume significant amount of your hosting or internet allowance.
+        </em></p>
+    </form>
+</div>
+
+{% endblock main %}
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+        jQuery(document).ready(function($) {
+            window.init_search_page();
+            
+            var refresh_rate = 2;
+
+            // called each time the ajax content is refreshed
+            setInterval(function(){
+                if ($('.is_running').val() == '1') {
+                    $('#search-ajax-fragment a.action-refresh').click();
+                }
+            }, refresh_rate*1000);
+            
+            $('body').on('click', 'button[name=action]', function() {
+                $('input[name=action]').val($(this).val());
+            });
+            
+            $('body').on('click', '[name=select-0]', function() {
+            	var checked = $(this).is(':checked');
+            	$('.index-selector').prop('checked', checked);
+            });
+            $('body').on('change', 'form input[type=checkbox]', function() {
+            	$('.action-reindex').prop('disabled', ($('form input:checked').length == 0) ? 'disabled' : false);
+            });
+        });
+    </script>
+{% endblock %}
