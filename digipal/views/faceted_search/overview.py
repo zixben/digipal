@@ -60,7 +60,7 @@ class Query(object):
 
     def get_remove_link(self):
         ret = '?'
-        for k, v in self.request_current.GET.iteritems():
+        for k, v in self.request_current.GET.items():
             if k.startswith('q%s_' % self.index):
                 continue
             ret += '&%s=%s' % (k, v)
@@ -98,7 +98,7 @@ class Query(object):
 
             new_url = '/?'
             url_is_set = False
-            for k, v in self.request.GET.iteritems():
+            for k, v in self.request.GET.items():
                 if k.startswith('q%s_' % self.index):
                     new_url += '&%s=%s' % (k.replace('q%s_' %
                                                      self.index, ''), v)
@@ -144,7 +144,7 @@ class Queries(object):
 
     def get_copy_link(self):
         ret = '?'
-        for k, v in self.request.GET.iteritems():
+        for k, v in self.request.GET.items():
             ret += '&%s=%s' % (k, v)
             if not re.match(u'^q\d+_.*$', k):
                 ret += '&q%s_%s=%s' % (len(self.queries), k, v)
@@ -155,7 +155,7 @@ class Queries(object):
 
     def get_hidden_inputs(self):
         ret = ''
-        for k, v in self.request.GET.iteritems():
+        for k, v in self.request.GET.items():
             if re.match(u'^q\d+_.*$', k):
                 from django.utils.html import escape
                 ret += u'<input type="hidden" name="%s" value="%s" />' % (
@@ -587,7 +587,7 @@ class Overview(object):
         '''
         stack = self.stack
         self.bands = sorted(
-            [[label, y] for label, y in self.bands.iteritems()], key=lambda p: p[1])
+            [[label, y] for label, y in self.bands.items()], key=lambda p: p[1])
         last_y = max([band[1] for band in self.bands])
         self.bands.append(['', last_y + self.band_width])  # X Axis
         self.bands.append(['', last_y + self.band_width +
@@ -649,16 +649,16 @@ class Overview(object):
                 point[0][0] -= self.mins[0] or 0
                 point[0][1] -= self.mins[0] or 0
         # reframe the histograms
-        #self.histogram = {x - self.mins[0]: hist for x, hist in self.histogram.iteritems()}
+        #self.histogram = {x - self.mins[0]: hist for x, hist in self.histogram.items()}
         histogram = self.histogram
         self.histogram = {}
-        for x, hist in histogram.iteritems():
+        for x, hist in histogram.items():
             self.histogram[x - self.mins[0]] = hist
 
         self.histogram_height = max(
             [sum([c for c in hist.values()]) for hist in self.histogram.values()])
         for x in self.histogram.keys():
-            self.histogram[x] = sorted([[comb, c] for comb, c in self.histogram[x].iteritems(
+            self.histogram[x] = sorted([[comb, c] for comb, c in self.histogram[x].items(
             )], key=lambda p: len(p[0]) * 10 - int(p[0][0]), reverse=True)
         drawing['histogram'] = self.histogram
 
@@ -719,7 +719,7 @@ class Overview(object):
 
         xaxis = drawing['x'][0][1]
         drawing['xdivs'] = []
-        for quire, data in ItemPart.get_quires_from_id(1).iteritems():
+        for quire, data in ItemPart.get_quires_from_id(1).items():
             x = self.get_int_from_locus(data['start'])
             if x > self.maxs[0] or x < self.mins[0]:
                 continue
