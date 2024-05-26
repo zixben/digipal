@@ -1370,9 +1370,8 @@ def get_cache_key_from_string(s):
     '''
     import hashlib
     import base64
-    hasher = hashlib.sha1()
-    hasher.update(repr(s))
-    return base64.b64encode(hasher.digest())
+    digest = hashlib.sha1(s.encode('utf-16-le')).digest()
+    return base64.b64encode(digest)
 
 
 def get_mem():

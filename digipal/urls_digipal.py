@@ -2,9 +2,9 @@ from django.conf.urls import include
 from django.urls import path
 from mezzanine.conf import settings
 from mezzanine.core.views import direct_to_template
-#from views.facet import facet_search
 from digipal.views.annotation import *
 from digipal.views.search import *
+from digipal.views.faceted_search.faceted_search import *
 from digipal.views.admin.image import *
 from digipal.views.test import *
 from digipal.views.email import *
@@ -58,6 +58,7 @@ urlpatterns = [
     path('quicksearch/', search_record_view),
     path('search/index', search_index_view, name='search_index'),
     path('search/graph', search_graph_view),
+    path('search/facets', search_whoosh_view, name='facets'),
     path('search/suggestions.json/', search_suggestions),
     # Record views
     path('<content_type>hands|manuscripts|scribes|graphs|pages)/<objectid>[^/]+)(/<tabid>[^/]+))?(?:/|$)', record_view),

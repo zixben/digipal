@@ -53,7 +53,7 @@
                             Show filters
                         {% endif %}
                     </a>
-                    <a class="pull-right" href="/digipal/search/facets/?terms={{ request.GET.terms|urlencode }}"
+                    <a class="pull-right" href="/digipal/search/facets?terms={{ request.GET.terms|urlencode }}"
                         data-toggle="tooltip" title="Go to the Faceted Search page" id="link-faceted-search">
                         Faceted Search
                     </a>
@@ -137,7 +137,7 @@
                                 <div class="row">
 
                                     <div class="col-md-10">
-                                        
+
                                         {% for type in type.queryset %}
                                         {{ type }}
                                         {% endfor %}

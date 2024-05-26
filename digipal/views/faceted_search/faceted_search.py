@@ -414,7 +414,8 @@ class FacetedModel(object):
         return ret
 
     def get_facet_options(self, field, request, sorted_by='c'):
-        from urllib import quote_plus
+        #from urllib import quote_plus (Luca)
+        from urllib.parse import quote_plus
         ret = []
         if not self.settings.areFieldOptionsShown(field):
             return ret
@@ -925,7 +926,7 @@ class FacetedModel(object):
                     # 'item_part__historical_items'
                     #ret = [records[int(id)] for id in ids if int(id) in records]
                     if len(ids):
-                        id_type = type(records.keys()[0])
+                        id_type = type(list(records.keys())[0])
 
                     # {1: <rec #1>, 3: <rec #3>} => [<rec #1>, <rec #3>]
                     ret = [records[id_type(id)]
@@ -1270,7 +1271,7 @@ def search_whoosh_view(request, content_type='', objectid='', tabid=''):
     context['wide_page'] = True
 
     hand_filters.chrono('overview')
-    from overview import draw_overview
+    from digipal.views.faceted_search.overview import draw_overview
     draw_overview(ct, context, request)
 
     hand_filters.chrono(':SEARCH')
