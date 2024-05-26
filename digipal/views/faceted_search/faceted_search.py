@@ -1,4 +1,5 @@
-from django.shortcuts import render_to_response
+#from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.template import RequestContext
 from django.db.models import Q
 import json
@@ -170,7 +171,7 @@ class FacetedModel(object):
 
         #records = self.get_all_records(False)
         #records = self.get_all_records(True).order_by('id')
-        # print '\t\t%d records' % records.count()
+        # print('\t\t%d records' % records.count()
 
         indexable_fields = []
         for field in self.fields:
@@ -183,7 +184,7 @@ class FacetedModel(object):
             whoosh_sortable_field = self._get_sortable_whoosh_field(field)
             if whoosh_sortable_field and whoosh_sortable_field != field['key']:
 
-                print '\t\t' + field['key']
+                print('\t\t' + field['key'])
 
                 # get all the values for that field in the table
                 self.value_rankings[whoosh_sortable_field], sorted_values = self.get_field_value_ranking(
@@ -204,7 +205,7 @@ class FacetedModel(object):
 
         hand_filters.chrono('%s:' % field['key'])
 
-        # print 'h1'
+        # print('h1')
 
         model, path = self.get_model_from_field(field)
         sort_function = field.get('sort_fct', None)
@@ -213,17 +214,17 @@ class FacetedModel(object):
         value_rankings[u''] = u''
 
         # add the values from the mapping
-        for k, v in field.get('mapping', {}).iteritems():
+        for k, v in field.get('mapping', {}).items():
             value_rankings[v] = v
 
-        # print model, path
+        # print(model, path)
         i = 0
-        # print repr(model), utils.get_mem()
+        # print(repr(model), utils.get_mem())
         for record in model.objects.all().order_by('id').iterator():
             if i == 0:
                 pass
-                # print path
-                # print utils.get_mem()
+                # print(path)
+                # print(utils.get_mem())
             i += 1
             value = ''
             value = self.get_record_path(record, path, field)
@@ -238,23 +239,23 @@ class FacetedModel(object):
 
         # convert dates to numbers
         if field['type'] == 'date':
-            for k, v in value_rankings.iteritems():
+            for k, v in value_rankings.items():
                 v = utils.get_midpoint_from_date_range(v)
                 value_rankings[k] = v or 10000
             sorted_values = sorted(value_rankings.values())
-            # #print sorted_values
+            # #print(sorted_values)
             # exit()
         else:
             # sort by natural order
             sorted_values = utils.sorted_natural(value_rankings.values(), True)
 
         # now assign the ranking to each value
-        for k, v in value_rankings.iteritems():
+        for k, v in value_rankings.items():
             value_rankings[k] = sorted_values.index(v)
 
         hand_filters.chrono(':%s' % field['key'])
 
-        # print '', utils.get_mem()
+        # print('', utils.get_mem())
         return value_rankings, sorted_values
         # return 0
 
@@ -417,7 +418,7 @@ class FacetedModel(object):
         ret = []
         if not self.settings.areFieldOptionsShown(field):
             return ret
-        selected_key = unicode(request.GET.get(field['key'], ''))
+        selected_key = str(request.GET.get(field['key'], ''))
 
         keyword = 'REPLACEME'
         # this fct is expensive, we moved it out of the loop below
@@ -429,12 +430,12 @@ class FacetedModel(object):
         # http://localhost:8080/digipal/search/facets/?entry_type=TO&page=1&pgs=10&wr=0&result_type=entries&view=list
         is_count_needed = field.get('count', False)
         if hasattr(self, 'whoosh_groups'):
-            for k, v in self.whoosh_groups[field['key']].iteritems():
+            for k, v in self.whoosh_groups[field['key']].items():
                 label = k
                 if is_bool:
                     label = labels[int(utils.get_bool_from_string(k))]
                 option = {'key': k, 'label': label, 'selected': (
-                    selected_key == unicode(k)) and (k is not None)}
+                    selected_key == str(k)) and (k is not None)}
                 if is_count_needed:
                     option['count'] = v
                 option['href'] = mark_safe(href.replace(keyword, quote_plus(
@@ -506,10 +507,10 @@ class FacetedModel(object):
         # convert to unicode (or list of unicode)
         # if ret is not None:
         if isinstance(ret, list):
-            #ret = [unicode(v) for v in ret]
-            ret = u'|'.join([unicode(v) for v in ret])
+            #ret = [str(v) for v in ret]
+            ret = u'|'.join([str(v) for v in ret])
         else:
-            ret = unicode(ret)
+            ret = str(ret)
 
         return ret
 
@@ -562,9 +563,9 @@ class FacetedModel(object):
                 part = parts.pop(0)
                 try:
                     v = getattr(v, part)
-                except ObjectDoesNotExist, e:
+                except ObjectDoesNotExist(e):
                     v = None
-                except Exception, e:
+                except Exception(e):
                     raise Exception(u'Model path not found. Record = [%s:%s], path = %s, part = %s, value = %s' % (
                         type(record), repr(record), path, part, repr(v)))
 
@@ -577,13 +578,14 @@ class FacetedModel(object):
                     else:
                         try:
                             v = v()
-                        except Exception, e:
-                            print u'Model path not found. Record = [%s:%s], path = %s, part = %s, value = %s' % (
+
+                        except Exception(e):
+                            print(u'Model path not found. Record = [%s:%s], path = %s, part = %s, value = %s' % (),
                                 type(record), repr(record), path, part, repr(v))
-                            print path_done
-                            print parts
-                            print part
-                            print repr(v)
+                            print(path_done)
+                            print(parts)
+                            print(part)
+                            print(repr(v))
                             raise e
 
                 if v is None:
@@ -595,7 +597,7 @@ class FacetedModel(object):
                 # a fct on the queryset, e.g. person.cars.all.count
                 # we don't want to fork in that case.
                 if isinstance(v, QuerySet) and not(parts and hasattr(v, parts[0])):
-                    # print v, parts
+                    # print(v, parts)
                     rec = v
                     v = []
                     for item in rec:
@@ -632,7 +634,7 @@ class FacetedModel(object):
 
         if passive:
             ret = ' + '.join(ret)
-            ret = re.sub(ur'<[^>]*>', ur' ', ret)
+            ret = re.sub(u'<[^>]*>', u' ', ret)
         else:
             ret = ' '.join(ret)
 
@@ -649,7 +651,7 @@ class FacetedModel(object):
                 'viewable', False)]
         else:
             #             for key in keys:
-            #                 #print key, self.get_field_by_key(key)
+            #                 #print(key, self.get_field_by_key(key))
             ret = [self.get_field_by_key(key) for key in keys]
         for field in ret:
             field['sortable'] = self._get_sortable_whoosh_field(field)
@@ -659,7 +661,7 @@ class FacetedModel(object):
 
     def get_whoosh_facets(self):
         from whoosh import sorting
-        # #print [field['key'] for field in self.fields if field.get('count', False)]
+        # #print([field['key'] for field in self.fields if field.get('count', False)])
         # return []
 
         ret = []
@@ -681,7 +683,7 @@ class FacetedModel(object):
                 if field.get('multivalued', False):
                     #field_facet.split_fn = lambda v: (v if isinstance(v, list) else [])
                     field_facet.split_fn = lambda v: v if isinstance(
-                        v, list) else unicode(v).split('|')
+                        v, list) else str(v).split('|')
                 ret.append(field_facet)
 
         return ret
@@ -725,7 +727,7 @@ class FacetedModel(object):
         # JIRA-673: Baidu doesn't respect the nofollow on the DigiPal search
         # page
         user_agent = request.META.get('HTTP_USER_AGENT', '')
-        m = re.search(ur'(?i)baiduspider|AhrefsBot', user_agent)
+        m = re.search(u'(?i)baiduspider|AhrefsBot', user_agent)
         return m
 
     def get_whoosh_index_path(self):
@@ -828,7 +830,7 @@ class FacetedModel(object):
             # ret = s.search(q, groupedby=facets, limit=1000000)
             # ret = s.search(q, sortedby=sortedby, limit=1000000)
             # ret = s.search(q, limit=1000000)
-            # #print facets
+            # #print(facets)
             # ret = s.search_page(q, 1, pagelen=10, groupedby=facets, sortedby=sortedby)
 
             hand_filters.chrono(':whoosh.search')
@@ -840,7 +842,7 @@ class FacetedModel(object):
                 for field in self.fields:
                     if field.get('count', False):
                         #                     if field['key'] == 'hi_has_images':
-                        #                         #print ret.groups(field['key'])
+                        #                         #print(ret.groups(field['key']))
                         self.whoosh_groups[field['key']
                                            ] = ret.groups(field['key'])
                     # #self.whoosh_groups[field['key']] = {}
@@ -857,13 +859,13 @@ class FacetedModel(object):
             # get highlights from the hits
             if 0:
                 for hit in ret:
-                    # print repr(hit)
-                    # #print '- ' * 20
-                    # #print hit['id']
+                    # print(repr(hit))
+                    # #print('- ' * 20)
+                    # #print(hit['id'])
 
                     if 1 and self.key == 'clauses':
                         #text = self.get_model().objects.get(id=hit['id'])
-                        # print repr(hit.highlights('content', top=10))
+                        # print(repr(hit.highlights('content', top=10)))
                         pass
 
             # Paginate
@@ -882,7 +884,7 @@ class FacetedModel(object):
 
             hand_filters.chrono(':whoosh')
 
-            # #print len(ids)
+            # #print(len(ids))
 
             # ids = [res['id'] for res in ret]
             hand_filters.chrono('sql:')
@@ -899,7 +901,7 @@ class FacetedModel(object):
                 # ! filter not implemented in all faceted models
                 #ret = records.filter(id__in=self.ids)
                 #ret = records.in_bulks(ids)
-                # print self.overview_records.count()
+                # print(self.overview_records.count())
                 #self.is_full_search = not (search_phrase or field_queries)
 #                 if self.is_full_search:
 #                     self.ids = []
@@ -964,8 +966,8 @@ class FacetedModel(object):
                 'analyzer': StemmingAnalyzer(minsize=2) | CharsetFilter(accent_map),
                 #'analyzer': StandardAnalyzer(minsize=2) | CharsetFilter(accent_map),
                 'fragmenter': highlight.ContextFragmenter(maxchars=200, surround=40),
-                'formatter': highlight.HtmlFormatter(between=ur'</li><li>'),
-                'template': lambda excerpts: ur'<ul><li>%s</li></ul>' % excerpts
+                'formatter': highlight.HtmlFormatter(between=u'</li><li>'),
+                'template': lambda excerpts: u'<ul><li>%s</li></ul>' % excerpts
             }
         return self.snippets_tools
 
@@ -1118,7 +1120,7 @@ def get_types(request):
     '''
     ret = getattr(settings, 'FACETED_SEARCH', None)
     if ret is None:
-        import settings as faceted_settings
+        import digipal.views.faceted_search.settings as faceted_settings
         ret = faceted_settings.FACETED_SEARCH
 
     from digipal.utils import is_model_visible
@@ -1279,8 +1281,10 @@ def search_whoosh_view(request, content_type='', objectid='', tabid=''):
     if request.is_ajax():
         fragment = '_fragment'
 
-    ret = render_to_response('search/faceted/search_whoosh%s.html' %
-                             fragment, context, context_instance=RequestContext(request))
+    #ret = render_to_response('search/faceted/search_whoosh%s.html' %
+#                             fragment, context, context_instance=RequestContext(request))
+
+    ret = render(request, 'search/faceted/search_whoosh%s.html' % fragment, context)
 
     hand_filters.chrono(':TEMPLATE')
 

@@ -16,7 +16,7 @@ urlpatterns = [
     path('digipal/idiograph_editor/get_idiograph', idiograph.get_idiograph),
     path('digipal/idiograph_editor/save_idiograph', idiograph.save_idiograph),
     path('digipal/idiograph_editor/update_idiograph', idiograph.update_idiograph),
-    path('digipal/idiograph_editor/delete_idiograph', idiograph.delete_idiograph)
+    path('digipal/idiograph_editor/delete_idiograph', idiograph.delete_idiograph),
 ]
 
 if getattr(settings, 'USE_ITEM_PART_QUICK_ADD_FORM'):

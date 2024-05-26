@@ -1,5 +1,5 @@
 from django import forms
-from search_content_type import SearchContentType, get_form_field_from_queryset
+from digipal.views.content_type.search_content_type import SearchContentType, get_form_field_from_queryset
 from digipal.models import *
 from django.forms.widgets import Textarea, TextInput, HiddenInput, Select, SelectMultiple
 from django.db.models import Q
@@ -151,7 +151,7 @@ class SearchGraphs(SearchContentType):
                 graphs = graphs.filter(
                     hand__item_part__historical_items__catalogue_number__iexact=index)
             if repository:
-                matches = re.match(ur'^([^,]+?),([^,]+)$', repository)
+                matches = re.match(r'^([^,]+?),([^,]+)$', repository)
                 if matches:
                     graphs = graphs.filter(Q(hand__item_part__current_item__repository__place__name__iexact=matches.group(
                         1).strip()) & Q(hand__item_part__current_item__repository__name__iexact=matches.group(2).strip()))

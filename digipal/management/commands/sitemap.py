@@ -83,9 +83,9 @@ sitemap.py <command>
 
     def run_command(self):
         if self.command == 'info':
-            print 'Models          : %s' % ', '.join(self.models)
-            print 'Output directory: %s' % self.path_to_sitemaps
-            print 'Index file      : %s' % self.get_sitemap_path(file_path=False)
+            print ('Models          : %s' % ', '.join(self.models))
+            print ('Output directory: %s' % self.path_to_sitemaps)
+            print ('Index file      : %s' % self.get_sitemap_path(file_path=False))
             
         if self.command == 'write':
             if not os.path.exists(self.path_to_sitemaps):
@@ -119,7 +119,7 @@ sitemap.py <command>
             reason = 'get_absolute_url() not found on the model'
 
         if reason:
-            print 'Skipped "%s" model: %s' % (model, reason)
+            print ('Skipped "%s" model: %s' % (model, reason))
             records = records.none()
             
         count = records.count()
@@ -154,4 +154,4 @@ sitemap.py <command>
         _file = open(path_to_file, 'w+')
         _file.write(content)
         _file.close()
-        print 'Written %s urls in %s' % (count, path_to_file) 
+        print ('Written %s urls in %s' % (count, path_to_file)) 

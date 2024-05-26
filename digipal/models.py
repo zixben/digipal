@@ -112,7 +112,7 @@ class NameModel(models.Model):
             self.slug = slugify(unicode(self.name))
         super(NameModel, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -154,7 +154,7 @@ class MediaPermission(models.Model):
                 break
         return ret
 
-    def __unicode__(self):
+    def __str__(self):
         return r'%s [%s]' % (self.label, self.get_permission_label())
 
 # Aspect on legacy db
@@ -173,7 +173,7 @@ class Appearance(models.Model):
         ordering = ['sort_order', 'text']
         verbose_name_plural = 'Appearance'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.text)
 
 
@@ -187,7 +187,7 @@ class Feature(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -202,7 +202,7 @@ class Component(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -219,7 +219,7 @@ class ComponentFeature(models.Model):
         db_table = 'digipal_component_features'
         ordering = ['component__name', 'feature__name']
 
-    def __unicode__(self):
+    def __str__(self):
         ret = u''
         if self.component:
             ret += self.component.name
@@ -239,7 +239,7 @@ class Aspect(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -252,7 +252,7 @@ class OntographType(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -275,7 +275,7 @@ class Ontograph(models.Model):
         ordering = ['sort_order', 'ontograph_type__name', 'name']
         unique_together = ['name', 'ontograph_type']
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s: %s' % (self.name, self.ontograph_type)
         return get_list_as_string(self.name, ': ', self.ontograph_type)
 
@@ -286,7 +286,7 @@ class CharacterForm(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
@@ -310,7 +310,7 @@ class Character(models.Model):
         ordering = ['ontograph__sort_order',
                     'ontograph__ontograph_type__name', 'name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -340,7 +340,7 @@ class Allograph(models.Model):
                     'character__ontograph__ontograph_type__name', 'name']
         unique_together = ['name', 'character']
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s, %s' % (self.character.name, self.name)
         return self.human_readable()
 
@@ -362,7 +362,7 @@ class AllographComponent(models.Model):
     class Meta:
         ordering = ['allograph', 'component']
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s. %s' % (self.allograph, self.component)
         return get_list_as_string(self.allograph, '. ', self.component)
 
@@ -423,8 +423,8 @@ class Text(ModelWithDate):
         unique_together = ['name']
         ordering = ['name']
 
-    def __unicode__(self):
-        return u'%s' % (self.name)
+    def __str__(self):
+        return self.name
 
 
 class Script(models.Model):
@@ -438,7 +438,7 @@ class Script(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -453,7 +453,7 @@ class ScriptComponent(models.Model):
     class Meta:
         ordering = ['script', 'component']
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s. %s' % (self.script, self.component)
         return get_list_as_string(self.script, '. ', self.component)
 
@@ -474,7 +474,7 @@ class Reference(models.Model):
         ordering = ['name']
         unique_together = ['name', 'name_index']
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s%s' % (self.name, self.name_index or '')
         return get_list_as_string(self.name, '', self.name_index)
 
@@ -551,7 +551,7 @@ class Owner(models.Model):
 
         return ret
 
-    def __unicode__(self):
+    def __str__(self):
         return self.display_label
 
 # DateText in legacy db
@@ -579,7 +579,7 @@ class Date(models.Model):
     class Meta:
         ordering = ['sort_order']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.date)
 
 
@@ -595,7 +595,7 @@ class Category(models.Model):
         ordering = ['name']
         verbose_name_plural = 'Categories'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -610,7 +610,7 @@ class Format(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -626,7 +626,7 @@ class Hair(models.Model):
         ordering = ['label']
         verbose_name_plural = 'Hair'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.label)
 
 
@@ -639,8 +639,8 @@ class HistoricalItemType(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
-        return u'%s' % (self.name)
+    def __str__(self):
+        return self.name
 
 
 # CharterLanguageText in legacy db
@@ -654,7 +654,7 @@ class Language(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -685,7 +685,7 @@ class HistoricalItem(ModelWithDate):
     class Meta:
         ordering = ['display_label', 'date', 'name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.display_label)
 
     def get_first_text(self):
@@ -782,7 +782,7 @@ class Source(models.Model):
         ''' Used by the front-end to display the source as a reference '''
         return self.get_authors_long()
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.label or self.name)
 
     @classmethod
@@ -861,7 +861,7 @@ class CatalogueNumber(models.Model):
         ordering = ['source', 'number']
         unique_together = ['source', 'number', 'historical_item', 'text']
 
-    def __unicode__(self):
+    def __str__(self):
         return get_list_as_string(self.source, ' ', self.number)
 
     def save(self, *args, **kwargs):
@@ -939,7 +939,7 @@ class Collation(models.Model):
     class Meta:
         ordering = ['historical_item']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.historical_item)
 
 
@@ -964,7 +964,7 @@ class Decoration(models.Model):
     class Meta:
         ordering = ['historical_item']
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s' % (self.historical_item)
 
 
@@ -997,7 +997,7 @@ class Description(models.Model):
             raise ValidationError(
                 'A description record must have a summary, a description or comments.')
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s %s' % (self.historical_item, self.source)
         return get_list_as_string(self.historical_item, ' ', self.source)
 
@@ -1046,7 +1046,7 @@ class Layout(models.Model):
     class Meta:
         ordering = ['item_part', 'historical_item']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.item_part or self.historical_item)
 
 
@@ -1069,7 +1069,7 @@ class ItemOrigin(models.Model):
     class Meta:
         ordering = ['historical_item']
 
-    def __unicode__(self):
+    def __str__(self):
         return get_list_as_string(
             self.content_type, ': ', self.content_object, ' ', self.historical_item)
 
@@ -1115,7 +1115,7 @@ class Archive(models.Model):
     class Meta:
         ordering = ['historical_item']
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s: %s. %s' % (self.content_type, self.content_object,
         #        self.historical_item)
         return get_list_as_string(self.content_type, ': ',
@@ -1131,7 +1131,7 @@ class Region(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -1147,7 +1147,7 @@ class County(models.Model):
         ordering = ['name']
         verbose_name_plural = 'Counties'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -1160,7 +1160,7 @@ class PlaceType(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 # PlaceText in legacy db
@@ -1189,7 +1189,7 @@ class Place(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
     @classmethod
@@ -1216,7 +1216,7 @@ class OwnerType(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -1263,7 +1263,7 @@ class Repository(models.Model):
         ordering = ['place', 'short_name', 'name']
         verbose_name_plural = 'Repositories'
 
-    def __unicode__(self):
+    def __str__(self):
         return self.short_name or self.human_readable() or ''
 
     def human_readable(self):
@@ -1315,7 +1315,7 @@ class CurrentItem(models.Model):
         ordering = ['repository', 'shelfmark']
         unique_together = ['repository', 'shelfmark']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.display_label)
 
     def save(self, *args, **kwargs):
@@ -1360,7 +1360,7 @@ class Person(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -1373,7 +1373,7 @@ class InstitutionType(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -1398,7 +1398,7 @@ class Institution(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -1420,7 +1420,7 @@ class Scribe(models.Model):
 
     has_absolute_url = True
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s. %s' % (self.name, self.date or '')
         return get_list_as_string(self.name, '. ', self.date)
 
@@ -1445,7 +1445,7 @@ class Idiograph(models.Model):
     class Meta:
         ordering = ['allograph']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.display_label)
 
     def save(self, *args, **kwargs):
@@ -1466,7 +1466,7 @@ class IdiographComponent(models.Model):
     class Meta:
         ordering = ['idiograph', 'component']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s. %s' % (self.idiograph, self.component)
 
 
@@ -1486,7 +1486,7 @@ class HistoricalItemDate(models.Model):
     class Meta:
         ordering = ['date']
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s. %s' % (self.historical_item, self.date)
         return get_list_as_string(self.historical_item, '. ', self.date)
 
@@ -1500,8 +1500,8 @@ class ItemPartType(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
-        return u'%s' % (self.name)
+    def __str__(self):
+        return self.name
 
 # Manuscripts and Charters in legacy db
 
@@ -1545,8 +1545,8 @@ class ItemPart(models.Model):
 
     has_absolute_url = True
 
-    def __unicode__(self):
-        return u'%s' % (self.display_label)
+    def __str__(self):
+        return self.display_label
 
     def clean(self):
         if self.group_id and self.group_id == self.id:
@@ -1625,10 +1625,10 @@ class ItemPart(models.Model):
                 if label:
                     self.display_label = label
         return old_label != self.display_label
-
-    def save(self, *args, **kwargs):
-        self._update_display_label()
-        super(ItemPart, self).save(*args, **kwargs)
+    #commented by Luca
+    #def save(self, *args, **kwargs):
+    #    self._update_display_label()
+    #    super(ItemPart, self).save(*args, **kwargs)
 
     @property
     def historical_label(self):
@@ -1725,7 +1725,7 @@ class ItemPartItem(models.Model):
         ordering = ['historical_item__id']
         verbose_name = 'Item Partition'
 
-    def __unicode__(self):
+    def __str__(self):
         ret = u''
 
         # Type, [Shelfmark, locus], [HI.name, locus]
@@ -1776,7 +1776,7 @@ class ItemPartAuthenticity(models.Model):
     class Meta:
         unique_together = ['item_part', 'category', 'source']
 
-    def __unicode__(self):
+    def __str__(self):
         return '%s (%s)' % (self.category, self.source.label)
 
     def is_suspect(self):
@@ -1802,7 +1802,7 @@ class TextItemPart(models.Model):
     class Meta:
         unique_together = ['item_part', 'text']
 
-    def __unicode__(self):
+    def __str__(self):
         if self.name:
             return '%s, %s' % (self.text.name, self.name)
         locus = ''
@@ -1823,7 +1823,7 @@ class LatinStyle(models.Model):
     class Meta:
         ordering = ['style']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.style)
 
 
@@ -1837,7 +1837,7 @@ class ImageAnnotationStatus(models.Model):
         ordering = ['name']
         verbose_name_plural = 'Image annotation statuses'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 # This is an image of a part of an item-part
@@ -1913,7 +1913,7 @@ class Image(models.Model):
         super(Image, self).__init__(*args, **kwargs)
         self.__original_iipimage = self.iipimage
 
-    def __unicode__(self):
+    def __str__(self):
         ret = u''
         if self.display_label:
             ret = u'%s' % self.display_label
@@ -2492,7 +2492,7 @@ class Hand(models.Model):
         ret = re.sub(u'\([^)]*\)', u'', ret)
         return ret
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s' % (self.description or '')
         # GN: See Jira ticket DIGIPAL-76,
         # hand.reference has moved to hand.label
@@ -2587,7 +2587,7 @@ class Hand(models.Model):
         self.images.add(*images)
 
 
-Hand.images.through.__unicode__ = lambda self: u'%s in %s' % (
+Hand.images.through.__str__ = lambda self: u'%s in %s' % (
     self.hand.label, self.image.display_label)
 
 
@@ -2722,7 +2722,7 @@ class HandDescription(models.Model):
         self.description = re.sub('<p>&nbsp;</p>', '', self.description)
         return super(HandDescription, self).save(*args, **kwargs)
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s %s' % (self.historical_item, self.source)
         return get_list_as_string(self.hand, ' ', self.source)
 
@@ -2738,7 +2738,7 @@ class Alphabet(models.Model):
     class Meta:
         ordering = ['name']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.name)
 
 
@@ -2766,7 +2766,7 @@ class DateEvidence(models.Model):
     class Meta:
         ordering = ['date']
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s. %s. %s' % (self.hand, self.date, self.date_description)
         return get_list_as_string(
             self.hand, '. ', self.date, '. ', self.date_description)
@@ -2789,7 +2789,7 @@ class Graph(models.Model):
     class Meta:
         ordering = ['idiograph']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.display_label)
 
     def get_aspect_positions(self):
@@ -2904,7 +2904,7 @@ class GraphComponent(models.Model):
     class Meta:
         ordering = ['graph', 'component']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s. %s' % (self.graph, self.component)
 
 
@@ -2919,8 +2919,8 @@ class Status(models.Model):
         ordering = ['name']
         verbose_name_plural = 'Status'
 
-    def __unicode__(self):
-        return u'%s' % (self.name)
+    def __str__(self):
+        return self.name
 
 
 class AnnotationQuerySet(models.query.QuerySet):
@@ -3003,7 +3003,7 @@ class Annotation(models.Model):
         ordering = ['graph', 'modified']
         #unique_together = ('image', 'vector_id')
 
-    def __unicode__(self):
+    def __str__(self):
         return get_list_as_string(self.graph, ' in ', self.image)
 
     @property
@@ -3328,7 +3328,7 @@ class Annotation(models.Model):
     thumbnail_with_link.short_description = 'Thumbnail'
     thumbnail_with_link.allow_tags = True
 
-#     def __unicode__(self):
+#     def __str__(self):
 #         return u'%s' % (self.name)
 
 # PlaceEvidence in legacy db
@@ -3351,7 +3351,7 @@ class PlaceEvidence(models.Model):
     class Meta:
         ordering = ['place']
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s. %s. %s' % (self.hand, self.place, self.reference)
         return get_list_as_string(
             self.hand, '. ', self.place, '. ', self.reference)
@@ -3368,7 +3368,7 @@ class Measurement(models.Model):
     class Meta:
         ordering = ['label']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.label)
 
 # Proportions in legacy db
@@ -3388,7 +3388,7 @@ class Proportion(models.Model):
     class Meta:
         ordering = ['hand', 'measurement']
 
-    def __unicode__(self):
+    def __str__(self):
         # return u'%s. %s' % (self.hand, self.measurement)
         return get_list_as_string(self.hand, '. ', self.measurement)
 
@@ -3452,7 +3452,7 @@ class ContentAttribution(models.Model):
     modified = models.DateTimeField(auto_now=True,
                                     editable=False)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.title
 
     def get_short_message(self):
@@ -3508,7 +3508,7 @@ class StewartRecord(models.Model):
     class Meta:
         ordering = ['scragg']
 
-    def __unicode__(self):
+    def __str__(self):
         ret = u'#%s' % self.id
         ids = self.get_ids()
         if ids:
@@ -3842,7 +3842,7 @@ class KeyVal(models.Model):
     class Meta:
         ordering = ['key', ]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.key)
 
     @classmethod
@@ -3909,17 +3909,17 @@ class ApiTransform(models.Model):
         ret += '&@xslt=' + self.slug
         return ret
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.title)
 
 
 # Generate a meaningful object label for the m2m models
-HistoricalItem.owners.through.__unicode__ = lambda self: unicode(
+HistoricalItem.owners.through.__str__ = lambda self: unicode(
     self.historicalitem)
 
-ItemPart.owners.through.__unicode__ = lambda self: unicode(self.itempart)
+ItemPart.owners.through.__str__ = lambda self: unicode(self.itempart)
 
-CurrentItem.owners.through.__unicode__ = lambda self: unicode(self.currentitem)
+CurrentItem.owners.through.__str__ = lambda self: unicode(self.currentitem)
 
 # Assign get_absolute_url() and get_admin_url() for all models
 # get_absolute_url() returns /digipal/MODEL_PLURAL/ID
@@ -3932,19 +3932,23 @@ CurrentItem.owners.through.__unicode__ = lambda self: unicode(self.currentitem)
 def set_additional_models_methods():
 
     def model_get_absolute_url(self):
-        from utils import plural
+        #from utils import plural
+        from ase.utils import plural
         # get custom label if defined in _meta, otehrwise stick to module name
         if self._meta.model_name in ['currentitem']:
             return None
         webpath_key = getattr(self, 'webpath_key',
-                              plural(self._meta.model_name, 2))
+                              #inverted number with word [Luca]
+                              plural(2, self._meta.model_name))
         ret = '/%s/%s/%s/' % (self._meta.app_label,
                               webpath_key.lower(), self.id)
         return ret
 
     def model_get_admin_url(self):
         # get_admin_url
-        from django.core.urlresolvers import reverse
+        #updated by Luca
+        #from django.core.urlresolvers import reverse
+        from django.urls import reverse
         info = (self._meta.app_label, self._meta.model_name)
         ret = reverse('admin:%s_%s_change' % info, args=(self.pk,))
         return ret

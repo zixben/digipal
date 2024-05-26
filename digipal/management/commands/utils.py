@@ -1,10 +1,11 @@
 from mezzanine.conf import settings
 from digipal import utils as dputils
-import urllib2
+# (Luca) import urllib2
+import urllib.request as urllib2
 
 
 def get_stats_from_xml_string(xml_string, text_label='', stats=None):
-    #     print 'Count - Tag'
+    #     print('Count - Tag'
     #     print
 
     els = {}
@@ -13,14 +14,14 @@ def get_stats_from_xml_string(xml_string, text_label='', stats=None):
 
     import regex as re
 
-#     elements = re.findall(ur'<(\w+)', xml_string)
+#     elements = re.findall(u'<(\w+)', xml_string)
 #     for el in set(elements):
-#         print '%8d %s' % (elements.count(el), el)
+#         print('%8d %s' % (elements.count(el), el)
 
 #     print
-#     print 'Unique tag-attributes'
+#     print('Unique tag-attributes'
 #     print
-    elements = re.findall(ur'<([^/!?>][^>]*)>', xml_string)
+    elements = re.findall(u'<([^/!?>][^>]*)>', xml_string)
     for el in elements:
         el = el.strip()
         if el not in els:
@@ -31,7 +32,7 @@ def get_stats_from_xml_string(xml_string, text_label='', stats=None):
     return els
 
 #     for el in sorted(els):
-#         print el
+#         print(el
 
 
 def fix_sequences(db_alias, silent=False):
@@ -42,7 +43,7 @@ def fix_sequences(db_alias, silent=False):
     connection = connections[db_alias]
     cursor = connection.cursor()
 
-    select_seq_info = ur'''
+    select_seq_info = u'''
         select table_name, column_name
         from information_schema.columns
         where table_catalog = %s
@@ -50,14 +51,14 @@ def fix_sequences(db_alias, silent=False):
         order by table_name
         '''
 
-    cur = sqlSelect(connection, select_seq_info, [db_name, ur'nextval%'])
+    cur = sqlSelect(connection, select_seq_info, [db_name, u'nextval%'])
     while True:
         rec = cur.fetchone()
         if not rec:
             break
         params = {'table_name': rec[0], 'seq_field': rec[1]}
         if not silent:
-            print '%s.%s' % (params['table_name'], params['seq_field'])
+            print('%s.%s' % (params['table_name'], params['seq_field']))
         cmd = "select setval('%(table_name)s_%(seq_field)s_seq', (select max(%(seq_field)s) from %(table_name)s) )" % params
         cursor.execute(cmd)
         ret += 1
@@ -71,7 +72,7 @@ def sqlWrite(wrapper, command, arguments=[], dry_run=False):
     if not dry_run:
         cur = wrapper.cursor()
 
-        # print command
+        # print(command
         cur.execute(command, arguments)
         # wrapper.commit()
         cur.close()
@@ -128,8 +129,8 @@ def sqlDeleteAll(con, table, dry_run=False):
 
     try:
         sqlWrite(con, 'delete from %s' % table, [], dry_run)
-    except IntegrityError, e:
-        print e
+    except IntegrityError(e):
+        print(e)
         ret = False
 
     return ret
@@ -179,10 +180,10 @@ class Logger(object):
             timestamp = datetime.now().strftime("%y-%m-%d %H:%M:%S")
             try:
                 indent_str = '    ' * indent
-                print (u'[%s] %s%s%s' % (timestamp, indent_str,
-                                         prefixes[log_level], message)).encode('utf-8')
+                print((u'[%s] %s%s%s' % (timestamp, indent_str,
+                                         prefixes[log_level], message)).encode('utf-8'))
             except UnicodeEncodeError:
-                print '???'
+                print('???')
 
 
 def write_file(file_name, data):
@@ -196,14 +197,14 @@ def wget(url):
     try:
         response = urllib2.urlopen(url)
         ret = response.read()
-    except Exception, e:
+    except Exception(e):
         ret = None
     return ret
 
 
 def get_simple_str(str):
     import re
-    return re.sub(ur'\W+', '_', str.strip().lower())
+    return re.sub(u'\W+', '_', str.strip().lower())
 
 
 def is_int(str):
@@ -257,7 +258,7 @@ def web_fetch(url, username=None, password=None, sessionid=None, noredirect=Fals
             # follow redirect
             ret = web_fetch(headers['location'])
         conn.close()
-    except StandardError, e:
+    except StandardError(e):
         ret['error'] = e
 
     return ret
@@ -273,8 +274,8 @@ def dictfetchall(cursor):
 
 
 def prnt(txt):
-    '''A safe print function that won't generate encoding errors'''
-    print txt.encode('utf8', 'ignore')
+    '''A safe print(function that won't generate encoding errors'''
+    print(txt.encode('utf8', 'ignore'))
 
 
 def get_bool_from_mysql(mysql_bool='-1'):
@@ -294,13 +295,13 @@ class CommandMessages(object):
         category = kwargs.get('category', 'WARNING')
         message = '%s: %s' % (category, message)
         message = message.replace('%s', '{}')
-        print message.format(*args)
+        print(message.format(*args))
         self.summary[message] = self.summary.get(message, 0) + 1
 
     def printSummary(self):
         if not self.summary:
             return
-        print '=' * 40
-        print 'MESSAGES SUMMARY'
+        print('=' * 40)
+        print('MESSAGES SUMMARY')
         for msg, count in self.summary.iteritems():
-            print count, msg
+            print(count, msg)

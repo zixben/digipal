@@ -1,10 +1,17 @@
+<!--added by Luca-->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
 {% extends "admin/base.html" %}
+
 {% load mezzanine_tags i18n static %}
+
+
 
 {% block title %}{{ title }} | Mezzanine{% endblock %}
 
 {% block javascripts %}
 <script>
+
     {% url "static_proxy" as static_proxy_url %}
     {% url "fb_browse" as fb_browse_url %}
     {% url "displayable_links_js" as link_list_url %}
@@ -27,6 +34,7 @@
 <script src="{% static "mezzanine/js/"|add:settings.JQUERY_FILENAME %}"></script>
 {% endif %}
 {{ block.super }}
+
 <script>
 jQuery(function($) {
     $('.admin-title').click(function() {location = window.__admin_url;});
@@ -86,13 +94,14 @@ jQuery(function($) {
 {% endblock %}
 
 {% block footer %}
+
 {% if form.this_is_the_login_form %}
     <script src="{% static "mezzanine/js/admin/login.js" %}"></script>
 {% else %}
     {% if user.is_staff %}
         {% if not is_popup and not request.GET.pop %}
         <link rel="stylesheet" href="{% static "mezzanine/chosen/chosen.css" %}">
-        <script src="{% static "mezzanine/chosen/chosen-0.9.12.jquery.js" %}"></script>
+        <script src="{% static "mezzanine/chosen/chosen.jquery.js" %}"></script>
         <script src="{% static "mezzanine/js/admin/navigation.js" %}"></script>
 
         {% endif %}

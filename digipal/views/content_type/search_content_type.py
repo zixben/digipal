@@ -192,7 +192,8 @@ class SearchContentType(object):
                     ret = len(self.queryset)
                 else:
                     # assume query set
-                    ret = self.queryset.count()
+                    # Changed by Luca ret = self.queryset.count()
+                    ret = len(self.queryset)
         return ret
 
     def set_record_view_pagination_context(self, context, request):

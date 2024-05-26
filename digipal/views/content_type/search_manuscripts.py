@@ -1,5 +1,5 @@
 from django import forms
-from search_content_type import SearchContentType, get_form_field_from_queryset
+from digipal.views.content_type.search_content_type import SearchContentType, get_form_field_from_queryset
 from digipal.models import *
 from django.forms.widgets import Textarea, TextInput, HiddenInput, Select, SelectMultiple
 from django.db.models import Q
@@ -239,7 +239,7 @@ class SearchManuscripts(SearchContentType):
         if re_terms:
             # search the descriptions
             for adesc in descriptions:
-                m = re.search(ur'(?ui)' + re_terms, adesc.get_description_plain_text())
+                m = re.search(r'(?ui)' + re_terms, adesc.get_description_plain_text())
                 if m:
                     location = m.start()
                     desc = adesc
@@ -256,9 +256,9 @@ class SearchManuscripts(SearchContentType):
         # Extends the selection a bit to include full words at both ends
         # TODO: optimise with regexp search
         # start -= len(re.sub(ur'^.*?(\w*)$', ur'\1', text[0:start]))
-        while start > 0 and re.match(ur'\w', text[start]):
+        while start > 0 and re.match(r'\w', text[start]):
             start -= 1
-        while end < len(text) and re.match(ur'\w', text[end]):
+        while end < len(text) and re.match(r'\w', text[end]):
             end += 1
             
         ret = text[start:end].strip()

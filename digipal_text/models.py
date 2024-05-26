@@ -249,10 +249,12 @@ class TextContent(models.Model):
     def get_string_from_languages(self):
         return u', '.join([l.name for l in self.languages.all()])
 
-    def __unicode__(self):
+    def __str__(self):
         ret = u'New TextContent record'
         if self.pk:
-            info = unicode(self.type)
+            # commented by Luca
+            #info = unicode(self.type)
+            info = self.type
             languages = self.get_string_from_languages()
             if languages:
                 info += u', %s' % languages
@@ -382,7 +384,7 @@ class TextContentXML(models.Model):
         verbose_name = 'Text (XML)'
         verbose_name_plural = 'Texts (XML)'
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s (#%s)' % (self.text_content, self.id)
 
     @classmethod
@@ -449,7 +451,7 @@ class TextAnnotation(models.Model):
     class Meta:
         unique_together = ['annotation', 'elementid']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'Annotation of "%s" in image "%s"' % (
             self.get_friendly_name(), self.annotation.image)
 
@@ -488,7 +490,7 @@ class EntryHand(models.Model):
         unique_together = ['item_part', 'entry_number',
                            'hand_label', 'order', 'correction']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s %ss %s' % (
             self.hand_label, self.get_intervention_label(), self.entry_number)
 
@@ -518,7 +520,7 @@ class TextPattern(models.Model):
         unique_together = ['key']
         ordering = ['order', 'key']
 
-    def __unicode__(self):
+    def __str__(self):
         return u'%s' % (self.title)
 
     def save(self, *args, **kwargs):

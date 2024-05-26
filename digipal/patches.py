@@ -96,7 +96,8 @@ def mezzanine_patches():
                 posts = {}
                 for post in BlogPost.objects.raw(select, params):
                     posts[post.publish_date] = post
-                keys = posts.keys()
+                # keys = posts.keys()
+                keys = list(posts.keys())
                 keys.sort()
                 for key in keys[::-1]:
                     ret.append(posts[key])

@@ -51,8 +51,8 @@ class DigiPalModelAdmin(VersionAdmin):
 
         model = record.__class__
 
-        for field_name in model._meta.get_all_field_names():
-            field = model._meta.get_field_by_name(field_name)[0]
+        for field_name in model._meta.get_fields():
+            field = model._meta.get_field(field_name)[0]
             get_accessor_name = getattr(field, 'get_accessor_name', None)
             if get_accessor_name:
                 field_name = get_accessor_name()
@@ -66,7 +66,9 @@ class DigiPalModelAdmin(VersionAdmin):
 
         return ret
 
-    def get_inline_instances(self, request, *args, **kwargs):
+    #commented by Luca
+
+    """def get_inline_instances(self, request, *args, **kwargs):
         ret = super(DigiPalModelAdmin, self).get_inline_instances(
             request, *args, **kwargs)
         threshold = getattr(settings, 'ADMIN_INLINE_HIDE_SIZE', 100)
@@ -77,6 +79,7 @@ class DigiPalModelAdmin(VersionAdmin):
             instance, inline.model) < threshold]
 
         return ret
+    """
 
 
 #########################
@@ -344,6 +347,14 @@ class ItemPartItemInline(StackedDynamicInlineAdmin):
     extra = 3
     model = ItemPartItem
 
+#added by Luca
+class ItemPartInline_new(admin.TabularInline):
+    model = ItemPart
+
+class CurrentItemOwnerInline_new(admin.TabularInline):
+    model = CurrentItem.owners.through
+    verbose_name = "Ownership"
+    verbose_name_plural = "Ownerships"
 
 class CurrentItemAdmin(DigiPalModelAdmin):
     model = CurrentItem
@@ -363,8 +374,9 @@ class CurrentItemAdmin(DigiPalModelAdmin):
                 ('Legacy', {'fields': ('legacy_id',)}),
     )
 
-    inlines = [digipal.admin_inlines.ItemPartInline,
-               digipal.admin_inlines.CurrentItemOwnerInline]
+    #inlines = [digipal.admin_inlines.ItemPartInline,
+    #           digipal.admin_inlines.CurrentItemOwnerInline]
+    inlines = [ItemPartInline_new, CurrentItemOwnerInline_new]
     filter_horizontal = ['owners']
 
 

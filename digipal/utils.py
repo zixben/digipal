@@ -6,11 +6,18 @@ import lxml.etree as ET
 from lxml.etree import XMLSyntaxError
 from django.shortcuts import render
 #from django.db.models.query import EmptyResultSet
+#added by Luca
+from urllib.parse import urlencode
 psutil = None
 try:
     import psutil
 except Exception:
     pass
+
+#added by Luca for compatibility python2 -> 3
+import sys
+if sys.version_info[0] >= 3:
+    unicode = str
 
 #_nsre = re.compile(u'(?iu)([0-9]+|(?:\b[mdclxvi]+\b))')
 REGEXP_ROMAN_NUMBER = re.compile(u'(?iu)\b[ivxlcdm]+\b')
@@ -146,8 +153,8 @@ def update_query_string(url, updates, url_wins=False):
     ret = url.strip()
     if ret and ret[0] == '#':
         return ret
-
-    from urlparse import urlparse, urlunparse, parse_qs
+    from urllib.parse import urlparse, urlunparse, parse_qs
+    #from urlparse import urlparse, urlunparse, parse_qs
 
     # Convert string format into a dictionary
     if isinstance(updates, str):
@@ -213,6 +220,9 @@ def get_str_from_call_stack(separator='; '):
                           for call in tb])
     return ret
 
+#commented by Luca (maximum recursion triggered)
+"""
+from urllib.parse import urlencode
 
 def urlencode(dict, doseq=0):
     ''' This is a unicode-compatible wrapper around urllib.urlencode()
@@ -221,6 +231,7 @@ def urlencode(dict, doseq=0):
         dict: a dictionary of param name = values
         doseq: see urlliburlencode (if dicts values are sequences)
     '''
+
     import urllib
     d = {}
     for k, v in dict.items():
@@ -229,9 +240,9 @@ def urlencode(dict, doseq=0):
             if isinstance(v2, unicode):
                 v2 = v2.encode('utf=8')
             d[k].append(v2)
-    ret = urllib.urlencode(d, doseq)
+    ret = urlencode(d, doseq)
     return ret
-
+"""
 
 def get_tokens_from_phrase(phrase, lowercase=False):
     ''' Returns a list of tokens from a query phrase.
@@ -895,7 +906,7 @@ def get_all_files_under(root, file_types='fd', filters=[], extensions=[
 def get_cms_page_from_title(title):
     from mezzanine.pages.models import Page as MPage
     from django.utils.text import slugify
-    for page in MPage.objects.filter(slug__iendswith=slugify(unicode(title))):
+    for page in MPage.objects.filter(slug__iendswith=slugify(str(title))):
         return page
     return None
 
@@ -905,7 +916,7 @@ def get_cms_url_from_slug(title):
     if page:
         return page.get_absolute_url()
     from django.utils.text import slugify
-    return u'/%s' % slugify(unicode(title))
+    return u'/%s' % slugify(str(title))
 
 
 def remove_param_from_request(request, key='jx'):

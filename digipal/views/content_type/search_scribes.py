@@ -1,5 +1,5 @@
 from django import forms
-from search_content_type import SearchContentType, get_form_field_from_queryset
+from digipal.views.content_type.search_content_type import SearchContentType, get_form_field_from_queryset
 from digipal.models import *
 from django.forms.widgets import Textarea, TextInput, HiddenInput, Select, SelectMultiple
 from django.db.models import Q

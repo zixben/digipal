@@ -22,7 +22,6 @@ def make_path(path):
 # MAIN DJANGO SETTINGS #
 ########################
 
-
 # Emails will be sent on server errors if DEBUG=False
 # Add admin email addresses in your local_settings.py
 ADMINS = ()
@@ -225,8 +224,15 @@ TEMPLATES = [
             # DigiPal app can also override other app templates
             os.path.join(PROJECT_ROOT, '../digipal/templates'),
         ],
-        'APP_DIRS': True,
+        # commented by Luca
+        #'APP_DIRS': True,
         'OPTIONS': {
+              # added by Luca. See https://stackoverflow.com/questions/50967854/futurewarning-templateforhostmiddleware-is-deprecated-please-upgrade-to-the
+              "loaders": [
+              "mezzanine.template.loaders.host_themes.Loader",
+              "django.template.loaders.filesystem.Loader",
+              "django.template.loaders.app_directories.Loader",
+              ],
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
                 # Only add this if you want the sql queries and debug variables in your template
@@ -262,8 +268,18 @@ MIDDLEWARE = (
 'django.contrib.sessions.middleware.SessionMiddleware',
 'django.contrib.auth.middleware.AuthenticationMiddleware',
 'mezzanine.core.middleware.SitePermissionMiddleware',
+    'mezzanine.core.request.CurrentRequestMiddleware',
+    'mezzanine.core.middleware.RedirectFallbackMiddleware',
+    'mezzanine.core.middleware.TemplateForDeviceMiddleware',
+    'mezzanine.core.middleware.AdminLoginInterfaceSelectorMiddleware',
+    'mezzanine.core.middleware.SitePermissionMiddleware',
+    'mezzanine.pages.middleware.PageMiddleware',
+    'mezzanine.core.middleware.FetchFromCacheMiddleware',
+    # Added by Luca for is_ajax
+    'digipal.middleware.AjaxMiddleware',
 )
 MIDDLEWARE_CLASSES = (
+    'pagination.middleware.PaginationMiddleware',
     'digipal.middleware.HttpsAdminMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'mezzanine.core.middleware.UpdateCacheMiddleware',
@@ -285,18 +301,24 @@ MIDDLEWARE_CLASSES = (
     'mezzanine.core.request.CurrentRequestMiddleware',
     'mezzanine.core.middleware.RedirectFallbackMiddleware',
     'mezzanine.core.middleware.TemplateForDeviceMiddleware',
-    'mezzanine.core.middleware.TemplateForHostMiddleware',
     'mezzanine.core.middleware.AdminLoginInterfaceSelectorMiddleware',
     'mezzanine.core.middleware.SitePermissionMiddleware',
     'mezzanine.pages.middleware.PageMiddleware',
     'mezzanine.core.middleware.FetchFromCacheMiddleware',
 
-    'pagination.middleware.PaginationMiddleware',
-
     # Uncomment the following if using any of the SSL settings:
     # 'mezzanine.core.middleware.SSLRedirectMiddleware',
     "django.middleware.gzip.GZipMiddleware",
     'digipal.middleware.ErrorMiddleware',
+)
+
+TEMPLATE_CONTEXT_PROCESSORS = (
+
+"django.core.context_processors.auth",
+"django.core.context_processors.debug",
+"django.core.context_processors.i18n",
+"django.core.context_processors.media",
+"django.core.context_processors.request"
 )
 
 ###################
@@ -468,7 +490,7 @@ FILEBROWSER_EXTENSIONS = {
 # One of DEBUG, INFO, WARNING, ERROR, CRITICAL
 # see digipal.utils.dplog()
 # USE 'ERROR' ON PRODUCTION SITE
-DIGIPAL_LOG_LEVEL = 'ERROR'
+DIGIPAL_LOG_LEVEL = 'DEBUG'
 
 # Log SQL statements into digipal.log
 # INDEPENDENT FROM DIGIPAL_LOG_LEVEL
@@ -480,7 +502,7 @@ DJANGO_LOG_SQL = False
 # See middleware,py
 # Only if DIGIPAL_LOG_LEVEL >= DEBUG
 # USE False ON PRODUCTION SITE
-DEBUG_PERFORMANCE = False
+DEBUG_PERFORMANCE = True
 
 PROJECT_LOG_PATH = os.path.join(PROJECT_ROOT, 'logs')
 make_path(PROJECT_LOG_PATH)

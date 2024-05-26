@@ -3,7 +3,7 @@ from django.conf.urls import include
 from django.contrib import admin
 from django.urls import path
 from mezzanine.core.views import direct_to_template
-from django.contrib import admin
+#from django.contrib import admin
 admin.autodiscover()
 
 # ADD YOUR OWN URLPATTERNS *ABOVE* THE LINE BELOW.

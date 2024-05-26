@@ -94,11 +94,20 @@
                                     {{ settings.BANNER_LOGO_HTML|safe }}
                                 {% else %}
                                     {# https://jsfiddle.net/vemj87m3/ #}
-                                    <span id='logo'>
+                                    <!-- <span id='logo'>
                                         {%spaceless%}
                                             <span class="logo-brand logo-brand-digi">{{ settings.SITE_TITLE }}</span>
                                         {%endspaceless%}
-                                    </span>
+                                    </span> -->
+                                    <div id='logo'>
+                                        <span class="logo-brand logo-brand-digi">Digi</span><span class="logo-brand logo-brand-pal">Pal</span>
+                                        <span class='logo-separator hidden-sm hidden-xs'>&nbsp;</span>
+                                        <span class='logo-sub hidden-sm hidden-xs'>
+                                            Digital Resource and Database of Palaeography,
+                                            <br/>
+                                            Manuscript Studies and Diplomatic
+                                        </span>
+                                    </div>
                                 {% endif %}
                             {% endblock %}
                         </a>
@@ -111,7 +120,9 @@
                     {# collapse navbar-collapse not inside container so the nav bg is full width #}
                     {# while the nav is centered #}
                     <div class="container">
-                        {% page_menu "pages/menus/dropdown.html" %}
+
+                         {% page_menu "pages/menus/dropdown.html" %}
+
                     </div>
                 </div>
 
@@ -208,6 +219,7 @@
         window.digipal_settings = {{ DIGIPAL_SETTINGS|safe }};
     </script>
     {% compress js %}
+    
         <script src="{{ STATIC_URL }}js/jquery.js" type="text/javascript" ></script>
         <script src="{{ STATIC_URL }}js/jquery-migrate-1.2.1.js"></script>
         <script src="{{ STATIC_URL }}digipal/scripts/libs/jquery-ui/jquery-ui.custom.min.js" type="text/javascript"></script>

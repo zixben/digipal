@@ -9,6 +9,7 @@ from digipal.views.admin.image import *
 from digipal.views.test import *
 from digipal.views.email import *
 
+
 urlpatterns = [
     #path('page/<image_id', image),
     #path('page/<image_id>/(allographs|metadata|copyright|pages|hands|texts)', image),
@@ -52,12 +53,12 @@ urlpatterns = [
         }),
 
     # search pages
-    path('page', search_ms_image_view),
-    path('search', search_record_view),
-    path('quicksearch', search_record_view),
+    path('page/', search_ms_image_view),
+    path('search/', search_record_view),
+    path('quicksearch/', search_record_view),
     path('search/index', search_index_view, name='search_index'),
     path('search/graph', search_graph_view),
-    path('search/suggestions.json', search_suggestions),
+    path('search/suggestions.json/', search_suggestions),
     # Record views
     path('<content_type>hands|manuscripts|scribes|graphs|pages)/<objectid>[^/]+)(/<tabid>[^/]+))?(?:/|$)', record_view),
     path('<content_type>hands|manuscripts|scribes|pages)(?:/|$)', index_view),

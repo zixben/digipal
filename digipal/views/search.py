@@ -17,12 +17,17 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 from digipal.utils import packager_cancel, get_packager_pid
 
+#added by Luca for compatibility python2 -> 3
+import sys
+if sys.version_info[0] >= 3:
+    unicode = str
+
 
 def get_search_types(request=None):
-    from content_type.search_hands import SearchHands
-    from content_type.search_manuscripts import SearchManuscripts
-    from content_type.search_scribes import SearchScribes
-    from content_type.search_graphs import SearchGraphs
+    from digipal.views.content_type.search_hands import SearchHands
+    from digipal.views.content_type.search_manuscripts import SearchManuscripts
+    from digipal.views.content_type.search_scribes import SearchScribes
+    from digipal.views.content_type.search_graphs import SearchGraphs
     search_hands = SearchHands()
     from digipal.utils import is_model_visible
     ret = [search_model for search_model in [SearchManuscripts(), search_hands, SearchScribes(
@@ -158,7 +163,8 @@ def search_index_view(request):
     if request.is_ajax():
         template = 'search/search_index_fragment.html'
     elif action:
-        from django.core.urlresolvers import reverse
+        # old code (Luca) from django.core.urlresolvers import reverse
+        from django.urls import reverse
         ret = redirect(reverse('search_index'))
 
     if ret is None:
@@ -316,17 +322,26 @@ def search_ms_image_view(request):
     # count hands
     hand_filters.chrono('hands:')
     from django.db.models import Count
-    context['images'] = Image.sort_query_set_by_locus(images.select_related(
+    images = Image.sort_query_set_by_locus(images.select_related(
         'item_part__current_item__repository__place').annotate(hand_count=Count('hands')))
     hand_filters.chrono('hands:')
 
     image_search_form = FilterManuscriptsImages(request.GET)
-    context['image_search_form'] = image_search_form
-    context['query_summary'], context['query_summary_interactive'] = get_query_summary(
-        request, '', True, [image_search_form])
+    image_search_form = image_search_form
+    query_summary = get_query_summary(request, '', True, [image_search_form])
+    query_summary_interactive = get_query_summary(request, '', True, [image_search_form])
+
+
+    context = {
+        'view' : context['view'],
+        'images': images,
+        'query_summary': query_summary,
+        'query_summary_interactive': query_summary_interactive,
+        'page_size': '5',
+    }
 
     hand_filters.chrono('template:')
-    ret = (request, 'search/search_ms_image.html', context)
+    ret = render(request, 'search/search_ms_image.html', context)
     hand_filters.chrono(':template')
 
     hand_filters.chrono(':BROWSE')
@@ -389,12 +404,19 @@ def search_record_view(request):
 
     context['nofollow'] = True
 
-    set_search_results_to_context(
-        request, context=context, show_advanced_search_form=True)
+    set_search_results_to_context(request, context=context, show_advanced_search_form=True)
 
     # check if the search was executed or not (e.g. form not submitted or
     # invalid form)
-    if context.has_key('results'):
+
+
+    # 'dict' object has no attribute 'has_key',
+    # is due to the use of the has_key() method, which was deprecated in Python 3.
+    # The has_key() method was used in Python 2 to check if a dictionary contains a specific key.
+    # In Python 3, the recommended approach is to use the in keyword.
+
+    # if context.has_key('results'):
+    if 'results' in context:
         # Tab Selection Logic =
         #     we pick the tab the user has selected even if it is empty. END
         #     if none, we select the filter/advanced search content type

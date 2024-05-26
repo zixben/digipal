@@ -53,7 +53,7 @@
                             Show filters
                         {% endif %}
                     </a>
-                    <a class="pull-right" href="/digipal/search/facets/?terms={{ request.GET.terms|urlencode }}" 
+                    <a class="pull-right" href="/digipal/search/facets/?terms={{ request.GET.terms|urlencode }}"
                         data-toggle="tooltip" title="Go to the Faceted Search page" id="link-faceted-search">
                         Faceted Search
                     </a>
@@ -137,50 +137,14 @@
                                 <div class="row">
 
                                     <div class="col-md-10">
-                                        {% chrono "pagination:" %}
-
-                                        {% reset_recordids as recordids %}
-                                        {% if type.results_are_recordids %}
-                                            {% autopaginate type.queryset type.get_page_size as recordids %}
-                                            {% get_records_from_ids type recordids as records %}
-                                        {% else %}
-                                            {% reset_recordids as records %}
-                                            {% autopaginate type.queryset type.get_page_size as records %}
-                                        {% endif %}
-
-                                        {% chrono ":pagination" %}
-
-                                        {% filter update_query_params:type.result_type_qs %}
-                                            {% dp_pagination_with_size_for page_obj %}
-                                        {% endfilter %}
+                                        
+                                        {% for type in type.queryset %}
+                                        {{ type }}
+                                        {% endfor %}
                                     </div>
-
-                                    {% if type.views %}
-                                        <div class='col-md-2' id="view-switch">
-                                            <ul class="nav nav-pills">
-                                                {% for tview in type.views %}
-                                                    <li class="{% if tview.active %}active{% endif %}"
-                                                        {% if tview.title %}title="{{ tview.title }}" data-toggle="tooltip"{% endif %}
-                                                        >
-                                                        <a data-target="#{{ type.key }}-{{ tview.key }}" data-toggle="pill"
-                                                            href="{% filter add_query_params:request.META.QUERY_STRING %}?view={{ tview.key }}{% endfilter %}">
-                                                            {{ tview.label }}
-                                                        </a>
-                                                    </li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    {% endif %}
 
                                 </div>
 
-                                {% chrono type.key %}
-                                {% include type.template_path with template_type=type.key %}
-                                {% chrono type.key %}
-
-                                {% filter update_query_params:type.result_type_qs %}
-                                    {% dp_pagination_with_size_for page_obj %}
-                                {% endfilter %}
 
                             {% endif %}
                         </div>

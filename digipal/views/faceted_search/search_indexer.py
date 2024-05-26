@@ -7,11 +7,11 @@ import os
 
 '''
     SearchIndexer
-    
+
     Used to rebuild the indexes used by the faceted search
-    
+
     Usage:
-    
+
         si = SearchIndexer()
         si.build_indexes(['images', 'manuscripts'])
 '''
@@ -39,21 +39,21 @@ class SearchIndexer(object):
             self.write_state_update(ct, 1.0)
 
     def create_index_schema(self, ct):
-        print '%s' % ct.key
+        print('%s' % ct.key)
 
-        print '\tcreate schema'
+        print('\tcreate schema')
 
         # create schema
         from whoosh.fields import TEXT, ID, NGRAM, NUMERIC, KEYWORD
         fields = {'id': ID(stored=True)}
         for field in ct.fields:
             if ct.is_field_indexable(field):
-                for suffix, whoosh_type in self.get_whoosh_field_types(field).iteritems():
+                for suffix, whoosh_type in self.get_whoosh_field_types(field).items():
                     fields[field['key'] + suffix] = whoosh_type
 
-        print '\t' + ', '.join(key for key in fields.keys())
+        print('\t' + ', '.join(key for key in fields.keys()))
 
-        print '\trecreate empty index'
+        print('\trecreate empty index')
 
         # recreate an empty index
         from whoosh.fields import Schema
@@ -66,7 +66,7 @@ class SearchIndexer(object):
         chrono('POPULATE_INDEX:')
 
         # Add documents to the index
-        print '\tgenerate sort rankings'
+        print('\tgenerate sort rankings')
 
         chrono('RANK_VALUES:')
         ct.prepare_value_rankings(callback=lambda progress: self.write_state_update(
@@ -74,7 +74,7 @@ class SearchIndexer(object):
         chrono(':RANK_VALUES')
 
         chrono('INDEXING QUERY:')
-        print '\tretrieve all records'
+        print('\tretrieve all records')
         dputils.gc_collect()
 
         from whoosh.writing import BufferedWriter
@@ -85,7 +85,7 @@ class SearchIndexer(object):
 
         chrono(':INDEXING QUERY')
 
-        print '\tadd records to index'
+        print('\tadd records to index')
 
         i = 0
         commit_size = 500
@@ -103,7 +103,7 @@ class SearchIndexer(object):
         # Which can be excessive for small VMs
         # One technique is to create small, independent index segments
         # Then optimise them outside this fct on a separate index
-        for record in rcs.iterator():
+        for record in rcs.iterator(chunk_size=100):
             if i == 0:
                 chrono(':First record')
             pbar.update(i + 1)
@@ -141,17 +141,17 @@ class SearchIndexer(object):
         pbar.complete()
         chrono(':INDEXING')
 
-        print '\n'
+        print('\n')
 
         chrono(':POPULATE_INDEX')
 
-        print '\tdone (%s records)' % record_count
+        print('\tdone (%s records)' % record_count)
 
     def optimize_index(self, ct):
         self.write_state_update(ct, 1.0 / 3 * 2)
         dputils.gc_collect()
         index = ct.get_whoosh_index()
-        print '\toptimize index'
+        print('\toptimize index')
         writer = index.writer()
         writer.commit(optimize=True)
 
@@ -165,7 +165,7 @@ class SearchIndexer(object):
             import shutil
             shutil.rmtree(path)
         os.makedirs(path)
-        print '\tCreated index under "%s"' % path
+        print('\tCreated index under "%s"' % path)
         # TODO: check if this REcreate the existing index
         index = create_in(path, schema)
 
@@ -216,7 +216,7 @@ class SearchIndexer(object):
             # EXACT search only
             analyzer = None
             if field.get('multivalued', False):
-                analyzer = RegexTokenizer(ur'\|', gaps=True)
+                analyzer = RegexTokenizer(u'\|', gaps=True)
             ret = ID(stored=True, sortable=sortable, analyzer=analyzer)
         elif field_type in ['int']:
             ret = NUMERIC(sortable=sortable)
@@ -226,7 +226,7 @@ class SearchIndexer(object):
             # See JIRA 358
             # | is NECESSARY for multivalued fields
             ret = TEXT(analyzer=SimpleAnalyzer(
-                ur'[/.\s()\u2013\u2014|-]', True), stored=True, sortable=sortable)
+                u'[/.\s()\u2013\u2014|-]', True), stored=True, sortable=sortable)
         elif field_type == 'title':
             # A title (e.g. British Library)
             # Accepts variants and partial search (e.g. 'libraries')
@@ -325,8 +325,8 @@ class SearchIndexer(object):
 
         # json conversion doesn't understand python dates
         self.convert_state_dates_to_strings(state)
-        # print '-' * 20
-        # print state
+        # print( '-' * 20
+        # print( state
         KeyVal.setjs('indexer', state)
         self.convert_state_dates_to_objects(state)
 

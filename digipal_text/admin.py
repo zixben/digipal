@@ -30,7 +30,8 @@ class MessageWidget(forms.Widget):
 
 
 class MessageField(forms.Field):
-    widget = MessageWidget
+    #commented by Luca
+    #widget = MessageWidget
 
     def __init__(self, message='', required=False, *args, **kwargs):
         self.message = message

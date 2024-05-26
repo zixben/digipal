@@ -5,11 +5,25 @@ from digipal.utils import dplog
 from django.http.response import Http404
 from django.core.cache.backends import filebased
 
+from django.utils.deprecation import MiddlewareMixin
 # TODO: log the perfs to a file instead of printing them out
 
 
 def are_perf_info_enabled():
     return getattr(settings, 'DEBUG', False) and getattr(settings, 'DEBUG_PERFORMANCE', False)
+
+#added by Luca for is_ajax in faceted_search (see https://stackoverflow.com/questions/70419441/attributeerror-wsgirequest-object-has-no-attribute-is-ajax)
+class AjaxMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        def is_ajax(self):
+            return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
+        request.is_ajax = is_ajax.__get__(request)
+        response = self.get_response(request)
+        return response
 
 
 class ErrorMiddleware(object):
@@ -87,3 +101,10 @@ class FileBasedCacheArchetype(filebased.FileBasedCache):
             self._delete(f.name)
             return True
         return False
+
+
+
+class ViewLoggerMiddleware(MiddlewareMixin):
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        print(f"View function: {view_func.__name__}")
+        return None
