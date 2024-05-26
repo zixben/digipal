@@ -13,3 +13,7 @@ digipal/backups/*.sql
 digipal/repo_cfg.py
 digipal_cust/static/
 digipal_cust/django_cache/
+/digipal_project/django_cache
+/digipal_project/search/unified
+/digipal_project/search/unified
+/digipal_project/search/unified
