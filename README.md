@@ -9,7 +9,7 @@ This is a fork of the Digipal porject which aims to make it compatible with the 
 
 `...venv/lib/python3.12/site-packages/grappelli_safe/templates/admin/change_list.html` and `...venv/lib/python3.12/site-packages/grappelli_safe/templates/admin/change_form.html`: replace `django.jQuery(function($) {` with `$(document).ready(function() {`
 
-**To install less compiler within the virtual environment**
+**To install the less compiler within the virtual environment**
 
 ```
 pip install nodeenv  
