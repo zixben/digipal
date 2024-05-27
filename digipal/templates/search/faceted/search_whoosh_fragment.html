@@ -36,7 +36,7 @@
                             <div class="btn-toolbar" role="toolbar">
                                 <div class="btn-group">
                                     <input type="hidden" name="wr" value="{{ wide_result }}" />
-                                    <a href="{% filter add_query_params:request.META.QUERY_STRING %}?wr={% if wide_result %}0{%else%}1{% endif %}{% endfilter %}"
+                                    <a href="{{request.META.QUERY_STRING}}?wr={% if wide_result %}0{%else%}1{% endif %}"
                                         class="btn btn-default {% if wide_result %} active {% endif %} hidden-sm hidden-xs"
                                         title="Toggle wide view" data-toggle="tooltip">
                                         <span class="glyphicon glyphicon-resize-horizontal"></span>
@@ -65,14 +65,14 @@
                                             {% for col in cols %}
                                                 {% if col.sortable %}
                                                     <li>
-                                                        <a href="{% filter add_query_params:request.META.QUERY_STRING %}?sort={% if sort_reverse %}-{%endif%}{{ col.key }}{% endfilter %}">
+                                                        <a href="{{request.META.QUERY_STRING}}?sort={% if sort_reverse %}-{%endif%}{{ col.key }}">
                                                             {{ col.label }}
                                                         </a>
                                                     </li>
                                                 {% endif %}
                                             {% endfor %}
                                         </ul>
-                                        <a class="btn btn-default" href="{% filter add_query_params:request.META.QUERY_STRING %}?sort={% if not sort_reverse %}-{%endif%}{%if sort_key|length == 0 and sort_reverse %}0{%else%}{{ sort_key }}{%endif%}{% endfilter %}"
+                                        <a class="btn btn-default" href="{{request.META.QUERY_STRING}}?sort={% if not sort_reverse %}-{%endif%}{%if sort_key|length == 0 and sort_reverse %}0{%else%}{{ sort_key }}{%endif%}"
                                             data-toggle="tooltip" title="Reverse sort order">
                                             <span class="glyphicon glyphicon-arrow-{% if sort_reverse %}up{%else%}down{%endif%}"></span>
                                         </a>
@@ -86,7 +86,7 @@
                                             <input type="hidden" name="view" value="{{ view.key }}" />
                                         {% endif %}
                                         {% if views|length > 1 %}
-                                            <a href="{% filter add_query_params:request.META.QUERY_STRING %}?page=1&view={{view.key}}{% endfilter %}"
+                                            <a href="{{request.META.QUERY_STRING}}?page=1&view={{view.key}}"
                                                 class="btn btn-default {% if view.selected %} active {% endif %}"
                                                 title="{{ view.label }}" data-toggle="tooltip">
                                                 <span class="glyphicon glyphicon-{{ view.icon }}"></span>
@@ -126,24 +126,24 @@
                                         </a>
                                     </span>
                                 {% endif %}
-                                
+
                                 {% if facet.options.5 and not facet.expanded == 2 %}
                                     {# in a span otherwise BS doesn't show it as a link #}
                                     <span class="facet-xp-icon">
                                         {% if facet.expanded == 1 %}
-                                            <a href="{% filter add_query_params:request.META.QUERY_STRING %}?_xp_{{facet.key}}=0{% endfilter %}" title="Show less"
+                                            <a href="{{request.META.QUERY_STRING}}?_xp_{{facet.key}}=0" title="Show less"
                                               aria-label="Show less {{ facet.label }}">
                                                 <span class="fa fa-chevron-down"></span>
                                             </a>
                                         {% else %}
-                                            <a href="{% filter add_query_params:request.META.QUERY_STRING %}?_xp_{{facet.key}}=1{% endfilter %}" title="Show more"
+                                            <a href="{{request.META.QUERY_STRING}}?_xp_{{facet.key}}=1" title="Show more"
                                               aria-label="Show more {{ facet.label }}">
                                                 <span class="fa fa-chevron-left"></span>
                                             </a>
                                         {% endif %}
                                     </span>
                                 {% endif %}
-                                
+
                                 {{ facet.label }}
                                 {% if facet.options %}
                                     ({{ facet.options|length }})
@@ -200,10 +200,10 @@
                                     <ul class="list-unstyled">
                                         {% if facet.options.5 and facet.options.0.count %}
                                             <li class="facet-sort-row">
-                                                <a href="{% filter add_query_params:request.META.QUERY_STRING %}?_st_{{facet.key}}=o{% endfilter %}" title="Sort {{ facet.label }} alphabetically">
+                                                <a href="{{request.META.QUERY_STRING}}?_st_{{facet.key}}=o" title="Sort {{ facet.label }} alphabetically">
                                                     {% if facet.sorted_by == 'o' %}<span class="glyphicon glyphicon-arrow-down"></span>{% endif %}
                                                     A-Z</a>
-                                                <a href="{% filter add_query_params:request.META.QUERY_STRING %}?_st_{{facet.key}}=c{% endfilter %}" title="Sort {{ facet.label }} by count" class="pull-right">
+                                                <a href="{{request.META.QUERY_STRING}}?_st_{{facet.key}}=c" title="Sort {{ facet.label }} by count" class="pull-right">
                                                     {% if facet.sorted_by == 'c' %}<span class="glyphicon glyphicon-arrow-up"></span>{% endif %}
                                                     Count</a>
                                             </li>
@@ -224,10 +224,10 @@
                                         {% if facet.options.5 and not facet.expanded == 2 %}
                                             <li>
                                                 {% if facet.expanded == 1 %}
-                                                    <a href="{% filter add_query_params:request.META.QUERY_STRING %}?_xp_{{facet.key}}=0{% endfilter %}" class="btn btn-default small btn-expand-facet"
+                                                    <a href="{{request.META.QUERY_STRING}}?_xp_{{facet.key}}=0" class="btn btn-default small btn-expand-facet"
                                                     aria-label="Show less {{ facet.label }}">Show less</a>
                                                 {% else %}
-                                                    <a href="{% filter add_query_params:request.META.QUERY_STRING %}?_xp_{{facet.key}}=1{% endfilter %}" class="btn btn-default small btn-expand-facet"
+                                                    <a href="{{request.META.QUERY_STRING}}?_xp_{{facet.key}}=1" class="btn btn-default small btn-expand-facet"
                                                     aria-label="Show more {{ facet.label }}">Show more...</a>
                                                 {% endif %}
                                             </li>
@@ -238,10 +238,10 @@
                                     <table class="table">
                                         {% if facet.options.5 and facet.options.0.count %}
                                             <tr>
-                                                <th><a href="{% filter add_query_params:request.META.QUERY_STRING %}?_st_{{facet.key}}=o{% endfilter %}" title="Sort alphabetically">
+                                                <th><a href="{{request.META.QUERY_STRING}}?_st_{{facet.key}}=o" title="Sort alphabetically">
                                                     {% if facet.sorted_by == 'o' %}<span class="glyphicon glyphicon-arrow-down"></span>{% endif %}
                                                     A-Z</a></th>
-                                                <th class="count"><a href="{% filter add_query_params:request.META.QUERY_STRING %}?_st_{{facet.key}}=c{% endfilter %}" title="Sort by count">
+                                                <th class="count"><a href="{{request.META.QUERY_STRING}}?_st_{{facet.key}}=c" title="Sort by count">
                                                     {% if facet.sorted_by == 'c' %}<span class="glyphicon glyphicon-arrow-up"></span>{% endif %}
                                                     Count</a></th>
                                             </tr>
@@ -270,10 +270,10 @@
                                         {% if facet.options.5 and not facet.expanded == 2 %}
                                             <tr><td colspan="2">
                                                 {% if facet.expanded == 1 %}
-                                                    <a href="{% filter add_query_params:request.META.QUERY_STRING %}?_xp_{{facet.key}}=0{% endfilter %}" class="btn btn-default small btn-expand-facet"
+                                                    <a href="{{request.META.QUERY_STRING}}?_xp_{{facet.key}}=0" class="btn btn-default small btn-expand-facet"
                                                     aria-label="Show less {{ facet.label }}">Show less</a>
                                                 {% else %}
-                                                    <a href="{% filter add_query_params:request.META.QUERY_STRING %}?_xp_{{facet.key}}=1{% endfilter %}" class="btn btn-default small btn-expand-facet"
+                                                    <a href="{{request.META.QUERY_STRING}}?_xp_{{facet.key}}=1" class="btn btn-default small btn-expand-facet"
                                                     aria-label="Show more {{ facet.label }}">Show more...</a>
                                                 {% endif %}
                                             </td></tr>

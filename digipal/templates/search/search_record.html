@@ -115,8 +115,7 @@
             <ul class="nav nav-tabs" id='result-types-switch'>
                 {% for type in types %}
                     <li class="{% if result_type == type.key %}active{% else %}{% if type.count == 0 %}disabled{% endif %}{% endif %}">
-                        <a
-                            href='{% filter add_query_params:request.META.QUERY_STRING %}?result_type={{ type.key }}{% endfilter %}'
+                        <a href='{{ request.META.QUERY_STRING }}?result_type={{ type.key }}'
                             {% if type.count > -1 %}data-toggle="tab" data-target="#{{ type.key }}"{% endif %}
                         >
                             {{ type.label }}
@@ -137,13 +136,43 @@
                                 <div class="row">
 
                                     <div class="col-md-10">
+                                        <div class="pagination">
+                                            <span class="step-links">
+                                                {% if page_obj.has_previous %}
+                                                    <a href="?page=1">&laquo; first</a>
+                                                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                                                {% endif %}
 
-                                        {% for type in type.queryset %}
-                                        {{ type }}
-                                        {% endfor %}
+
+                                                <span class="current">
+                                                    {% reset_recordids as recordids %}
+                                                    {% if type.results_are_recordids %}
+                                                        {% get_records_from_ids type recordids as records %}
+
+                                                    {% else %}
+                                                        {% reset_recordids as records %}
+                                                        {% get_records_from_ids type recordids as records %}
+                                                    {% endif %}
+
+
+
+                                                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                                                </span>
+
+                                                {% if page_obj.has_next %}
+                                                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                                                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                                                {% endif %}
+                                            </span>
+                                        </div>
                                     </div>
 
                                 </div>
+
+
+                                {% include type.template_path with template_type=type.key %}
+
+
 
 
                             {% endif %}

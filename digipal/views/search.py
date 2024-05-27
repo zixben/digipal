@@ -17,6 +17,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 
 from digipal.utils import packager_cancel, get_packager_pid
 
+# added native paginator (Luca)
+from django.core.paginator import Paginator
+
 #added by Luca for compatibility python2 -> 3
 import sys
 if sys.version_info[0] >= 3:
@@ -330,14 +333,18 @@ def search_ms_image_view(request):
     image_search_form = image_search_form
     query_summary = get_query_summary(request, '', True, [image_search_form])
     query_summary_interactive = get_query_summary(request, '', True, [image_search_form])
+    paginator = Paginator(images, 25)
 
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     context = {
         'view' : context['view'],
         'images': images,
         'query_summary': query_summary,
         'query_summary_interactive': query_summary_interactive,
-        'page_size': '5',
+        'page': page_number,
+        'page_size': page_obj,
     }
 
     hand_filters.chrono('template:')
@@ -473,6 +480,14 @@ def search_record_view(request):
 
     hand_filters.chrono(':SEARCH LOGIC')
     hand_filters.chrono('SEARCH TEMPLATE:')
+
+    paginator = Paginator(context['types'], 25)  # Show 25 contacts per page.
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context['page_number'] = page_number
+    context['page_obj'] = page_obj
 
     ret = render(request, 'search/search_record.html', context)
 

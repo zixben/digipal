@@ -8,6 +8,8 @@ from inspect import getargs
 #from django.template.base import parse_bits
 from django.conf import settings
 
+import html
+
 register = template.Library()
 
 
@@ -65,14 +67,14 @@ def update_query_params(content, updates):
     '''
     return update_query_params_internal(content, updates)
 
-
+""" commented by Luca
 @register.filter()
 def add_query_params(content, updates):
-    ''' The query strings in the content are updated by the filter.
+     The query strings in the content are updated by the filter.
         In case of conflict, the parameters in the content always win.
-    '''
-    return update_query_params_internal(content, updates, True)
 
+    return update_query_params_internal(html.escape(content), updates, True)
+"""
 
 def update_query_params_internal(content, updates, url_wins=False):
     '''

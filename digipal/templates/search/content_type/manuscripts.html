@@ -12,7 +12,7 @@
                     {% if can_edit %}
                         <a class="btn btn-default" href="/admin/digipal/itempart/{{ manuscript.id }}">Edit</a>
                     {% endif %}
-                    <a class="btn btn-default" href="{% filter add_query_params:request.META.QUERY_STRING %}{{ manuscript.get_absolute_url }}?result_type={{template_type}}{% endfilter %}">View</a>
+                    <a class="btn btn-default" href="{{ request.META.QUERY_STRING }}{{ manuscript.get_absolute_url }}?result_type={{template_type}}">View</a>
                 </td>
                 <td>
                     {% for item in manuscript.historical_items.all %}

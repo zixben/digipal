@@ -10,7 +10,6 @@ from PIL import Image as pil
 import os
 import re
 import string
-import unicodedata
 import cgi
 import digipal.iipfield.fields
 import digipal.iipfield.storage
@@ -109,7 +108,7 @@ class NameModel(models.Model):
     def save(self, *args, **kwargs):
         self.slug = (self.slug or '').strip()
         if not self.slug:
-            self.slug = slugify(unicode(self.name))
+            self.slug = slugify(str(self.name))
         super(NameModel, self).save(*args, **kwargs)
 
     def __str__(self):
@@ -345,7 +344,7 @@ class Allograph(models.Model):
         return self.human_readable()
 
     def human_readable(self):
-        if unicode(self.character) != unicode(self.name):
+        if str(self.character) != str(self.name):
             return get_list_as_string(self.character, ', ', self.name)
         else:
             return u'%s' % (self.name)
@@ -831,7 +830,7 @@ class Source(models.Model):
         return ret
 
     def save(self, *args, **kwargs):
-        self.label_slug = slugify(unicode(self.label))
+        self.label_slug = slugify(str(self.label))
         super(Source, self).save(*args, **kwargs)
         self.__class__._sources = None
 
@@ -865,7 +864,7 @@ class CatalogueNumber(models.Model):
         return get_list_as_string(self.source, ' ', self.number)
 
     def save(self, *args, **kwargs):
-        self.number_slug = slugify(unicode(self.number).replace('/', '-'))
+        self.number_slug = slugify(str(self.number).replace('/', '-'))
 
         super(CatalogueNumber, self).save(*args, **kwargs)
 
@@ -2097,9 +2096,9 @@ class Image(models.Model):
         '''
         ret = u''
         if self.folio_number:
-            ret = ret + unicode(self.folio_number)
+            ret = ret + str(self.folio_number)
         if self.folio_side:
-            ret = ret + unicode(self.folio_side)
+            ret = ret + str(self.folio_side)
 
         if ret == u'0r':
             ret = u'face'
@@ -2366,7 +2365,7 @@ class Image(models.Model):
         selection_condition = u''
         if ids is not None:
             selection_condition = 'and i1.id in (%s)' % ', '.join(
-                [unicode(item) for item in ids])
+                [str(item) for item in ids])
         select = u'''
             select distinct i1.id, i2.id
             from digipal_image i1 join digipal_itempart ip1 on i1.item_part_id = ip1.id,
@@ -2397,7 +2396,7 @@ def normalize_string(s):
     """Converts non-ascii characters into ascii, removes punctuation,
     substitutes spaces with _, and converts to lowercase."""
     s = s.strip()
-    s = unicodedata.normalize('NFKD', u'%s' % s).encode('ascii', 'ignore')
+    s = strdata.normalize('NFKD', u'%s' % s).encode('ascii', 'ignore')
     s = s.translate(string.maketrans('', ''), string.punctuation)
     s = re.sub(r'\s+', '_', s)
     s = s.lower()
@@ -2488,7 +2487,7 @@ class Hand(models.Model):
         return '%s%s' % (settings.ARCHETYPE_HAND_ID_PREFIX, self.id)
 
     def get_short_label(self):
-        ret = unicode(self)
+        ret = str(self)
         ret = re.sub(u'\([^)]*\)', u'', ret)
         return ret
 
@@ -2816,7 +2815,7 @@ class Graph(models.Model):
            See setting.ARCHETYPE_ANNOTATION_TOOLTIP_*
         '''
 
-        ret = unicode(pattern).decode('unicode_escape')
+        ret = str(pattern).decode('str_escape')
 
         def get_field(match):
             r = match.group(0)
@@ -3914,12 +3913,12 @@ class ApiTransform(models.Model):
 
 
 # Generate a meaningful object label for the m2m models
-HistoricalItem.owners.through.__str__ = lambda self: unicode(
+HistoricalItem.owners.through.__str__ = lambda self: str(
     self.historicalitem)
 
-ItemPart.owners.through.__str__ = lambda self: unicode(self.itempart)
+ItemPart.owners.through.__str__ = lambda self: str(self.itempart)
 
-CurrentItem.owners.through.__str__ = lambda self: unicode(self.currentitem)
+CurrentItem.owners.through.__str__ = lambda self: str(self.currentitem)
 
 # Assign get_absolute_url() and get_admin_url() for all models
 # get_absolute_url() returns /digipal/MODEL_PLURAL/ID
