@@ -206,6 +206,7 @@ INSTALLED_APPS = (
     'mezzanine.galleries',
     'pagination',
     'tinymce',
+    'easy_thumbnails',
 )
 
 ###############
@@ -225,14 +226,14 @@ TEMPLATES = [
             os.path.join(PROJECT_ROOT, '../digipal/templates'),
         ],
         # commented by Luca
-        #'APP_DIRS': True,
+        'APP_DIRS': True,
         'OPTIONS': {
               # added by Luca. See https://stackoverflow.com/questions/50967854/futurewarning-templateforhostmiddleware-is-deprecated-please-upgrade-to-the
-              "loaders": [
-              "mezzanine.template.loaders.host_themes.Loader",
-              "django.template.loaders.filesystem.Loader",
-              "django.template.loaders.app_directories.Loader",
-              ],
+            #   "loaders": [
+            #   "mezzanine.template.loaders.host_themes.Loader",
+            #   "django.template.loaders.filesystem.Loader",
+            #   "django.template.loaders.app_directories.Loader",
+            #   ],
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
                 # Only add this if you want the sql queries and debug variables in your template
@@ -270,7 +271,7 @@ MIDDLEWARE = (
 'mezzanine.core.middleware.SitePermissionMiddleware',
     'mezzanine.core.request.CurrentRequestMiddleware',
     'mezzanine.core.middleware.RedirectFallbackMiddleware',
-    'mezzanine.core.middleware.TemplateForDeviceMiddleware',
+    # 'mezzanine.core.middleware.TemplateForDeviceMiddleware',
     'mezzanine.core.middleware.AdminLoginInterfaceSelectorMiddleware',
     'mezzanine.core.middleware.SitePermissionMiddleware',
     'mezzanine.pages.middleware.PageMiddleware',
@@ -300,7 +301,7 @@ MIDDLEWARE_CLASSES = (
 
     'mezzanine.core.request.CurrentRequestMiddleware',
     'mezzanine.core.middleware.RedirectFallbackMiddleware',
-    'mezzanine.core.middleware.TemplateForDeviceMiddleware',
+    # 'mezzanine.core.middleware.TemplateForDeviceMiddleware',
     'mezzanine.core.middleware.AdminLoginInterfaceSelectorMiddleware',
     'mezzanine.core.middleware.SitePermissionMiddleware',
     'mezzanine.pages.middleware.PageMiddleware',
@@ -902,3 +903,5 @@ except ImportError:
     pass
 else:
     set_dynamic_settings(globals())
+
+WHOOSH_INDEX = os.path.join(PROJECT_ROOT, 'search/unified')

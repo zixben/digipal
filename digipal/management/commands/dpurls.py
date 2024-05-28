@@ -57,7 +57,7 @@ Commands:
 			url = root + url
 			status = self.testUrl(url)
 			if not re.search(r'200$', status):
-				print '[%8s] %s' % (status, url)
+				print ('[%8s] %s' % (status, url))
 	
 	def testUrl(self, url):
 		status = '0'
@@ -73,8 +73,8 @@ Commands:
 			status = '%s' % res.status
 			if headers.has_key('location') and headers['location'] != url:
 				status = '%s+%s' % (status, self.testUrl(headers['location']))
-		except StandardError, e:
-			print e
+		except StandardError as e:
+			print (e)
 			pass
 		
 		return status
@@ -135,7 +135,7 @@ Commands:
 		ret = True
 		try:
 			os.system(command)
-		except Exception, e:
+		except Exception as e:
 			#os.remove(input_path)
 			raise CommandError('Error executing command: %s (%s)' % (e, command))
 		finally:
@@ -144,12 +144,12 @@ Commands:
 			#os.remove(input_path)
 			pass
 		
-	def read_file(self, file_path): 
-	    ret = ''
+	def read_file(self, file_path):
+		ret = ''
 	    try: 
 	        text_file = open(file_path, 'r')
 	        ret = text_file.read()
 	        text_file.close()
-	    except Exception, e:
+	    except Exception as e:
 	        pass
 	    return ret

@@ -14,6 +14,7 @@ django-iipimage==1.0
 django-pagination==1.0.7
 django-reversion==5.0.12
 django-tinymce==4.0.0
+easy-thumbnails==2.8.5
 feedparser==6.0.11
 filebrowser-safe==1.1.1
 grappelli-safe==1.1.1
@@ -22,6 +23,7 @@ idna==3.7
 importlib==1.0.4
 lxml==5.2.2
 Mezzanine==6.0.0
+nodeenv==1.8.0
 nose==1.3.7
 oauthlib==3.2.2
 pillow==10.3.0

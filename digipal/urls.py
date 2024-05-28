@@ -27,7 +27,7 @@ urlpatterns = [
     path('', include('digipal_text.urls')),
     path('admin/', include('digipal.urls_admin')),
     #there was a missing trailing slash
-    path('admin/', include(admin.site.urls)),
+    path('admin', include(admin.site.urls)),
     path('digipal/', include('digipal.urls_digipal')),
     # path('digipal/', include(('digipal.urls_digipal', 'digipal'), namespace='digipal')),
     #path('login', django.contrib.auth.views.login, name='login'),

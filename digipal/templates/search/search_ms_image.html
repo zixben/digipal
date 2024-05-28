@@ -43,11 +43,11 @@
 
             <ul class="nav nav-pills">
                 <li title='Change Manuscripts View to Images' data-toggle='tooltip' data-container='body' class="{% if view == 'images' %}active{% endif %}">
-                    <a data-target="#images" data-toggle="pill"  href="{% filter add_query_params:request.META.QUERY_STRING %}?view=images{% endfilter %}">Images</a>
+                    <a data-target="#images" data-toggle="pill" href="{{ request.path }}?{{ request.META.QUERY_STRING }}&view=images">Images</a>
                 </li>
-
+                    
                 <li title='Change Manuscripts View to List' data-toggle='tooltip' data-container='body' class="{% if view == 'list' %}active{% endif %}">
-                    <a data-target="#list" data-toggle="pill" href="{% filter add_query_params:request.META.QUERY_STRING %}?view=list{% endfilter %}">List</a>
+                    <a data-target="#list" data-toggle="pill" href="{{ request.path }}?{{ request.META.QUERY_STRING }}&view=list">List</a>
                 </li>
             </ul>
         </div>
