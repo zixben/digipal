@@ -732,7 +732,7 @@ class OwnerAdmin(DigiPalModelAdmin):
                digipal.admin_inlines.OwnerItemPartInline, digipal.admin_inlines.OwnerCurrentItemInline]
 
     def get_content_type(self, obj):
-        ret = unicode(obj.content_type)
+        ret = str(obj.content_type)
         if ret == u'repository':
             ret += u'/' + obj.repository.type.name
         return ret

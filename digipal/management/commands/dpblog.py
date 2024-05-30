@@ -85,23 +85,23 @@ Commands:
 			self.log('Nothing actually written (remove --dry-run option for permanent changes).', 1)
 			
 		if not known_command:
-			print self.help
+			print (self.help)
 	
 	def rename_keyword(self, keyword, new_name, new_keyword=None):
 		from mezzanine.generic.models import Keyword, AssignedKeyword
 		for ak in AssignedKeyword.objects.filter(keyword=keyword):
 			post = ak.content_object
-			print u'\tused in #%s %s (%s)' % (post.id, unicode(post)[0:15], post.keywords_string)
+			print (u'\tused in #%s %s (%s)' % (post.id, str(post)[0:15], post.keywords_string))
 			post.keywords_string = post.keywords_string.replace(keyword.title, new_name)
 			if new_keyword:
 				ak.keyword = new_keyword
 				ak.save()
 		if new_keyword:
-			print u'\tmerge with %s' % new_keyword.title
+			print (u'\tmerge with %s' % new_keyword.title)
 			keyword.delete()				
 		else:
 			keyword.title = new_name
-			print '\trename into %s' % keyword.title
+			print ('\trename into %s' % keyword.title)
 			keyword.save()
 			
 	def fix_keywords(self, args, options):
@@ -110,7 +110,7 @@ Commands:
 		from mezzanine.generic.models import Keyword, AssignedKeyword
 		for kw in Keyword.objects.all():
 			if kw.title[0].islower():
-				print kw.title
+				print (kw.title)
 				kw_target = Keyword.objects.filter(title__iexact=kw.title).exclude(id=kw.id)
 				if kw_target:
 					kw_target = kw_target[0]
@@ -121,15 +121,16 @@ Commands:
 	def getDQComments(self):
 		# http://disqus.com/api/docs/posts/list/
 		# https://github.com/disqus/disqus-python
- 		from disqusapi import DisqusAPI
- 		from mezzanine.conf import settings
- 		settings.use_editable()
- 		
- 		disqus = DisqusAPI(settings.COMMENTS_DISQUS_API_SECRET_KEY, settings.COMMENTS_DISQUS_API_PUBLIC_KEY)
- 		posts = disqus.forums.listPosts(forum='digipal')
- 		for post in posts:
- 			print post
- 		print posts
+		from disqusapi import DisqusAPI
+		from mezzanine.conf import settings
+		settings.use_editable()
+		
+		disqus = DisqusAPI(settings.COMMENTS_DISQUS_API_SECRET_KEY, settings.COMMENTS_DISQUS_API_PUBLIC_KEY)
+		posts = disqus.forums.listPosts(forum='digipal')
+		for post in posts:
+			print (post)
+
+		print(posts)
 		
 	
 	def getUrlMapping(self, args, options, as_categories=False):
@@ -154,10 +155,10 @@ Commands:
 		try:
 			import lxml.etree as ET
 			tree = ET.parse(xml_file)
-		except Exception, e:
+		except Exception as e:
 			raise CommandError('Cannot parse %s: %s' % (xml_file, e))
 
-		from digipal_django.redirects import get_redirected_url
+		from django.contrib.redirects import get_redirected_url
 		for link in tree.findall('//item/link'):
 			old_url = link.text
 			if re.search(r'/attachment/|\?', old_url): continue
@@ -170,7 +171,7 @@ Commands:
 			if old_domain:
 				old_url = re.sub(ur'^([^/]+://)[^/]+(.*)$', r'\1%s\2' % old_domain, new_url)
 			
-			print ur'%s, %s' % (old_url, new_url)
+			print (ur'%s, %s' % (old_url, new_url))
 	
 	def importTags(self, args, options, as_categories=False):
 		# if as_categories is True, the tags will be imported as Mezzanine categories rather than keywords
@@ -191,7 +192,7 @@ Commands:
 			tree = ET.parse(xml_file)
 			#tree.register_namespace('wp', 'http://wordpress.org/export/1.2/')
 			root = tree.getroot()
-		except Exception, e:
+		except Exception as e:
 			raise CommandError('Cannot parse %s: %s' % (xml_file, e))
 		
 		# get the mezzanine categories
@@ -213,7 +214,7 @@ Commands:
 		category_domain = 'post_tag'
 		if as_categories: category_domain = 'category'
 			
-		print '%d %s in Mezzanine' % (len(categories), model_name)
+		print ('%d %s in Mezzanine' % (len(categories), model_name))
 		
 		# load all the WP tag names and ids
 		# add the category if it doesn't already exists
@@ -230,13 +231,13 @@ Commands:
 			
 			# add the category if it doesn't already exists
 			if tag['slug'] not in categories:
-				print '\tAdd new %s to Mezzanine: %s' % (model_name, tag['slug'], )
+				print ('\tAdd new %s to Mezzanine: %s' % (model_name, tag['slug'], ))
 				category = CatOrKwd(slug=tag['slug'], title=tag['name'], site_id=1)
 				if not self.is_dry_run():
 					category.save()
 				categories[category.slug] = category
 				
-		print '%d tags in Wordpress' % len(xml_tags)
+		print ('%d tags in Wordpress' % len(xml_tags))
 			
 		# Tag the posts
 		#
@@ -252,7 +253,7 @@ Commands:
 		modified_posts = {}
 		for post in BlogPost.objects.all().order_by('id'):
 			if post.title not in xml_items:
-				print '\tWARNING: blog post #%s not found in Wordpress dump' % (post.id,)
+				print ('\tWARNING: blog post #%s not found in Wordpress dump' % (post.id,))
 				continue
 			
 			xml_item = xml_items[post.title]
@@ -268,13 +269,13 @@ Commands:
 						object_to_add = AssignedKeyword(keyword=categories[xml_tag_slug])
 					getattr(post, model_field_name).add(object_to_add)
 					#print categories[xml_tag_slug].slug
-					print '\tAdd %s %s to post %s' % (model_name, xml_tag_slug, post.slug)
+					print ('\tAdd %s %s to post %s' % (model_name, xml_tag_slug, post.slug))
 					if not self.is_dry_run():
 						post.save()
 					tag_count += 1
 					modified_posts[post.slug] = 1
 		
-		print 'Added %d %s to %d posts.' % (tag_count, model_name, len(modified_posts.keys()))
+		print ('Added %d %s to %d posts.' % (tag_count, model_name, len(modified_posts.keys())))
 			#post.categories
 			#xml_items = tree.findall('.//item[title/text()=\'%s\']' % (post.title,), namespaces)
 			#print len(xml_items)
@@ -282,7 +283,7 @@ Commands:
 	def reformat(self, options):
 		# e.g. https://digipal2.cch.kcl.ac.uk/blog/anglo-saxon-mss-online-ii-copenhagen-roy-lib-and-bav/
 		from mezzanine.blog.models import BlogPost
-		from digipal_django.redirects import get_redirected_url
+		from django.contrib.redirects import get_redirected_url
 		 
 		#print get_redirected_url('http://www.digipal.eu/blogs/blog/the-problem-of-digital-dating-part-i/')
 		#print get_redirected_url('/blogs/blog/the-problem-of-digital-dating-part-i/')
@@ -293,7 +294,7 @@ Commands:
 		
 		for blog in BlogPost.objects.all().order_by('id'):
 			content = blog.content
-			print '#%s: %s' % (blog.id, blog.slug)
+			print ('#%s: %s' % (blog.id, blog.slug))
 			if False:
 				self.log('1. remove large empty spaces before a paragraph', 2)
 				#content = re.sub(ur'(?musi)<p/>\s*<br/>', '<br/>', content)
@@ -312,7 +313,7 @@ Commands:
 				
 				if new_url != url: warning = ''
 				
-				print '\t%s%s => %s' % (warning, url, new_url)
+				print ('\t%s%s => %s' % (warning, url, new_url))
 				
 # 				if warning:
 # 					print '> ' + filename
@@ -362,7 +363,7 @@ Commands:
 		ret = True
 		try:
 			os.system(command)
-		except Exception, e:
+		except Exception as e:
 			#os.remove(input_path)
 			raise CommandError('Error executing command: %s (%s)' % (e, command))
 		finally:
@@ -383,9 +384,9 @@ Commands:
 			from datetime import datetime
 			timestamp = datetime.now().strftime("%y-%m-%d %H:%M:%S")
 			try:
-				print u'[%s] %s%s' % (timestamp, prefixes[log_level], message)
+				print (u'[%s] %s%s' % (timestamp, prefixes[log_level], message))
 			except UnicodeEncodeError:
-				print '???'
+				print ('???')
 
 	def find_all_files(self, original_path):
 		# scan the originals folder to find all the image files there

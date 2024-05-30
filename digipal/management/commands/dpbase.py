@@ -33,7 +33,7 @@ class DPBaseCommand(BaseCommand):
             ret = self.args[i]
         else:
             if error:
-                print 'ERROR: %s' % error
+                print ('ERROR: %s' % error)
                 exit()
         return ret
 

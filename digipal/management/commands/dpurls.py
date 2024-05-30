@@ -62,18 +62,24 @@ Commands:
 	def testUrl(self, url):
 		status = '0'
 		
-		import urlparse
-		parts = urlparse.urlsplit(url)
-		import httplib
+		# import urlparse
+		# parts = urlparse.urlsplit(url)
+		import urllib.parse
+		parts = urllib.parse.urlsplit(url)
+
+		# import httplib
+		import http.client
+
 		try:
-			conn = httplib.HTTPConnection(parts.hostname, parts.port)
+			# conn = httplib.HTTPConnection(parts.hostname, parts.port)
+			conn = http.client.HTTPConnection(parts.hostname, parts.port)
 			conn.request('HEAD', parts.path)
 			res = conn.getresponse()
 			headers = dict(res.getheaders()) 
 			status = '%s' % res.status
 			if headers.has_key('location') and headers['location'] != url:
 				status = '%s+%s' % (status, self.testUrl(headers['location']))
-		except StandardError as e:
+		except Exception as e:
 			print (e)
 			pass
 		
@@ -118,11 +124,11 @@ Commands:
 
 		if command == 'listurls':
 			known_command = True
-			self.listUrls(options)
+			urls = self.listUrls(options)
 			for url in urls:
-				print url
+				print (url)
 			
-			print '%s urls' % len(urls)
+			print ('%s urls' % len(urls))
 			
 		if command == 'testurls':
 			known_command = True
@@ -146,10 +152,10 @@ Commands:
 		
 	def read_file(self, file_path):
 		ret = ''
-	    try: 
-	        text_file = open(file_path, 'r')
-	        ret = text_file.read()
-	        text_file.close()
-	    except Exception as e:
-	        pass
-	    return ret
+		try:
+			text_file = open(file_path, 'r')
+			ret = text_file.read()
+			text_file.close()
+		except Exception as e:
+			pass
+		return ret

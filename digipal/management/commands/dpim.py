@@ -368,7 +368,7 @@ class Command(BaseCommand):
 
                 if command == 'remove' and file_info['disk']:
                     file_abs_path = join(settings.IMAGE_SERVER_ROOT, file_relative)
-                    print file_abs_path
+                    print (file_abs_path)
                     if os.path.exists(file_abs_path):
                         os.unlink(file_abs_path)
                         found_message = '[REMOVED FROM DISK]'
@@ -386,9 +386,9 @@ class Command(BaseCommand):
                     extra = ''
                     if not file_info['disk'] and online and file_info['image'].image is not None and len(file_info['image'].image.name) > 2:
                         extra = file_info['image'].image.name
-                    print '#%s\t%-20s\t%s\t%s' % (imageid, found_message, file_relative, extra)
+                    print ('#%s\t%-20s\t%s\t%s' % (imageid, found_message, file_relative, extra))
 
-            print '%s images in DB. %s image on disk. %s on disk only. %s not on disk.' % (counts['online'], counts['disk'], counts['disk_only'], counts['missing'])
+            print ('%s images in DB. %s image on disk. %s on disk only. %s not on disk.' % (counts['online'], counts['disk'], counts['disk_only'], counts['missing']))
 
         if command in ['copy', 'originals', 'copy_convert', 'pocket']:
             known_command = True
@@ -399,23 +399,23 @@ class Command(BaseCommand):
 
     def move_annotations(self):
         if len(self.args) != 3:
-            print 'Error: please prove two image ids, SOURCE and TARGET of the annotation migrations.'
+            print ('Error: please prove two image ids, SOURCE and TARGET of the annotation migrations.')
             return
         
         import digipal.images.models
         ims = [digipal.images.models.Image.objects.get(id=v) for v in self.args[1:3]]
         ans = ims[0].annotation_set.filter()
-        print 'Move %s annotations from %s to %s' % (ans.count(), ims[0], ims[1])
+        print ('Move %s annotations from %s to %s' % (ans.count(), ims[0], ims[1]))
         
         diff = ims[0].compare_with(ims[1])
-        print diff
+        print (diff)
         for an in ans:
-            print '#%s, %s' % (an.id, an)
+            print ('#%s, %s' % (an.id, an))
             info = ims[0].get_annotation_offset(an, ims[1], diff)
             if info and info['offsets']:
                 an.image = ims[1]
                 an.geo_json = ims[0].get_uncropped_geo_json(an, info['offsets'], image_size=ims[1].get_img_size(), old_image_size=ims[0].get_img_size())
-                print an.geo_json
+                print (an.geo_json)
                 an.save()
 #             if sum(offset_info['offsets']) > 0:
 #                 im1.replace_image_and_update_annotations(offset_info['offsets'], im2)
@@ -458,7 +458,7 @@ class Command(BaseCommand):
         if not image:
             return
 
-        print image.dimensions()
+        print (image.dimensions())
 
         file_path = self.get_image_path(image, height)
         if not file_path: return
@@ -499,7 +499,7 @@ class Command(BaseCommand):
                     best_diff = diff
                     bg_index = i
                 i += 1
-            print center[bg_index]
+            print (center[bg_index])
 
         #print center
         res = center[label.flatten()]
@@ -535,14 +535,14 @@ class Command(BaseCommand):
             th = int(pc * l)
 
             #print dims, l, c, dims[1]
-            for x in xrange(0, dims[1]):
+            for x in range(0, dims[1]):
                 line = imgk[:, x]
                 cs, cts = np.unique(line, return_counts=True)
                 if not bg_color:
                     m = cts.max()
                 else:
                     m = 0
-                    for i in xrange(0, len(cs)):
+                    for i in range(0, len(cs)):
                         if cs[i] == bg_index:
                             m = cts[i]
 #                     print cs
@@ -570,7 +570,7 @@ class Command(BaseCommand):
             [short_ratio(bests[1][0], dims[1]), short_ratio(bests[0][0], dims[0])],
             [short_ratio(bests[1][1], dims[1]), short_ratio(bests[0][1], dims[0])]
         ]
-        print boundaries
+        print (boundaries)
         image.set_page_boundaries(boundaries)
         image.save()
 
@@ -591,7 +591,7 @@ class Command(BaseCommand):
         bests = get_margined(bests, dims, margin=0)
         img[:,bests[1]] = [0,0,255]
         img[bests[0],:] = [0,0,255]
-        print '\t%s' % path_out
+        print ('\t%s' % path_out)
         #cv2.imwrite(path_out, res2)
         cv2.imwrite(path_out, img)
 
@@ -602,17 +602,17 @@ class Command(BaseCommand):
 
         dir_path = os.path.join(settings.IMAGE_SERVER_ROOT, 'tmp')
         if not os.path.exists(dir_path):
-            print 'Create path'
+            print ('Create path')
             os.makedirs(dir_path)
         file_path = os.path.join(settings.IMAGE_SERVER_ROOT, 'tmp', 'i%s-h%s.jpg' % (image.id, height))
         if not os.path.exists(file_path):
-            print 'Download image'
+            print ('Download image')
             url = image.thumbnail_url(height=height,uncropped=True)
             res = utils.web_fetch(url)
             if not res['error']:
                 utils.write_file(file_path, res['body'])
             else:
-                print 'ERROR downloading image %s' % res['error']
+                print ('ERROR downloading image %s' % res['error'])
 
         if os.path.exists(file_path):
             ret = file_path
@@ -642,7 +642,7 @@ class Command(BaseCommand):
             for i in range(5177218, 5177311 + 1):
                 href = 'http://zzz/j2k/jpegNavMain.jsp?filename=Page%203&pid=' + str(i) + '&VIEWER_URL=/j2k/jpegNav.jsp?&img_size=best_fit&frameId=1&identifier=770&metsId=5176802&application=DIGITOOL-3&locale=en_US&mimetype=image/jpeg&DELIVERY_RULE_ID=770&hideLogo=true&compression=90'
                 i += 1
-                print i
+                print (i)
                 found = self.download_images_from_webpage(href, out_path, str(i) + '.jpg')
                 if not found: break
 
@@ -659,7 +659,7 @@ class Command(BaseCommand):
 
         if len(args) > 1:
             url = args[1]
-            print url
+            print (url)
 
             if options['links']:
                 links = options['links'].split(' ')
@@ -673,48 +673,48 @@ class Command(BaseCommand):
             if links:
                 html = utils.wget(url)
                 if not html:
-                    print 'ERROR: request to %s failed.' % url
+                    print ('ERROR: request to %s failed.' % url)
                 else:
                     for link in links:
-                        print link
+                        print (link)
                         href = re.findall(ur'<a [^>]*href="([^"]*?)"[^>]*>\s*' + re.escape(link) + '\s*<', html)
                         if href:
                             href = href[0]
                             href = re.sub(ur'/[^/]*$', '/' + href, url)
-                            print href
+                            print (href)
 
                             self.download_images_from_webpage(href, out_path)
 
     def download_images_from_webpage(self, href, out_path=None, img_name=None):
         ret = False
-        print href
+        print (href)
         sub_html = utils.wget(href)
 
         if not sub_html:
-            print 'WARNING: request to %s failed.' % sub_html
+            print ('WARNING: request to %s failed.' % sub_html)
         else:
             ret = True
             # get the jpg image in the page
             #image_urls = re.findall(ur'<img [^>]*src="([^"]*?\.jpg)"[^>]*>', sub_html)
             #print sub_html
             image_urls = re.findall(ur'<img [^>]*src\s*=\s*"([^"]*?)"[^>]*?>', sub_html)
-            print image_urls
+            print (image_urls)
             for image_url in image_urls:
                 if not image_url.startswith('/'):
                     image_url = re.sub(ur'/[^/]*$', '/' + image_url, href)
                 else:
                     image_url = re.sub(ur'^(.*?//.*?/).*$', r'\1' + image_url, href)
-                print image_url
+                print (image_url)
 
                 # get the image
                 image = utils.wget(image_url)
 
                 if not image:
-                    print 'WARNING: request to %s failed.' % image_url
+                    print ('WARNING: request to %s failed.' % image_url)
                 else:
                     # save it
                     image_path = os.path.join(out_path, img_name or re.sub(ur'^.*/', '', image_url)) + ''
-                    print image_path
+                    print (image_path)
                     utils.write_file(image_path, image)
 
         return ret
@@ -771,7 +771,7 @@ class Command(BaseCommand):
 
             status = ''
             if copied: status = 'COPIED'
-            print '[%6s] %s' % (status, file_relative)
+            print ('[%6s] %s' % (status, file_relative))
 
             if command == 'pocket':
                 import time
@@ -788,9 +788,9 @@ class Command(BaseCommand):
                 fileout = file_relative
 
                 if len(recs) > 1:
-                    print 'WARNING: more than one image records for this file (%s)' % iipimage
+                    print ('WARNING: more than one image records for this file (%s)' % iipimage)
                 if len(recs) < 1:
-                    print 'WARNING: image record not found (%s)' % iipimage
+                    print ('WARNING: image record not found (%s)' % iipimage)
                 else:
                     rec = recs[0]
 
@@ -804,7 +804,7 @@ class Command(BaseCommand):
                     if not self.is_dry_run():
                         ret_shell = self.run_shell_command(cmd)
                     else:
-                        print cmd
+                        print (cmd)
 
                     time.sleep(float(pause))
 
@@ -816,7 +816,7 @@ class Command(BaseCommand):
 
                 # copy the file
                 if command == 'copy':
-                    print '\tCopy to %s' % target
+                    print ('\tCopy to %s' % target)
                     shutil.copyfile(join(original_path, file_relative), target)
 
                 if command == 'copy_convert':
@@ -851,7 +851,7 @@ class Command(BaseCommand):
                 os.rename(os.path.join(settings.IMAGE_SERVER_ROOT, image.iipimage.name), os.path.join(settings.IMAGE_SERVER_ROOT, name))
                 image.iipimage.name = name
                 image.save()
-            except Exception, e:
+            except Exception as e:
                 ret_shell = [e, 'rename']
         else:
             # assume the file is already a jpeg 2k, return
@@ -959,12 +959,12 @@ class Command(BaseCommand):
     def run_shell_command(self, command):
         ret = None
         if self.get_verbosity() >= 2:
-            print '\t' + command
+            print ('\t' + command)
         try:
             status = os.system(command)
             if status > 0:
                 ret = [status, command]
-        except Exception, e:
+        except Exception as e:
             #os.remove(input_path)
             #raise CommandError('Error executing command: %s (%s)' % (e, command))
             ret = [e, command]

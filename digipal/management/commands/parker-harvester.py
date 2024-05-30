@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import urllib2, json, csv, os, base64, re, time
+import json, csv, os, base64, re, time
+import urllib.request as urllib2
 from django.core.management.base import BaseCommand, CommandError
 from optparse import make_option
 
@@ -140,9 +141,9 @@ class Command(BaseCommand):
             request = urllib2.Request(url_json_file)
             json_file = urllib2.urlopen(request).read()
             json_object = json.loads(json_file.replace('\'', '"'))
-        except Exception, e:
-            print 'ERROR:'
-            print 'Tried to Download %s' % (url_json_file)
+        except Exception as e:
+            print ('ERROR:')
+            print ('Tried to Download %s' % (url_json_file))
         # list for storing final manuscripts array
         list_manuscripts = []
 
@@ -164,9 +165,9 @@ class Command(BaseCommand):
         for manuscript in manuscripts_from_json:
 
             if self.command == 'test':
-                print '\n---------------------------------------------'
-                print 'Manuscript: %s' % (manuscript['manuscript'])
-                print 'Manifest URL: %s' % (manuscript['url'])
+                print ('\n---------------------------------------------')
+                print ('Manuscript: %s' % (manuscript['manuscript']))
+                print ('Manifest URL: %s' % (manuscript['url']))
 
             request = urllib2.Request(manuscript['url'])
             json_file = urllib2.urlopen(request).read()
@@ -199,8 +200,8 @@ class Command(BaseCommand):
                             output.append(output_obj)
 
                             if self.command == 'test':
-                                print "Label: ", canvas['label']
-                                print "URL: ", url
+                                print ("Label: ", canvas['label'])
+                                print ("URL: ", url)
 
                             if self.command == "download":
                                 self.download(url, canvas['label'], manuscript['manuscript'])
@@ -234,9 +235,9 @@ class Command(BaseCommand):
                 image_file.write(image_data)
                 image_file.close()
 
-            except Exception, e:
-                print 'ERROR: %s' % e
-                print 'Tried to Download %s, %s (%s)' % (folder_name, file_name, url)
+            except Exception as e:
+                print ('ERROR: %s' % e)
+                print ('Tried to Download %s, %s (%s)' % (folder_name, file_name, url))
 
         else:
             return False

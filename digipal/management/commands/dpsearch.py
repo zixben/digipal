@@ -531,7 +531,7 @@ Options:
         from digipal.models import Graph
         for graph in Graph.objects.filter(graph_components__isnull=False).prefetch_related('graph_components', 'graph_components__component', 'graph_components__features').distinct():
             c += 1
-            doc = {'gid': unicode(
+            doc = {'gid': str(
                 graph.id), 'description': graph.get_serialised_description()}
             writer.add_document(**doc)
 

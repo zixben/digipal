@@ -81,7 +81,7 @@ Commands:
     
     def html2md(self):
         if len(self.args) < 2:
-            print 'ERROR: missing path. Check help.'
+            print ('ERROR: missing path. Check help.')
             exit()
             
         path = self.args[1]
@@ -95,9 +95,9 @@ Commands:
             if 'confluence-workbox' in target:
                 continue
             utils.write_file(target, info['md'])
-            print '%s\n  => %s' % (path, target)
+            print ('%s\n  => %s' % (path, target))
             for f in info['files']:
-                print '   + %s' % f 
+                print ('   + %s' % f )
             
             #self.update_cms_page(doc_slug, slug, html)
 
@@ -110,14 +110,14 @@ Commands:
         self.update_cms_page(doc_slug, draft=True)
         
         for path in utils.get_all_files_under(doc.get_doc_root_path('digipal'), file_types='f', filters=self.options['filter'], extensions='md', can_return_root=True):
-            print path
+            print (path)
             info = doc.get_doc_from_md(utils.read_file(path))
             page = None
             if info:
                 content = u'<div class="mddoc">%s</div>' % info['content']
                 page = self.update_cms_page(info['title'], content, doc_slug)
             if page:
-                print '  => # %s (%s)' % (page.id, page.slug)
+                print ('  => # %s (%s)' % (page.id, page.slug))
 
     def update_cms_page(self, title=None, content='', parent_title=None, draft=False):
         if not title:

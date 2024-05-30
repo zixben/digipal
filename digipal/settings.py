@@ -221,7 +221,14 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             # You can override app templates in the project/templates folder
+
+            # base tamplates from django and mezzanine
+            # os.path.join(PROJECT_ROOT, '../myenv/lib/python3.12/site-packages/django/contrib/admin/templates'),
+            # os.path.join(PROJECT_ROOT, '../myenv/lib/python3.12/site-packages/mezzanine/core/templates'),
+
+            # digipal_project overrides django and mezzanine templates
             os.path.join(PROJECT_ROOT, 'templates'),
+
             # DigiPal app can also override other app templates
             os.path.join(PROJECT_ROOT, '../digipal/templates'),
         ],

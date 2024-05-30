@@ -1,5 +1,5 @@
 {% extends "blog/blog_post_list.html" %}
-{% load mezzanine_tags comment_tags keyword_tags rating_tags i18n disqus_tags html_escape %}
+{% load mezzanine_tags comment_tags keyword_tags rating_tags i18n disqus_tags html_escape thumbnail %}
 
 {% block meta_title %}{{ blog_post.meta_title }}{% endblock %}
 
@@ -77,7 +77,7 @@
 
     {% block blog_post_detail_featured_image %}
     {% if settings.BLOG_USE_FEATURED_IMAGE and blog_post.featured_image %}
-    <p><img class="img-responsive" src="{{ MEDIA_URL }}{% thumbnail blog_post.featured_image 600 0 %}"></p>
+    <p><img class="img-responsive" src="{{ MEDIA_URL }}{% thumbnail blog_post.featured_image 600x0 %}"></p>
     {% endif %}
     {% endblock %}
 

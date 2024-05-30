@@ -148,7 +148,7 @@ Commands:
         if command == 'clear-compressor':
             known_command = True
             cache_name = 'django-compressor'
-            print 'Clear cache "%s"...' % cache_name
+            print ('Clear cache "%s"...' % cache_name)
             from digipal.utils import get_cache
             cache = get_cache(cache_name)
             cache.clear()
@@ -156,7 +156,7 @@ Commands:
             from compressor import conf
             path = os.path.join(conf.settings.COMPRESS_ROOT,
                                 conf.settings.COMPRESS_OUTPUT_DIR.strip('/'))
-            print path
+            print (path)
 
         if command == 'ipauth':
             known_command = True
@@ -269,20 +269,20 @@ Commands:
         for hi in HistoricalItem.objects.all():
             if hi.date or hi.date_sort:
                 for ip in hi.item_parts.all():
-                    print '---'
+                    print ('---')
                     texts = ip.texts
                     if texts.count() == 0:
                         text = Text(name=ip.display_label)
                         text.save()
                         item_itempart = TextItemPart(text=text, item_part=ip)
                         item_itempart.save()
-                        print 'Created'
+                        print ('Created')
                     for text in texts.all():
                         text.date = hi.date.replace(u'×', u'x')
                         text.date_sort = hi.date_sort
-                        print ur'Move %s from HI #%s to Text #%s' % (text.date, hi.id, ip.id)
+                        print (ur'Move %s from HI #%s to Text #%s' % (text.date, hi.id, ip.id))
                         text.save()
-                        print dputils.get_range_from_date(text.date)
+                        print (dputils.get_range_from_date(text.date))
                 hi.date = None
                 hi.date_sort = None
                 hi.save()
@@ -299,13 +299,13 @@ Commands:
         source = Source.get_source_from_keyword(u'moa', none_if_not_found=True)
         for name in ['Contemporary', 'Anachronistic: Palaeography', 'Anachronistic: Diplomatic']:
             auth, created = AuthenticityCategory.objects.get_or_create(
-                name=name, slug=slugify(unicode(name)))
+                name=name, slug=slugify(str(name)))
             genuine = genuine or auth
 
         # set genuine to all the item parts
         for ip in ItemPart.objects.filter():
             if ip.authenticities.count() == 0:
-                print ip.id
+                print (ip.id)
                 ip = ItemPartAuthenticity(
                     item_part=ip, source=source, category=genuine)
             ip.save()
@@ -323,7 +323,7 @@ Commands:
             new_number = line['barnesellisfol']
             old_number = line['olderfol']
 
-            print old_number, new_number
+            print (old_number, new_number)
 
             #folio = '%s%s' % (old_number)
             for image in images:
@@ -331,11 +331,11 @@ Commands:
                                    old_number, r'%s\1' % new_number, image.locus)
                 if image.locus != new_locus:
                     image.new_locus = new_locus
-                    print '    #%4s: %4s -> %4s' % (image.id, image.locus, image.new_locus)
+                    print ('    #%4s: %4s -> %4s' % (image.id, image.locus, image.new_locus))
 
         for image in images:
             if getattr(image, 'new_locus', None):
-                print image.locus, image.new_locus
+                print (image.locus, image.new_locus)
                 image.locus = image.new_locus
                 image.save()
 
@@ -381,13 +381,13 @@ Commands:
                 # find the image
                 idphoto = re.sub('\D', '_', rec['idphotos'].strip())
                 if not idphoto:
-                    print 'No photo id (line %s)' % line_index
+                    print ('No photo id (line %s)' % line_index)
                 else:
                     image = images.get(idphoto, None)
                     # print image
                     # print rec
                     if not image:
-                        print 'No matching image %s (line %s)' % (idphoto, line_index)
+                        print ('No matching image %s (line %s)' % (idphoto, line_index))
                     else:
                         # set the side
                         image.locus = rec['dr']
@@ -494,7 +494,7 @@ Commands:
         # but later we read as latin-1
         write_rows_to_csv(file_path, rows, encoding='utf8')
 
-        print 'Written %s records in %s.' % (len(rows), file_path)
+        print ('Written %s records in %s.' % (len(rows), file_path))
         # transaction,0,3,"William, abbot of Scone (fl.1206×09-1225)",2/139/91
         # ,825,abbot of Scone
 
@@ -595,7 +595,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         import digipal
         from digipal.models import ItemPart
 
-        print '> Load manuscripts from DigiPal...\n'
+        print ('> Load manuscripts from DigiPal...\n')
         sources_ips = dputils.MultiDict()
         for ip in ItemPart.objects.filter(historical_items__id__gt=0).prefetch_related('historical_items__catalogue_number__source').select_related('current_item__repository__place'):
             catnum = ip.historical_items.first().catalogue_numbers.filter(
@@ -604,14 +604,14 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                 sources_ips.add_entry(catnum.number.strip().lower(), ip)
         sources_found = {}
 
-        print '%s records, %s unique document/source/text numbers' % (sources_ips.get_entry_count(), len(sources_ips))
+        print ('%s records, %s unique document/source/text numbers' % (sources_ips.get_entry_count(), len(sources_ips)))
 
-        print '\n> POMS texts with more than one HI/IP\n'
+        print ('\n> POMS texts with more than one HI/IP\n')
         for docnum, ips in sources_ips.iteritems():
             if len(ips) > 1:
-                print docnum, ', '.join(['IP #%s HI #%s: %s' % (ip.id, ip.historical_items.first().id, ip.display_label) for ip in ips])
+                print (docnum, ', '.join(['IP #%s HI #%s: %s' % (ip.id, ip.historical_items.first().id, ip.display_label) for ip in ips]))
 
-        print '\n> Import data from POMS database...\n'
+        print ('\n> Import data from POMS database...\n')
         self.stats = {'sources': {}}
         for row in utils.dictfetchall(pc):
             #             for k, v in row.iteritems():
@@ -622,14 +622,14 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                 sources_found[docnum] = 1
                 self.import_poms_into_ip(row, ip)
 
-        print '%s MS in DigiPal, %s matching a source in POMS' % (len(sources_ips), len(sources_found))
+        print ('%s MS in DigiPal, %s matching a source in POMS' % (len(sources_ips), len(sources_found)))
         for catnum in set(sources_ips.keys()) - set(sources_found.keys()):
-            print '    %s not found in POMS' % catnum
+            print ('    %s not found in POMS' % catnum)
 
         # for source in sorted(self.stats['sources'].keys()):
         #    #print self.stats['sources'][source], source
 
-        print self.print_warning_report()
+        print (self.print_warning_report())
 
         if self.is_dry_run():
             raise Exception('DRY_RUN ROLLBACK')
@@ -653,7 +653,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
 #             print '\tno cat num'
 
         # if (row['helper_hnumber']).lower().strip() not in ['4/20/7']: return
-        print 'POMS Source #%s = IP #%s (%s) (%s)' % (row['so_id'], ip.id, docnum, ip.created)
+        print ('POMS Source #%s = IP #%s (%s) (%s)' % (row['so_id'], ip.id, docnum, ip.created))
 
         #ref = row['source_tradid']
         #source = re.sub(',[^,]*$', '', ref).strip()
@@ -669,7 +669,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
 
         # import the reference -> source
         hi = ip.historical_item
-        print '    HI #%s.cat_num = (%s | %s)' % (hi.id, source, cat_num)
+        print ('    HI #%s.cat_num = (%s | %s)' % (hi.id, source, cat_num))
         from digipal.models import CatalogueNumber, Language, HistoricalItemType
         CatalogueNumber.objects.filter(historical_item=hi).exclude(
             source__label='POMS').delete()
@@ -686,7 +686,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                                '%s' % row['source_tradid'])
         else:
             lg, created = Language.objects.get_or_create(name=row['la_name'])
-            print '    HI #%s.language = %s' % (hi.id, lg)
+            print ('    HI #%s.language = %s' % (hi.id, lg))
             hi.language = lg
 
         # import Charter type
@@ -696,7 +696,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                                row['source_tradid'])
             ct_name = 'Charter'
 
-        print '    HI #%s.type = %s' % (hi.id, ct_name)
+        print ('    HI #%s.type = %s' % (hi.id, ct_name))
         hi.historical_item_type, created = HistoricalItemType.objects.get_or_create(
             name=ct_name)
 
@@ -704,13 +704,13 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         from digipal.models import Description, DateEvidence, Date, PlaceEvidence, Place, Reference
         if row['so_description']:
             from digipal.models import Source
-            print '    HI #%s.description = (%s | %s)' % (hi.id, source, row['so_description'][0:20].encode('ascii', 'ignore'))
+            print ('    HI #%s.description = (%s | %s)' % (hi.id, source, row['so_description'][0:20].encode('ascii', 'ignore')))
             desc, created = Description.objects.get_or_create(
                 historical_item=hi, source=Source.objects.filter(label='POMS').first())
             desc.description = row['so_description'].strip()
             desc.save()
         else:
-            print '    Remove HI #%s.description = (%s)' % (hi.id, source)
+            print ('    Remove HI #%s.description = (%s)' % (hi.id, source))
             Description.objects.filter(
                 historical_item=hi, source__label='POMS').delete()
 
@@ -724,7 +724,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                 evidence = None
                 if field_name.startswith('firm'):
                     evidence = row['datingnotes']
-                    print '    HI #%s.date_evidence = (%s, %s)' % (hi.id, row[field_name], field_name)
+                    print ('    HI #%s.date_evidence = (%s, %s)' % (hi.id, row[field_name], field_name))
                 date = Date.objects.filter(date=row[field_name]).first()
                 if not date:
                     date = Date(date=row[field_name])
@@ -741,7 +741,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                 name=row['placedatemodern'] or row['placedatedoc'])
             place.other_names = row['pl_name']
             place.save()
-            print '    HI #%s.place_evidence = %s' % (hi.id, row['placedatedoc'])
+            print ('    HI #%s.place_evidence = %s' % (hi.id, row['placedatedoc']))
             reference, created = Reference.objects.get_or_create(
                 name='Unspecified')
             PlaceEvidence(place=place, historical_item=hi,
@@ -929,7 +929,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
 
             ms_matches[row['ms_id']] = 0
 
-            print '\tmatch legacy.`manuscripts` with digipal.itempart'
+            print ('\tmatch legacy.`manuscripts` with digipal.itempart')
             ip = self.find_matching_ip(row)
 
             if ip:
@@ -966,11 +966,11 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                                (ownership.id, ownership))
 
         # Print the MS matches
-        print '\n%s ownerships records' % i
+        print ('\n%s ownerships records' % i)
         self.print_warning_report()
 
         if 1:
-            print '%s manuscripts records, %s matched, %s not matched.' % (len(set(ms_matches.keys())), len(set(ms_matches.values())), len(set(ms_matches.keys())) - len(set(ms_matches.values())))
+            print ('%s manuscripts records, %s matched, %s not matched.' % (len(set(ms_matches.keys())), len(set(ms_matches.values())), len(set(ms_matches.keys())) - len(set(ms_matches.values()))))
 
         # Print the owner matches
         if 0:
@@ -981,7 +981,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                     if owner['Category'] == cat:
                         repo = owner['repo'] or ur''
                         utils.prnt(
-                            '%s %40s %-30s' % (owner['Category'], owner['Owner'][0:40], unicode(repo)[0:30]))
+                            '%s %40s %-30s' % (owner['Category'], owner['Owner'][0:40], str(repo)[0:30]))
                         if owner['Category'] == 2:
                             owners_2_count += 1
                         if owner['repo']:
@@ -991,7 +991,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
 
         #raise Exception('DRY RUN')
 
-        print 'done'
+        print ('done')
 
     def create_ownership(self, repo, ip, row):
         # row = ['Manuscript', 'Annotated?', 'Evidence', 'Rebound?', 'Date', 'Owner', 'Dubitable?', 'ID']
@@ -1018,7 +1018,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         ret = Repository(legacy_id=-row['ot_id'], name=row['Owner'],
                          british_isles=utils.get_bool_from_mysql(row['Overseas?']), type_id=4, place_id=40)
 
-        cat = unicode(row['Category']).strip()
+        cat = str(row['Category']).strip()
         if cat == '0':
             # unknown owner in a place
             # TODO: create the place
@@ -1026,7 +1026,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
             places = Place.objects.filter(name__iexact=row['Owner'])
             if places.count():
                 self.print_warning(
-                    u'found matching Place record', 1, unicode(row['Owner']))
+                    u'found matching Place record', 1, str(row['Owner']))
                 place = places[0]
             else:
                 self.print_warning(u'create Place record', 1, row['Owner'])
@@ -1051,7 +1051,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         return ret
 
     def find_matching_repo(self, row, owners):
-        print '\tmatch legacy.`owner text` with digipal.repository record'
+        print ('\tmatch legacy.`owner text` with digipal.repository record')
         owner = owners.get(row['ot_id'], None)
         if not owner:
             owner = owners[row['ot_id']] = row
@@ -1079,7 +1079,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
 
         if not hasattr(self, 'ips'):
             self.ips = []
-            print 'gen'
+            print ('gen')
             from digipal.models import ItemPart
             from django.db import connections
             con = connections['default']
@@ -1143,7 +1143,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
 
         # show matches based on individual fields
         for field in matches.keys():
-            print '\t\t\t%-12s: %s' % (field, ', '.join(set([unicode(v) for v in matches[field]])))
+            print ('\t\t\t%-12s: %s' % (field, ', '.join(set([str(v) for v in matches[field]]))))
 
         # now combine the fields to find best and reliable matches
         def get_inter(d, *ks):
@@ -1187,7 +1187,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
             if len(inter) == 1:
                 min_size = combination.get('min_size', 1)
                 if len(row['Shelfmark']) >= min_size:
-                    print '\t\t\tmatched on (%s)' % comb_name
+                    print ('\t\t\tmatched on (%s)' % comb_name)
                     if not combination.get('reliable', 0):
                         self.print_warning(
                             'loose match on (%s)' % comb_name, 2)
@@ -1242,7 +1242,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
             if row['Shelfmark']:
                 closests = difflib.get_close_matches(
                     row['Shelfmark'], [ip.current_item.shelfmark for ip in ips])
-                print '\t%s' % closests
+                print ('\t%s' % closests)
                 if closests:
                     if closests[0] == row['Shelfmark']:
                         # perfect match
@@ -1359,7 +1359,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         con_dst.enter_transaction_management()
         con_dst.managed()
 
-        print '\n fm_sawyerdetails -> digipal_text\n'
+        print ('\n fm_sawyerdetails -> digipal_text\n')
 
         from digipal.models import Text, CatalogueNumber, Description, Source
         source_esawyer = Source.objects.get(name=settings.SOURCE_SAWYER)
@@ -1437,22 +1437,22 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
             es_desc = es_descriptions[cat_num.number]
             text = cat_num.text
 
-            print 'Text %s' % utils.get_obj_label(text)
+            print ('Text %s' % utils.get_obj_label(text))
 
             descriptions = text.descriptions.filter(source=source_esawyer)
             if descriptions:
-                print '\tUpdate description'
+                print ('\tUpdate description')
                 description = descriptions[0]
             else:
-                print '\tCreate description'
+                print ('\tCreate description')
                 description = Description(source=source_esawyer, text=text)
 
             if es_desc['title'] and es_desc['title'].strip():
                 description.description = es_desc['title']
-                print '\t\tUpdate description'
+                print ('\t\tUpdate description')
             if es_desc['comments'] and es_desc['comments'].strip():
                 description.comments = es_desc['comments']
-                print '\t\tUpdate comments'
+                print ('\t\tUpdate comments')
             description.summary = ''
 
             description.save()
@@ -1478,7 +1478,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                         es_text_item_part = es_text_item_parts[key]
                     else:
                         self.print_warning('Item Part not found in eSawyer', 1)
-                        print u'\t\tSearch keys: ("%s", "%s"); Item part: %s' % (repr(key_long), repr(key), repr(utils.get_obj_label(text_item_part.item_part)))
+                        print (u'\t\tSearch keys: ("%s", "%s"); Item part: %s' % (repr(key_long), repr(key), repr(utils.get_obj_label(text_item_part.item_part))))
                         similars = ''
                         for pk in es_text_item_parts.keys():
                             if (pk is not None) and (pk.startswith('%s_' % cat_num.number)) and es_text_item_parts[pk]:
@@ -1486,24 +1486,24 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                                     similars += ' | '
                                 similars += '#%s (%s)' % (
                                     es_text_item_parts[pk]['recordid'], pk)
-                        print '\t\tSimilar: %s' % similars
+                        print ('\t\tSimilar: %s' % similars)
 
                 if es_text_item_part:
                     item_part_count += 1
-                    print u'\tUpdate item part %s' % repr(utils.get_obj_label(text_item_part))
+                    print (u'\tUpdate item part %s' % repr(utils.get_obj_label(text_item_part)))
                     if es_text_item_part['locus']:
                         text_item_part.locus = es_text_item_part['locus']
                     if es_text_item_part['this_text_date']:
                         text_item_part.date = es_text_item_part['this_text_date']
                     text_item_part.save()
 
-        print 'Updated %d Text records and % d item parts.' % (cat_nums.count(), item_part_count)
+        print ('Updated %d Text records and % d item parts.' % (cat_nums.count(), item_part_count))
 
         self.print_warning_report()
 
         if self.is_dry_run():
             con_dst.rollback()
-            print 'Nothing actually written (remove --dry-run option for permanent changes).'
+            print ('Nothing actually written (remove --dry-run option for permanent changes).')
         else:
             con_dst.commit()
         con_dst.leave_transaction_management()
@@ -1527,7 +1527,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
             tree = ET.parse(xml_file)
             #tree.register_namespace('wp', 'http://wordpress.org/export/1.2/')
             root = tree.getroot()
-        except Exception, e:
+        except Exception as e:
             raise CommandError('Cannot parse %s: %s' % (xml_file, e))
 
         from django.db import connections
@@ -1565,7 +1565,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         table_name = 'fm_' + \
             utils.get_simple_str(
                 re.sub(ur'^.*[\\/]([^.]+).*$', ur'\1', xml_file))
-        print table_name
+        print (table_name)
 
         utils.sqlWrite(con_dst, 'DROP TABLE IF EXISTS %s' % table_name)
 
@@ -1601,13 +1601,13 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         con_dst.commit()
         con_dst.leave_transaction_management()
 
-        print 'Wrote %d records in table %s' % (len(rows), table_name)
+        print ('Wrote %d records in table %s' % (len(rows), table_name))
 
         # print fields
 
     def parse_em_table(self, options):
         from digipal.utils import find_first
-        import HTMLParser
+        from html.parser import HTMLParser
         hp = HTMLParser.HTMLParser()
 
         csv_path = 'em.csv'
@@ -1849,7 +1849,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         cursor = connection.cursor()
         if 0:
             for model in [Repository, ItemPart, CurrentItem, HistoricalItem, Place, CatalogueNumber, Source, ItemPartItem, Owner, HistoricalItem.owners.through]:
-                print 'Delete from %s' % model._meta.db_table
+                print ('Delete from %s' % model._meta.db_table)
                 cursor.execute('delete from %s' % model._meta.db_table)
             cursor.execute('update digipal_image set item_part_id = null')
 
@@ -1894,7 +1894,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
 
                 rec = dict(zip(columns, line))
 
-                print line_index, rec['Shelfmark']
+                print (line_index, rec['Shelfmark'])
 
                 # report and skip duplicate CSV lines
                 line_key = '%s %s' % (rec['Repository'], rec['Shelfmark'])
@@ -1958,7 +1958,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                         historical_item_type_id=1, date=rec['Date'])
                     hi.save()
                     ItemPartItem(historical_item=hi, item_part=ip).save()
-                    print '    Created IP #%s, HI #%s, CI #%s' % (ip.id, hi.id, ci.id)
+                    print ('    Created IP #%s, HI #%s, CI #%s' % (ip.id, hi.id, ci.id))
 
                 if hi:
                     # add the historical archive as an owner (i.e repo)
@@ -1969,18 +1969,18 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                             ha = Repository(
                                 name=ha_name, place=unknown_place, type_id=4)
                             ha.save()
-                            print '    Created Repository/Historical Archive %s' % (ha.id)
+                            print ('    Created Repository/Historical Archive %s' % (ha.id))
                         else:
                             ha = has[0]
 
                         # add link b/w HI and Historical Archive
                         if hi.owners.filter(repository=ha).count():
-                            print '    Ownership already exists'
+                            print ('    Ownership already exists')
                         else:
                             ownership = Owner(repository=ha)
                             ownership.save()
                             hi.owners.add(ownership)
-                            print '    Added ownership %s, repo %s' % (ownership.id, ha.id)
+                            print ('    Added ownership %s, repo %s' % (ownership.id, ha.id))
 
                     # create the Cat Num
                     if import_cat_num:
@@ -1992,7 +1992,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                                 cn = CatalogueNumber(
                                     source=poms_source, historical_item=hi, number=ref, url=rec['POMS URL'])
                                 cn.save()
-                                print '    New Cat Number: %s' % (cn)
+                                print ('    New Cat Number: %s' % (cn))
                                 # save the hi to refresh its labels
                                 hi.save()
                         else:
@@ -2016,7 +2016,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                                            indent=1, extra=extra + ', %s images' % images.count())
                     else:
                         for image in images:
-                            print '    Image #%s connected to this MS' % image.id
+                            print ('    Image #%s connected to this MS' % image.id)
                             if image.item_part is not None and image.item_part_id != ip.id:
                                 self.print_warning('image already linked to another IP', indent=1,
                                                    extra=extra + ', IM #%s to IP #%s' % (image.id, image.item_part_id))
@@ -2029,7 +2029,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
 
         for k, v in image_paths.iteritems():
             if len(v) > 1:
-                print k, v
+                print (k, v)
 
         self.print_warning_report()
         if self.is_dry_run():
@@ -2069,7 +2069,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                     values = [(row[col] or '').encode('utf-8') for col in cols]
                     csvwriter.writerow(values)
 
-        print 'Written %s (%s rows)' % (file_path, len(rows))
+        print ('Written %s (%s rows)' % (file_path, len(rows)))
 
     def createTableFromCSV(self):
         options = self.options
@@ -2093,7 +2093,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         lines = read_all_lines_from_csv(file_path, **fct_args)
 
         if not lines:
-            print 'ERROR: cannot create table, no line in input CSV file (%s)' % file_path
+            print ('ERROR: cannot create table, no line in input CSV file (%s)' % file_path)
             exit()
 
         table_name = self.getTablenameFromPath(file_path)
@@ -2106,7 +2106,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         max_len = 1  # varchar must be at least 1
         for col in lines[0].keys():
             for val in [line[col] for line in lines]:
-                val = unicode(val)
+                val = str(val)
                 if len(val) > max_len:
                     max_len = len(val)
             schema.append([col, 'varchar(%s)' % max_len])
@@ -2126,7 +2126,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
 
         self.create_table_index(table_name, options=options)
 
-        print 'Created table %s (%s columns)' % (table_name, len(schema))
+        print ('Created table %s (%s columns)' % (table_name, len(schema)))
 
     def create_table_index(self, table_name, options=None):
         # TODO: move to local_settings.py
@@ -2146,7 +2146,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
             from django.db import connections
             con_dst = connections[options.get('db', 'default')]
             for field in fields:
-                print '\tCreate index on field %s' % field
+                print ('\tCreate index on field %s' % field)
                 drop = 'DROP INDEX IF EXISTS %s_%s' % (table_name, field)
                 utils.sqlWrite(con_dst, drop)
 
@@ -2194,11 +2194,11 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
             pbar.update(i)
             insert_sql = ur'INSERT INTO %s (%s) values (%s)' % (table_name, ','.join(
                 fields_ordered), ','.join([ur'%s' for f in fields_ordered]))
-            utils.sqlWrite(con_dst, insert_sql, [unicode(
+            utils.sqlWrite(con_dst, insert_sql, [str(
                 line[f]).strip() for f in fields_ordered])
         pbar.complete()
 
-        print 'Written %s records into table %s' % (len(lines), table_name)
+        print ('Written %s records into table %s' % (len(lines), table_name))
 
     def importStewart(self, options):
         from django.db import connections, router, transaction, models, DEFAULT_DB_ALIAS
@@ -2279,7 +2279,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
             src_tables = con_src.introspection.table_names()
             dst_tables = con_dst.introspection.table_names()
 
-            print '%40s %2s %6s %6s %6s %6s' % ('table name', '=?', '+lcl', '+rmt', 'lcl', 'rmt')
+            print ('%40s %2s %6s %6s %6s %6s' % ('table name', '=?', '+lcl', '+rmt', 'lcl', 'rmt'))
 
             for src_table in src_tables:
                 if re.search(r'%s' % table_filter, src_table):
@@ -2320,19 +2320,19 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                 diff_status += '>'
             if not diff_status:
                 diff_status = '='
-            print '%40s %2s %6s %6s %6s %6s' % (src_table, diff_status, len(diffs[0]), len(diffs[1]), len(idss[1]), len(idss[0]))
+            print ('%40s %2s %6s %6s %6s %6s' % (src_table, diff_status, len(diffs[0]), len(diffs[1]), len(idss[1]), len(idss[0])))
 
             # show actual records
             if diffs[0] and self.get_verbosity() > 1:
                 missing_ids = sorted(list(diffs[0]))
-                print '  ' + ', '.join([str(v) for v in missing_ids])
+                print ('  ' + ', '.join([str(v) for v in missing_ids]))
 
                 if self.get_verbosity() > 2:
                     model = get_model_from_table_name(src_table)
                     for rec in model.objects.filter(id__in=missing_ids):
-                        print '  #%4s: %s' % (rec.id, rec)
+                        print ('  #%4s: %s' % (rec.id, rec))
         else:
-            print '%40s NO ID FIELD' % (src_table, )
+            print ('%40s NO ID FIELD' % (src_table, ))
 
     def get_verbosity(self):
         return int(self.options.get('verbosity', 1))
@@ -2365,7 +2365,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
                 if src_table.endswith('xmlcopy'):
                     # skipped this table as it's too big and only a local
                     # backup
-                    print 'skipped'
+                    print ('skipped')
                     continue
                 if re.search(r'%s' % table_filter, src_table):
                     if src_table in dst_tables:
@@ -2540,7 +2540,7 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         ret = True
         try:
             os.system(command)
-        except Exception, e:
+        except Exception as e:
             # os.remove(input_path)
             raise CommandError(
                 'Error executing command: %s (%s)' % (e, command))
@@ -2560,9 +2560,9 @@ helper_keywordsearch = Clunie PER (Perthshire) 1276
         utils.prnt((u'\t' * indent) + u'WARNING: ' + message + u' ' + extra)
 
     def print_warning_report(self):
-        print 'WARNINGS:'
+        print ('WARNINGS:')
         for message in getattr(self, 'messages', []):
-            print '\t%6d: %s' % (self.messages[message], message)
+            print ('\t%6d: %s' % (self.messages[message], message))
 
 
 def fetch_all_low_mem(table_name, fields_list_str, connection=None):

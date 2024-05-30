@@ -129,7 +129,7 @@ def sqlDeleteAll(con, table, dry_run=False):
 
     try:
         sqlWrite(con, 'delete from %s' % table, [], dry_run)
-    except IntegrityError(e):
+    except IntegrityError as e:
         print(e)
         ret = False
 
@@ -197,7 +197,7 @@ def wget(url):
     try:
         response = urllib2.urlopen(url)
         ret = response.read()
-    except Exception(e):
+    except Exception as e:
         ret = None
     return ret
 
@@ -223,17 +223,22 @@ def web_fetch(url, username=None, password=None, sessionid=None, noredirect=Fals
     ret = {'error': None, 'response': None,
            'status': 0, 'reason': None, 'body': None}
 
-    import urlparse
-    parts = urlparse.urlsplit(url)
+    # import urlparse
+    # parts = urlparse.urlsplit(url)
+    import urllib.parse
+    parts = urllib.parse.urlsplit(url)
 
-    import httplib
+    # import httplib
+    import http.client
     from base64 import b64encode
     port = parts.port
     if parts.scheme == 'https':
         port = 443
-        conn = httplib.HTTPSConnection(parts.hostname, port)
+        # conn = httplib.HTTPSConnection(parts.hostname, port)
+        conn = http.client.HTTPSConnection(parts.hostname, port)
     else:
-        conn = httplib.HTTPConnection(parts.hostname, port)
+        # conn = httplib.HTTPConnection(parts.hostname, port)
+        conn = http.client.HTTPConnection(parts.hostname, port)
 
     options = {}
     if username:
@@ -258,7 +263,7 @@ def web_fetch(url, username=None, password=None, sessionid=None, noredirect=Fals
             # follow redirect
             ret = web_fetch(headers['location'])
         conn.close()
-    except StandardError(e):
+    except Exception as e:
         ret['error'] = e
 
     return ret
@@ -280,7 +285,7 @@ def prnt(txt):
 
 def get_bool_from_mysql(mysql_bool='-1'):
     '''Returns True/False from a mysql boolean field'''
-    return mysql_bool and unicode(mysql_bool) == '-1'
+    return mysql_bool and str(mysql_bool) == '-1'
 
 
 class CommandMessages(object):

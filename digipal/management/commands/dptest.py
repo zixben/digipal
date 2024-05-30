@@ -34,7 +34,7 @@ Commands:
         e.g. record_path manuscripts historical_item.historical_item_type.name 598
 
     dateconv [hi [HI_ID]]
-        reports datse which cannot be parsed correctly
+        reports dates which cannot be parsed correctly
         if hi: check hi.get_date_sort() otherwise check dateevidence.date
 
     max_date_range FIELD
@@ -110,8 +110,8 @@ Commands:
             known_command = True
 
             if len(args) < 3:
-                print 'Please provide a root URL, e.g. http://localhost:8080'
-                print 'And a sesion id, e.g. 6o436pngqgpjg0bqd46fhge3a458t92x'
+                print ('Please provide a root URL, e.g. http://localhost:8080')
+                print ('And a sesion id, e.g. 6o436pngqgpjg0bqd46fhge3a458t92x')
                 exit()
 
             root_url = args[1]
@@ -121,7 +121,7 @@ Commands:
             from django.core import urlresolvers
             from utils import web_fetch
             for amodel, aadmin in admin.site._registry.iteritems():
-                print amodel, aadmin
+                print (amodel, aadmin)
 
                 obj = amodel.objects.first()
 
@@ -140,7 +140,7 @@ Commands:
                     url = root_url + url
                     res = web_fetch(url, sessionid=sessionid, noredirect=True)
                     if res['status'] != '200':
-                        print 'WARNING: %s code returned by %s' % (res['status'], url)
+                        print ('WARNING: %s code returned by %s' % (res['status'], url))
 
         if command == 'hd':
             # 8546 </c> [1145, 1145, 1145, 1231, 1231, 1231, 1231, 1231, 1231, 1231]
@@ -176,7 +176,7 @@ Commands:
                         els[el] = v
 
             for el in sorted(els.keys()):
-                print len(els[el]), el, els[el][0:10]
+                print (len(els[el]), el, els[el][0:10])
 
         if command == 'record_path':
             known_command = True
@@ -195,11 +195,11 @@ Commands:
                 },
                 'l': ['v1', '2016-10-28T13:27:38.944298+00:00'],
             }
-            print repr(d)
+            print (repr(d))
             ds = dputils.json_dumps(d)
-            print repr(ds)
+            print (repr(ds))
             d2 = dputils.json_loads(ds)
-            print repr(d2)
+            print (repr(d2))
 
         if command == 'mem':
             known_command = True
@@ -228,15 +228,15 @@ Commands:
                 res = dputils.cmp_locus(case[0], case[1])
                 if res != case[2]:
                     fail_count += 1
-                    print 'FAILED: %s, got %s' % (repr(case), res)
+                    print ('FAILED: %s, got %s' % (repr(case), res))
 
-            print '%s / %s' % (len(cases) - fail_count, len(cases))
+            print ('%s / %s' % (len(cases) - fail_count, len(cases)))
 
         if command == 'get_locuses':
             from digipal.models import Image
             existing_locations = dputils.sorted_natural(Image.objects.filter(
                 item_part__display_label__icontains='ex').values_list('locus', flat=1), 0, 1)
-            print '\n'.join(existing_locations)
+            print ('\n'.join(existing_locations))
 
         if command == 'date_prob':
             known_command = True
@@ -260,13 +260,13 @@ Commands:
             from digipal.utils import convert_xml_to_html
             for hd in HandDescription.objects.all():
                 # if hd.hand.id != 1226: continue
-                print '-' * 80
-                print hd.id, hd.hand.id
-                print repr(hd.description)
-                print '- ' * 40
+                print ('-' * 80)
+                print (hd.id, hd.hand.id)
+                print (repr(hd.description))
+                print ('- ' * 40)
                 hd.description = convert_xml_to_html(hd.description)
                 hd.save()
-                print repr(hd.description)
+                print (repr(hd.description))
 
         if command == 'stint':
             from digipal.utils import expand_folio_range
@@ -280,11 +280,11 @@ Commands:
             for case in cases:
                 result = expand_folio_range(case[0])
                 if ';'.join(result) != ';'.join(case[1]):
-                    print '[FAIL] %s' % case[0]
-                    print '\t got : %s' % result
-                    print '\t want: %s' % case[1]
+                    print ('[FAIL] %s' % case[0])
+                    print ('\t got : %s' % result)
+                    print ('\t want: %s' % case[1])
                 else:
-                    print '[PASS] %s' % case[0]
+                    print ('[PASS] %s' % case[0])
 
         if command == 'max_date_range':
             known_command = True
@@ -360,30 +360,30 @@ Commands:
         if command == 'img_size':
             known_command = True
             from digipal.models import Image
-            print '0'
+            print ('0')
             #im0 = Image()
             # im0.save()
-            print '1'
+            print ('1')
             im = Image.objects.get(id=400)
             im.iipimage = 'jp2/admin-upload/e/ebcf3583-dd40-431f-8327-92d6f7c1822b.jp2'
-            print im.dimensions()
-            print '2'
-            print im.dimensions()
+            print (im.dimensions())
+            print ('2')
+            print (im.dimensions())
             im.save()
-            print '3'
-            print im.dimensions()
-            print '4'
+            print ('3')
+            print (im.dimensions())
+            print ('4')
             im.iipimage = 'yo'
             im.save()
-            print '5'
-            print im.dimensions()
-            print '6'
+            print ('5')
+            print (im.dimensions())
+            print ('6')
             #im.iipimage = 'jp2/bl/cotton_vitellius_axv/cotton_ms_vitellius_a_xv_f169r.jp2'
             im.iipimage = 'jp2/admin-upload/e/ebcf3583-dd40-431f-8327-92d6f7c1822b.jp2'
-            print '7'
+            print ('7')
             im.save()
-            print '8'
-            print im.dimensions()
+            print ('8')
+            print (im.dimensions())
 
         if command == 'stress_search':
             known_command = True
@@ -398,10 +398,10 @@ Commands:
             self.adhoc_test(*args[1:])
 
         if not known_command:
-            print self.help
+            print (self.help)
 
     def unstatic(self):
-        print 'unstatic'
+        print ('unstatic')
         static_root = settings.STATIC_ROOT
 
         is_verbose = self.is_verbose()
@@ -416,17 +416,17 @@ Commands:
                     if ext in ['less', 'ts']:
                         counts['left'] += 1
                         if is_verbose:
-                            print 'WARNING: leave transpiled (%s)' % os.path.relpath(path, static_root)
+                            print ('WARNING: leave transpiled (%s)' % os.path.relpath(path, static_root))
                         continue
 
                     try:
                         os.unlink(path)
                         counts['deleted'] += 1
                     except Exception as e:
-                        print 'WARNING: %s not deleted (%s)' % (path, e)
+                        print ('WARNING: %s not deleted (%s)' % (path, e))
 
-        print '%s deleted' % counts['deleted']
-        print '%s left' % counts['left']
+        print ('%s deleted' % counts['deleted'])
+        print ('%s left' % counts['left'])
 
     def race(self, *args):
         '''
@@ -446,7 +446,7 @@ Commands:
         ip = ItemPart.objects.exclude(id__in=TextContent.objects.all(
         ).values_list('item_part_id', flat=True)).first()
 
-        print 'IP without text: %s' % ip
+        print ('IP without text: %s' % ip)
 
         if not ip:
             return
@@ -488,7 +488,7 @@ Commands:
                 # print date, hi.id, hi.display_label
 
         write_rows_to_csv(file_path, rows, encoding='utf-8')
-        print 'Written %s' % file_path
+        print ('Written %s' % file_path)
 
     def cpip(self, *args):
         from digipal.utils import natural_sort_key
@@ -518,7 +518,7 @@ Commands:
                 status = '>'
                 if natural_sort_key(vers[0]) < natural_sort_key(vers[1]):
                     status = '<'
-            print '%3s %10s %10s %s' % (status, vers[0], vers[1], pkg)
+            print ('%3s %10s %10s %s' % (status, vers[0], vers[1], pkg))
 
     def multivalued(self, *args):
         ''' test Whoosh search on multi-valued documents'''
@@ -542,17 +542,17 @@ Commands:
 
         with ix.searcher() as s:
 
-            print list(s.lexicon('f1'))
+            print (list(s.lexicon('f1')))
 
             qp = qparser.QueryParser('f1', schema)
             for i in range(0, 2):
-                print '-' * 40
-                print i, values[i]
+                print ('-' * 40)
+                print (i, values[i])
                 q = qp.parse(u'"%s"' % values[i])
-                print repr(q)
+                print (repr(q))
                 r = s.search(q)
-                print [hit for hit in r]
-
+                print ([hit for hit in r]
+)
     def record_path(self, *args):
         '''
             {'hi_date_max': -5000, 'hi_index_sortable': 287, 'hi_type': u'Charter',
@@ -577,7 +577,7 @@ Commands:
             if t.get_key() == ctype:
                 fmodel = t
         if not fmodel:
-            print 'ERROR: content type not found "%s"' % ctype
+            print ('ERROR: content type not found "%s"' % ctype)
             exit()
 
         record = fmodel.get_model().objects.get(id=recordid)
@@ -585,14 +585,14 @@ Commands:
         #afield['path'] = path
         #value = fmodel.get_record_path(record, afield)
         value = fmodel.get_record_path(record, path)
-        print repr(value)
+        print (repr(value))
 
     def download_images(self, *args):
         if len(args) < 1:
-            print 'ERROR: please provide a URL'
+            print ('ERROR: please provide a URL')
             return
         if len(args) < 2:
-            print 'ERROR: please provide a path'
+            print ('ERROR: please provide a path')
             return
 
         from utils import web_fetch
@@ -617,12 +617,12 @@ Commands:
             if not re.search(ur'\..{1,4}$', filename):
                 filename += '.jpg'
 
-            print 'downloading %s to %s' % (aurl, filename)
+            print ('downloading %s to %s' % (aurl, filename))
             # break
 
             res = web_fetch(aurl)
             if res['error']:
-                print res['error']
+                print (res['error'])
             else:
                 import json
                 write_file(filename, res['body'], None)
@@ -659,7 +659,7 @@ Commands:
         # 157v.png
 
         # download all the parts
-        print 'download tiles...'
+        print ('download tiles...')
         tile_numbers = [0, 0]
         if len(args) in [1, 2]:
             url = args[0]
@@ -670,7 +670,7 @@ Commands:
             if 1:
                 for x in range(0, 10):
                     for y in range(0, 10):
-                        print '', x, y
+                        print ('', x, y)
                         url = re.sub(ur'\d+,\d+,\d+,\d+', '%d,%d,%d,%d' %
                                      (y * max_length, x * max_length, max_length, max_length), url)
                         # print url
@@ -697,10 +697,10 @@ Commands:
             tile = Image.open(last_tile)
             size = [n * max_length for n in tile_numbers]
             size = size[0] + tile.size[0] + 1, size[1] + tile.size[1] + 1
-            print '', 'Size: ', size
+            print ('', 'Size: ', size)
 
             # create the new image
-            print 'Reconstruct full image'
+            print ('Reconstruct full image')
             im = Image.new('RGB', size, 'white')
             for x in range(0, tile_numbers[0] + 1):
                 for y in range(0, tile_numbers[1] + 1):
@@ -713,15 +713,15 @@ Commands:
                     crop = panel.crop(box)
                     target_area = (x * max_length, y * max_length, x *
                                    max_length + crop.size[0], y * max_length + crop.size[1])
-                    print '', x, y, crop.size, target_area
+                    print ('', x, y, crop.size, target_area)
                     im.paste(crop, target_area)
 
-            print 'Save full image (%s)' % dest_file
+            print ('Save full image (%s)' % dest_file)
             im.save(dest_file)
-            print 'done'
+            print ('done')
 
         else:
-            print 'ERROR: please specify a URL to the bottom right tile of an image'
+            print ('ERROR: please specify a URL to the bottom right tile of an image')
 
         return ret
 
@@ -729,18 +729,18 @@ Commands:
         ret = []
         for keyword in ['ker', 'pelteret', 'gneuss', 'digipal',
                         'english manuscripts 1060', settings.SOURCE_SAWYER_KW, 'scragg', 'cla', 'davis']:
-            print keyword, ' => ', repr(Source.get_source_from_keyword(keyword))
+            print (keyword, ' => ', repr(Source.get_source_from_keyword(keyword)))
 
         return ret
 
     def max_date_range(self, *args):
         ret = [None, None]
         if not len(args) == 1:
-            print 'ERROR: please provide a path to a date field. E.g. dptest max_date_range HistoricalItem.date'
+            print ('ERROR: please provide a path to a date field. E.g. dptest max_date_range HistoricalItem.date')
             return
 
         path = args[0]
-        print 'Path: %s' % path
+        print ('Path: %s' % path)
 
         parts = path.split('.')
 #         if len(parts) != 2:
@@ -752,7 +752,7 @@ Commands:
         import digipal.models
         model = getattr(digipal.models, model_name, None)
         if not model:
-            print 'ERROR: Invalid model name. See digipal.models module.'
+            print ('ERROR: Invalid model name. See digipal.models module.')
             return
 
         from digipal.utils import get_range_from_date
@@ -772,7 +772,7 @@ Commands:
                     else:
                         ret[1] = max(ret[1], rng[1])
 
-        print repr(ret)
+        print (repr(ret))
 
     def date_conv(self, *args):
         from digipal.utils import get_range_from_date, get_range_from_date, MAX_DATE_RANGE
@@ -802,12 +802,12 @@ Commands:
                 if rng[0] in MAX_DATE_RANGE and rng[1] in MAX_DATE_RANGE:
                     status = '00'
                     unrec_count += 1
-                    print '%4s %s %40s [%7s, %7s] [%7s, %7s]' % (rec.id, status, rec.date, date_rgn[0], date_rgn[1], rng[0], rng[1])
+                    print ('%4s %s %40s [%7s, %7s] [%7s, %7s]' % (rec.id, status, rec.date, date_rgn[0], date_rgn[1], rng[0], rng[1]))
                 else:
                     if not(rng[0] == date_rgn[0] and rng[1] == date_rgn[1]):
                         status = '<>'
                     if rid or status == '<>':
-                        print '%4s %s %40s [%7s, %7s] [%7s, %7s]' % (rec.id, status, rec.date, date_rgn[0], date_rgn[1], rng[0], rng[1])
+                        print ('%4s %s %40s [%7s, %7s] [%7s, %7s]' % (rec.id, status, rec.date, date_rgn[0], date_rgn[1], rng[0], rng[1]))
             if 'hi' in args:
                 d = rec.get_date_sort()
                 if rec.date:
@@ -819,12 +819,12 @@ Commands:
                         if rid or (rng[0] == -5000 or rng[1] == 5000):
                             status = '<>'
                     if status != '==':
-                        print '%4s %s %40s [%7s, %7s]' % (rec.id, status, d, rng[0], rng[1])
+                        print ('%4s %s %40s [%7s, %7s]' % (rec.id, status, d, rng[0], rng[1]))
             if status != '==':
                 diff_count += 1
 
-        print '%s incorrect, %s correct, total %s' % (diff_count, cnt - diff_count, cnt)
-        print '%s unrecognised, total %s' % (unrec_count, cnt)
+        print ('%s incorrect, %s correct, total %s' % (diff_count, cnt - diff_count, cnt))
+        print ('%s unrecognised, total %s' % (unrec_count, cnt))
 
     def adhoc_test(self, *args):
         from digipal import utils
@@ -832,8 +832,8 @@ Commands:
         # href="&gt;yo&lt;">c</a></p>''')
         d = '670 (? for 937) or 937'
         #d = 'c. 950x68'
-        print d
-        print utils.get_midpoint_from_date_range(d)
+        print (d)
+        print (utils.get_midpoint_from_date_range(d))
 
     def adhoc_test_old(self, *args):
         from digipal.templatetags import html_escape
@@ -870,9 +870,9 @@ Commands:
 
         value = u'''\u00E6<td>Cambridge, n…  cambridge</td>'''
 
-        ret = html_escape.tag_phrase_terms(value, unicode(args[0]))
-        print '-' * 80
-        print ret.encode('ascii', 'ignore')
+        ret = html_escape.tag_phrase_terms(value, str(args[0]))
+        print ('-' * 80)
+        print (ret.encode('ascii', 'ignore'))
 
     def annotation_test(self):
         #         ips = ItemOrigin.objects.values_list('id', 'place__name')
@@ -920,37 +920,37 @@ Commands:
         ans.append(an)
 
         for a in ans:
-            print 'save'
+            print ('save')
             a.save()
 
         # run queries
-        print 'find all annotations'
+        print ('find all annotations')
         if Annotation.objects.all().filter(
                 id__in=[a.id for a in ans]).count() == 3:
-            print '\tok'
+            print ('\tok')
         else:
-            print '\terror'
+            print ('\terror')
 
-        print 'find editorial annotations'
+        print ('find editorial annotations')
         if Annotation.objects.all().editorial().filter(
                 id__in=[ans[0].id, ans[1].id]).count() == 2:
-            print '\tok'
+            print ('\tok')
         else:
-            print '\terror'
+            print ('\terror')
 
-        print 'find publicly visible annotations'
+        print ('find publicly visible annotations')
         if Annotation.objects.all().publicly_visible().filter(
                 id__in=[ans[1].id, ans[2].id]).count() == 2:
-            print '\tok'
+            print ('\tok')
         else:
-            print '\terror'
+            print ('\terror')
 
-        print 'find graph annotation'
+        print ('find graph annotation')
         if Annotation.objects.all().with_graph().filter(
                 id=ans[2].id).count() == 1:
-            print '\tok'
+            print ('\tok')
         else:
-            print '\terror'
+            print ('\terror')
 
         for a in ans:
             a.delete()
@@ -974,7 +974,7 @@ Commands:
         url = 'http://www.digipal.eu/digipal/search/?from_link=true&s=1'
         #url = 'http://localhost/digipal/search/?from_link=true&s=1'
 
-        print 'Stress test for the search page.'
+        print ('Stress test for the search page.')
 
         class FetchingThread(threading.Thread):
             def __init__(self, index):
@@ -1009,7 +1009,7 @@ Commands:
             error_count = sum([1 for t in ts if t.status == '500'])
             if alive_count != alive_count_old:
                 alive_count_old = alive_count
-                print 'waiting (%d died, %d left, %d errors)' % (test_count - alive_count, alive_count, error_count)
+                print ('waiting (%d died, %d left, %d errors)' % (test_count - alive_count, alive_count, error_count))
 #                 if error_count > 0:
 #                     exit()
             if alive_count:
@@ -1018,9 +1018,9 @@ Commands:
         return ret
 
     def find_dup_im(self, **kwargs):
-        print 'duplicates'
+        print ('duplicates')
         from digipal.models import Image
-        print repr(Image.get_duplicates([744]))
+        print (repr(Image.get_duplicates([744])))
 
     def autocomplete(self, phrase, **kwargs):
         from utils import readFile
@@ -1034,48 +1034,48 @@ Commands:
             ur'(?ui)\b%s(?:[^|]{0,40}\|\||\w*\b)' % re.escape(phrase), idx)
         chrono(':search')
         print (u'\n'.join(set(matches))).encode('ascii', 'ignore')
-        print len(idx)
+        print (len(idx))
 
     def catnum(self, root=None):
-        print '\nh1 NOCAT'
+        print ('\nh1 NOCAT')
         hi1 = HistoricalItem(historical_item_type_id=1)
         hi1.save()
-        print hi1.catalogue_number
-        print hi1.catalogue_numbers.all()
+        print (hi1.catalogue_number)
+        print (hi1.catalogue_numbers.all())
 
-        print '\nh1 NOCAT'
+        print ('\nh1 NOCAT')
         hi1.save()
         hi1_id = hi1.id
-        print hi1.catalogue_number
-        print hi1.catalogue_numbers.all()
+        print (hi1.catalogue_number)
+        print (hi1.catalogue_numbers.all())
 
-        print '\nh2'
+        print ('\nh2')
         hi2 = HistoricalItem(historical_item_type_id=1)
         hi2.save()
-        print hi2.catalogue_number
-        print hi2.catalogue_numbers.all()
+        print (hi2.catalogue_number)
+        print (hi2.catalogue_numbers.all())
 
-        print '\nh2'
+        print ('\nh2')
         hi2.catalogue_numbers.add(CatalogueNumber.objects.all()[0])
         hi2.catalogue_numbers.add(CatalogueNumber.objects.all()[1])
-        print hi2.catalogue_numbers.all()
+        print (hi2.catalogue_numbers.all())
         hi2.save()
-        print hi2.catalogue_number
-        print hi2.catalogue_numbers.all()
+        print (hi2.catalogue_number)
+        print (hi2.catalogue_numbers.all())
 
-        print '\nh2 NOCAT'
+        print ('\nh2 NOCAT')
         hi2.catalogue_numbers.clear()
         hi2.save()
-        print hi2.catalogue_number
-        print hi2.catalogue_numbers.all()
+        print (hi2.catalogue_number)
+        print (hi2.catalogue_numbers.all())
 
-        print '\nh3'
+        print ('\nh3')
         hi3 = HistoricalItem.objects.get(id=hi1_id)
         hi3.catalogue_numbers.add(CatalogueNumber.objects.all()[0])
         hi3.save()
 
-        print hi3.catalogue_number
-        print hi3.catalogue_numbers.all()
+        print (hi3.catalogue_number)
+        print (hi3.catalogue_numbers.all())
 
     def fetch_and_test(self, root=None):
         from utils import web_fetch
@@ -1083,7 +1083,7 @@ Commands:
 
         if not root:
             root = 'http://localhost/'
-        print 'Base URL: %s' % root
+        print ('Base URL: %s' % root)
 
         stats = []
 
@@ -1130,7 +1130,7 @@ Commands:
             stats.append(sp)
 
             print
-            print 'Request %s' % url
+            print ('Request %s' % url)
 
             t0 = datetime.now()
 
@@ -1139,13 +1139,13 @@ Commands:
             t1 = datetime.now()
 
             if res['status'] != '200':
-                print 'ERROR: %s !!!!!!!!!!!!!!!!!!!' % res['status']
+                print ('ERROR: %s !!!!!!!!!!!!!!!!!!!' % res['status'])
                 continue
             if res['error']:
-                print 'ERROR: %s !!!!!!!!!!!!!!!!!!!' % res['error']
+                print ('ERROR: %s !!!!!!!!!!!!!!!!!!!' % res['error'])
                 continue
             if res['body']:
-                print '\t %s KB in %.4f s.' % (len(res['body']) / 1024, (t1 - t0).total_seconds())
+                print ('\t %s KB in %.4f s.' % (len(res['body']) / 1024, (t1 - t0).total_seconds()))
 
                 # prefix the line with numbers
                 ln = 0
@@ -1155,7 +1155,7 @@ Commands:
                     ln += 1
                     lines.append('%6s %s' % (ln, line))
                 sp['body'] = '\n'.join(lines)
-            print '\n'.join([str(m) for m in sp['msgs']])
+            print ('\n'.join([str(m) for m in sp['msgs']]))
 
     def get_opening_tag(self, bs_element):
         ret = ''
@@ -1217,10 +1217,10 @@ Commands:
                                      soup.title.string.replace('\n', ''))).encode('ascii', 'ignore')
 
         # find all the headers
-        print 'heading:'
+        print ('heading:')
         for i in range(1, 7):
             for header in soup.find_all('h%s' % i):
-                print '\t\t%s' % re.sub('\s+|\n', ' ', '%s' % header)
+                print ('\t\t%s' % re.sub('\s+|\n', ' ', '%s' % header))
 
         # check that all rows are under a container
         for row in soup.find_all('div', class_='row'):
@@ -1245,19 +1245,55 @@ Commands:
                         self.get_opening_tag(col), self.get_opening_tag(col.parent))).encode('ascii', 'ignore')
 
         # HTML validation
+        # if 1:
+        #     import urllib2
+        #     import time
+        #     attempts = 0
+        #     ok = True
+        #     while True:
+        #         attempts += 1
+        #         ok = True
+        #         from py_w3c.validators.html.validator import HTMLValidator
+        #         vld = HTMLValidator()
+        #         try:
+        #             vld.validate_fragment(body)
+        #         except urllib2.HTTPError:
+        #             time.sleep(1)
+        #             ok = False
+        #         if ok:
+        #             break
+        #         if attempts > 2:
+        #             break
+
+        #     if ok:
+        #         for info in vld.warnings:
+        #             ret.append('%6s: [W3C WARNING] %s' %
+        #                        (info['line'], info['message']))
+        #         for info in vld.errors:
+        #             ret.append('%6s: [W3C ERROR  ] %s' %
+        #                        (info['line'], info['message']))
+        #     else:
+        #         ret.append('\tFailed to call W3C validation.')
+
+        # return ret
+
+        # HTML validation
         if 1:
-            import urllib2
+            import urllib.request  # Updated import
             import time
+
             attempts = 0
             ok = True
+
             while True:
                 attempts += 1
                 ok = True
-                from py_w3c.validators.html.validator import HTMLValidator
-                vld = HTMLValidator()
+
+                from w3c_validator import Validator  # Assuming w3c_validator is the package
+                vld = Validator()
                 try:
-                    vld.validate_fragment(body)
-                except urllib2.HTTPError:
+                    vld.validate(body)
+                except urllib.request.HTTPError:  # Updated exception
                     time.sleep(1)
                     ok = False
                 if ok:
@@ -1276,6 +1312,7 @@ Commands:
                 ret.append('\tFailed to call W3C validation.')
 
         return ret
+
 
     def adjust_offsets(self, offset_path, target_path):
         # we calculate a better offset for the annotations by searching for a
@@ -1308,25 +1345,25 @@ Commands:
             # if rel_path != ur'cotton_caligula_axv\152v': continue
             # if rel_path != ur'harley_5915\13r': continue
             c += 1
-            print '%s (%d left)' % (rel_path, len(images['images']) - c)
+            print ('%s (%d left)' % (rel_path, len(images['images']) - c))
 
             src_path = os.path.join(images['root'], rel_path) + '.tif'
             dst_path = os.path.join(target_path, rel_path) + '.tif'
             if not os.path.exists(dst_path):
-                print '\tskipped (new image)'
+                print ('\tskipped (new image)')
                 continue
 
             # find an annotation in the database
             a = Annotation.objects.filter(
                 image__iipimage__endswith=rel_path.replace('\\', '/') + '.jp2')
             if a.count() == 0:
-                print '\tskipped (no annotation)'
+                print ('\tskipped (no annotation)')
                 continue
             a = a[0]
 
             if images['images'][rel_path]['offset'][2] != 0:
-                print '\tskipped (y-crop <> 0)'
-                print '\t!!!!!!!!!!!!! y-crop is not zero !!!!!!!!!!!!!!!'
+                print ('\tskipped (y-crop <> 0)')
+                print ('\t!!!!!!!!!!!!! y-crop is not zero !!!!!!!!!!!!!!!')
                 continue
 
             # open the images
@@ -1335,14 +1372,14 @@ Commands:
             dst_img = Image.open(dst_path)
             sps = src_img.convert('L').load()
             dps = dst_img.convert('L').load()
-            print '\tsrc: %s x %s; dst: %s x %s' % (src_img.size[0], src_img.size[1], dst_img.size[0], dst_img.size[1])
+            print ('\tsrc: %s x %s; dst: %s x %s' % (src_img.size[0], src_img.size[1], dst_img.size[0], dst_img.size[1]))
 
             # find the best match for this annotation region on the new image
 
             # We scan a whole line on the uncropped image to find the x value
             # that minimises the pixelwise difference of annotation regions.
             box = a.get_coordinates(None, True)
-            print '\tbox: %s' % repr(box)
+            print ('\tbox: %s' % repr(box))
             size = [(box[1][i] - box[0][i] + 1) for i in range(0, 1)]
             min_info = (0, 1e6)
             for x in range(0, src_img.size[0] - size[0]):
@@ -1358,20 +1395,20 @@ Commands:
                                         dps[box[0][0] + xs, ys] - diff0)
                 if diff < min_info[1]:
                     min_info = [x, diff]
-            print '\tbest match at x = %s (diff = %s)' % (min_info[0], min_info[1])
+            print ('\tbest match at x = %s (diff = %s)' % (min_info[0], min_info[1]))
             offsetx = min_info[0] - box[0][0]
             images['images'][rel_path]['offset'][3] = offsetx
-            print '\toffset: %s; detected: %s' % (repr(info['offset']), offsetx)
+            print ('\toffset: %s; detected: %s' % (repr(info['offset']), offsetx))
             if info['offset'][1] != offsetx:
-                print '\t******************************************'
+                print ('\t******************************************')
                 # if info['offset'][1] < 0 and offsetx != 0:
                 #    print '\t!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 
-        print '%d images with annotations.' % ca
+        print ('%d images with annotations.' % ca)
 
         print
 
-        print json.dumps(images)
+        print (json.dumps(images))
 
     def correct_annotations(self, info_path):
         import json
@@ -1384,9 +1421,9 @@ Commands:
             # if path != 'arundel_60\\83v': continue
             offsets = info['offset']
             if offsets[0]:
-                print path.replace('\\', '/')
+                print (path.replace('\\', '/'))
                 # continue
-                print '\t%s' % repr(offsets)
+                print ('\t%s' % repr(offsets))
                 imgs = Image.objects.filter(
                     iipimage__endswith=path.replace('\\', '/') + '.jp2')
                 c = imgs.count()
@@ -1414,7 +1451,7 @@ Commands:
                         # print annotation.cutout
                         # print annotation.geo_json
                         annotation.save()
-                    print '\t%d annotations' % annotations.count()
+                    print ('\t%d annotations' % annotations.count())
 
         # print counts
 
@@ -1563,25 +1600,25 @@ Commands:
 #         for f in new:
 #             print f
 
-        print '\nDifferent\n'
+        print ('\nDifferent\n')
         different = sorted(different)
         for f in different:
             # if not(f == 'add_46204\\recto'): continue
             src['images'][f]['offset'] = self.get_image_offset(src, dst, f)
-            print f
-            print '', src['images'][f]['offset']
+            print (f)
+            print ('', src['images'][f]['offset'])
             # print '', src['images'][f]['offset']
 
         # save the offsets
         print
 
-        print json.dumps(src)
+        print (json.dumps(src))
 
         print
 
-        print '\n'
-        print '%d source images;  %d destination images' % (len(src['images']), len(dst['images']))
-        print '%d new images; %d same images; %d different images' % (len(new), len(same), len(different))
+        print ('\n')
+        print ('%d source images;  %d destination images' % (len(src['images']), len(dst['images'])))
+        print ('%d new images; %d same images; %d different images' % (len(new), len(same), len(different)))
 
     # ------------------------------------------------------------------------------
 
@@ -1591,7 +1628,7 @@ Commands:
         im1 = Image.objects.get(id=id1)
         im2 = Image.objects.get(id=id2)
         ret = im1.find_image_offset(im2)
-        print ret
+        print (ret)
         return ret
 
     # ------------------------------------------------------------------------------
@@ -1711,7 +1748,7 @@ Commands:
         ret['images'] = self.get_image_info(path)
 
         import json
-        print json.dumps(ret)
+        print (json.dumps(ret))
 
         #img_dst = self.get_image_info(target_path)
 
@@ -1751,7 +1788,7 @@ Commands:
         return ret
 
     def rename_images(self, csv_path):
-        print csv_path
+        print (csv_path)
         import csv
         import shutil
 
@@ -1789,17 +1826,17 @@ Commands:
                         dir_name, file_name) + re.sub(ur'^.*(\.[^.]+)$', ur'\1', file_name_old)
                     if not os.path.exists(file_name):
                         #shutil.copyfile(os.path.join(base_dir, file_name_old), file_name)
-                        print file_name
+                        print (file_name)
                 else:
-                    print 'No match (%s)' % line[1]
+                    print ('No match (%s)' % line[1])
 
     def test_natsort(self, options):
         #[ ItemPart.objects.filter(display_label__icontains='royal')]
         sms = ['A.897.abc.ixv', 'Hereford Cathedral Library O.IX.2',
                'Hereford Cathedral Library O.VI.11']
         for s in sms:
-            print s, natural_sort_key(s)
-        print sorted(sms, key=lambda i: natural_sort_key(i))
+            print (s, natural_sort_key(s))
+        print (sorted(sms, key=lambda i: natural_sort_key(i)))
         # print natural_sort_key('A.897.abc.ixv')
         # print natural_sort_key('Hereford Cathedral Library O.IX.2')
         #'Hereford Cathedral Library O.VI.11'
@@ -1865,25 +1902,25 @@ Commands:
         ]:
             i.locus = l[0]
             i.update_number_and_side_from_locus()
-            print '%s => %s, %s' % (i.locus, i.folio_number, i.folio_side)
+            print ('%s => %s, %s' % (i.locus, i.folio_number, i.folio_side))
             if i.folio_number != l[1][0] or i.folio_side != l[1][1]:
-                print '\tERROR, expected %s, %s.' % (l[1][0], l[1][1])
+                print ('\tERROR, expected %s, %s.' % (l[1][0], l[1][1]))
 
         if 1:
-            print '\nDetect changes:'
+            print ('\nDetect changes:')
             for im in Image.objects.filter(item_part__isnull=False):
                 old_val = '(%s, %s)' % (im.folio_number, im.folio_side)
                 n, s = im.update_number_and_side_from_locus()
                 new_val = '(%s, %s)' % (n, s)
                 if new_val != old_val:
-                    print '#%s locus: %s, %s -> %s' % (im.id, im.locus, old_val, new_val)
+                    print ('#%s locus: %s, %s -> %s' % (im.id, im.locus, old_val, new_val))
 
     def test_mem(self):
         import gc
         objs = gc.get_objects()
 
         # total size
-        print '%s used by %s objects in the GC' % (hs(sum(sys.getsizeof(o) for o in objs)), len(objs))
+        print ('%s used by %s objects in the GC' % (hs(sum(sys.getsizeof(o) for o in objs)), len(objs)))
 
         # find biggest objects
         limit = 1000000
@@ -1897,7 +1934,7 @@ Commands:
 
         def list_objs(objs):
             for i in range(0, min(limit, len(objs))):
-                print '', i, hs(sys.getsizeof(objs[i])), type(objs[i]), ostr(objs[i])
+                print ('', i, hs(sys.getsizeof(objs[i])), type(objs[i]), ostr(objs[i]))
 
         objs = sorted(objs, key=lambda o: sys.getsizeof(o), reverse=True)
         list_objs(objs)

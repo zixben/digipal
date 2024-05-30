@@ -78,7 +78,7 @@ Commands:
         from utils import get_stats_from_xml_string
         stats = get_stats_from_xml_string(xml_string)
 
-        print repr(stats)
+        print (repr(stats))
 
     def val(self):
         if len(self.cargs) < 2:
@@ -102,10 +102,10 @@ Commands:
 
                 if not valid:
                     for error in dtd.error_log.filter_from_errors():
-                        print error
+                        print (error)
 
         except ET.XMLSyntaxError as e:
-            print u'XML Syntax Error %s' % e
+            print (u'XML Syntax Error %s' % e)
 
     def convert(self):
         if len(self.cargs) < 3:
@@ -133,7 +133,7 @@ Commands:
         if out_file:
             dputils.write_file(out_file, str(comments) + ret, encoding=None)
         else:
-            print str(comments) + ret
+            print (str(comments) + ret)
 
         return ret
 
@@ -223,7 +223,8 @@ Commands:
 
         html_string = re.sub(ur'.*(?musi)(<body.*/body>).*', ur'\1', html_string)
 
-        from BeautifulSoup import BeautifulSoup
+        # from BeautifulSoup import BeautifulSoup
+        from bs4 import BeautifulSoup
         soup = BeautifulSoup(html_string, 'html.parser')
         ret = soup.prettify()
 
