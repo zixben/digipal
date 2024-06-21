@@ -6,9 +6,11 @@ from mezzanine.core.views import direct_to_template, search
 from digipal.patches import mezzanine_patches, compressor_patch
 from digipal.models import CarouselItem
 from digipal.signals import init_signals
-from django.contrib.auth import views as auth_views
+# from django.contrib.auth import views as auth_views
+from django.contrib.auth.views import LoginView, LogoutView
 from django.views.generic import TemplateView
 from digipal.views.robots import robots_view
+# from digipal.views.doc import doc_view
 from digipal.index import count
 admin.autodiscover()
 
@@ -27,15 +29,23 @@ urlpatterns = [
     path('', include('digipal_text.urls')),
     path('admin/', include('digipal.urls_admin')),
     #there was a missing trailing slash
-    path('admin', include(admin.site.urls)),
+    path('admin/', include(admin.site.urls)),
     path('digipal/', include('digipal.urls_digipal')),
     # path('digipal/', include(('digipal.urls_digipal', 'digipal'), namespace='digipal')),
+
     #path('login', django.contrib.auth.views.login, name='login'),
-    #path('logout', django.contrib.auth.views.logout, name='logout'),
-    path('accounts', include('django.contrib.auth.urls')),
+    # path('logout', include('django.contrib.auth.urls'), name='logout'),
+    # path('login/', LoginView.as_view(), name='login'),
+    # path('logout/', LogoutView.as_view(), name='logout'),
+
+    # path('accounts/', include('django.contrib.auth.urls')),
+    # path('accounts', include('mezzanine.accounts.urls')),
+    path('', include('django.contrib.auth.urls')),
+
     path('robots.txt', robots_view),
     path('tinymce', include('tinymce.urls')),
     path('blog/search/', search),
+    # re_path(r'^doc/(?P<path>.*)$', doc_view),
 
      # these allow us to test 404 and 500 pages in DEBUG=True mode
     path('404/?', direct_to_template, {'template': 'errors/404.html'}, name = '404'),
@@ -60,12 +70,12 @@ urlpatterns = [
     re_path(r'^', include("mezzanine.urls"))
 
 ]
-if settings.DEBUG:
-    import debug_toolbar
-    urlpatterns = [
-        path('__debug__/', include(debug_toolbar.urls)),
+# if settings.DEBUG:
+#     import debug_toolbar
+#     urlpatterns = [
+#         path('__debug__/', include(debug_toolbar.urls)),
 
-    ] + urlpatterns
+#     ] + urlpatterns
 
 #urlpatterns = patterns('', ('^', include('digipal_text.urls')))
 """

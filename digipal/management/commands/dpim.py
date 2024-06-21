@@ -1,25 +1,33 @@
 from django.core.management.base import CommandError
-from dpbase import DPBaseCommand as BaseCommand
+from .dpbase import DPBaseCommand as BaseCommand
 from mezzanine.conf import settings
-from os.path import isdir
+from os.path import isdir, join
 import os
 import re
-import utils
-from optparse import make_option
+from .utils import *
+from digipal.models import Image
 from os import listdir
 from os.path import isfile, join
-from digipal.models import Image
 
 def get_originals_path():
-    ret = join(getattr(settings, 'IMAGE_SERVER_ROOT', ''), getattr(settings, 'IMAGE_SERVER_ORIGINALS_ROOT', ''))
+    root = getattr(settings, 'IMAGE_SERVER_ROOT', '')
+    originals_root = getattr(settings, 'IMAGE_SERVER_ORIGINALS_ROOT', '')
+    ret = join(root, originals_root)
+    print(f"IMAGE_SERVER_ROOT: {root}")
+    print(f"IMAGE_SERVER_ORIGINALS_ROOT: {originals_root}")
+    print(f"Originals Path: {ret}")
     return ret
 
 def get_image_path():
-    ret = join(getattr(settings, 'IMAGE_SERVER_ROOT', ''), getattr(settings, 'IMAGE_SERVER_UPLOAD_ROOT', ''))
+    root = getattr(settings, 'IMAGE_SERVER_ROOT', '')
+    upload_root = getattr(settings, 'IMAGE_SERVER_UPLOAD_ROOT', '')
+    ret = join(root, upload_root)
+    print(f"IMAGE_SERVER_ROOT: {root}")
+    print(f"IMAGE_SERVER_UPLOAD_ROOT: {upload_root}")
+    print(f"Image Path: {ret}")
     return ret
 
 class Command(BaseCommand):
-    args = 'list|upload'
     help = ''' Manage the Digipal images
 
 ----------------------------------------------------------------------
@@ -136,45 +144,45 @@ class Command(BaseCommand):
 
     ''' % (get_originals_path(), get_image_path())
 
-    option_list = BaseCommand.option_list + (
-        make_option('--db',
-            action='store',
-            dest='db',
-            default='default',
-            help='Name of the database configuration'),
-        make_option('--offline',
-            action='store_true',
-            dest='offline',
-            default='',
-            help='Only list images which are offline'),
-        make_option('--links',
-            action='store',
-            dest='links',
-            default='',
-            help='Link names'),
-        make_option('--op',
-            action='store',
-            dest='out_path',
-            default='.',
-            help='out path'),
-        make_option('--links_file',
-            action='store',
-            dest='links_file',
-            default='',
-            help='Link names'),
-        make_option('--missing',
-            action='store_true',
-            dest='missing',
-            default='',
-            help='Only list images which are missing from disk'),
-        make_option('--cdt',
-            action='store',
-            dest='cdt',
-            default='',
-            help=''),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('command', type=str, help='Subcommand to run')
+        parser.add_argument('--db',
+                            action='store',
+                            dest='db',
+                            default='default',
+                            help='Name of the database configuration')
+        parser.add_argument('--offline',
+                            action='store_true',
+                            dest='offline',
+                            default=False,
+                            help='Only list images which are offline')
+        parser.add_argument('--links',
+                            action='store',
+                            dest='links',
+                            default='',
+                            help='Link names')
+        parser.add_argument('--op',
+                            action='store',
+                            dest='out_path',
+                            default='.',
+                            help='Out path')
+        parser.add_argument('--links_file',
+                            action='store',
+                            dest='links_file',
+                            default='',
+                            help='Link names')
+        parser.add_argument('--missing',
+                            action='store_true',
+                            dest='missing',
+                            default=False,
+                            help='Only list images which are missing from disk')
+        parser.add_argument('--cdt',
+                            action='store',
+                            dest='cdt',
+                            default='',
+                            help='')
 
-    def get_all_files(self, root):
+    def get_all_files(self, root, options):
         # Scan all the image files on disk (under root) and in the database.
         # Returns an array of file informations. For each file we have:
         #     {'path': path relative to settings.IMAGE_SERVER_ROOT, 'disk': True|False, 'image': Image object|None}
@@ -182,7 +190,7 @@ class Command(BaseCommand):
 
         all_images = Image.objects.all()
 
-        cdt = self.options.get('cdt', None)
+        cdt = options.get('cdt', None)
         if cdt:
             all_images = eval('all_images.filter({})'.format(cdt))
 
@@ -238,7 +246,6 @@ class Command(BaseCommand):
         return ret
 
     def handle(self, *args, **options):
-
         root = get_image_path()
         if not root:
             raise CommandError('Path variable IMAGE_SERVER_ROOT not set in your settings file.')
@@ -246,18 +253,18 @@ class Command(BaseCommand):
             raise CommandError('Image path not found (%s).' % root)
         if len(args) < 1:
             raise CommandError('Please provide a command. Try "python manage.py help dpdb" for help.')
-        command = args[0]
+        command = options['command']
         if options['db'] not in settings.DATABASES:
             raise CommandError('Database settings not found ("%s"). Check DATABASE array in your settings.py.' % options['db'])
 
         db_settings = settings.DATABASES[options['db']]
 
         self.args = args
-
         self.options = options
 
         known_command = False
         counts = {'online': 0, 'disk': 0, 'disk_only': 0, 'missing': 0}
+
         if command == 'fetch':
             known_command = True
             self.fetch(*args, **options)
@@ -292,7 +299,7 @@ class Command(BaseCommand):
         if command in ('list', 'upload', 'unstage', 'update', 'remove', 'crop'):
             known_command = True
 
-            for file_info in self.get_all_files(root):
+            for file_info in self.get_all_files(root, options):
                 file_relative = file_info['path']
                 found_message = ''
 
@@ -608,9 +615,9 @@ class Command(BaseCommand):
         if not os.path.exists(file_path):
             print ('Download image')
             url = image.thumbnail_url(height=height,uncropped=True)
-            res = utils.web_fetch(url)
+            res = web_fetch(url)
             if not res['error']:
-                utils.write_file(file_path, res['body'])
+                write_file(file_path, res['body'])
             else:
                 print ('ERROR downloading image %s' % res['error'])
 
@@ -671,16 +678,16 @@ class Command(BaseCommand):
                 links = [link.strip() for link in links]
 
             if links:
-                html = utils.wget(url)
+                html = wget(url)
                 if not html:
                     print ('ERROR: request to %s failed.' % url)
                 else:
                     for link in links:
                         print (link)
-                        href = re.findall(ur'<a [^>]*href="([^"]*?)"[^>]*>\s*' + re.escape(link) + '\s*<', html)
+                        href = re.findall(r'<a [^>]*href="([^"]*?)"[^>]*>\s*' + re.escape(link) + r'\s*<', html)
                         if href:
                             href = href[0]
-                            href = re.sub(ur'/[^/]*$', '/' + href, url)
+                            href = re.sub(r'/[^/]*$', '/' + href, url)
                             print (href)
 
                             self.download_images_from_webpage(href, out_path)
@@ -688,7 +695,7 @@ class Command(BaseCommand):
     def download_images_from_webpage(self, href, out_path=None, img_name=None):
         ret = False
         print (href)
-        sub_html = utils.wget(href)
+        sub_html = wget(href)
 
         if not sub_html:
             print ('WARNING: request to %s failed.' % sub_html)
@@ -697,25 +704,25 @@ class Command(BaseCommand):
             # get the jpg image in the page
             #image_urls = re.findall(ur'<img [^>]*src="([^"]*?\.jpg)"[^>]*>', sub_html)
             #print sub_html
-            image_urls = re.findall(ur'<img [^>]*src\s*=\s*"([^"]*?)"[^>]*?>', sub_html)
+            image_urls = re.findall(r'<img [^>]*src\s*=\s*"([^"]*?)"[^>]*?>', sub_html)
             print (image_urls)
             for image_url in image_urls:
                 if not image_url.startswith('/'):
-                    image_url = re.sub(ur'/[^/]*$', '/' + image_url, href)
+                    image_url = re.sub(r'/[^/]*$', '/' + image_url, href)
                 else:
-                    image_url = re.sub(ur'^(.*?//.*?/).*$', r'\1' + image_url, href)
+                    image_url = re.sub(r'^(.*?//.*?/).*$', r'\1' + image_url, href)
                 print (image_url)
 
                 # get the image
-                image = utils.wget(image_url)
+                image = wget(image_url)
 
                 if not image:
                     print ('WARNING: request to %s failed.' % image_url)
                 else:
                     # save it
-                    image_path = os.path.join(out_path, img_name or re.sub(ur'^.*/', '', image_url)) + ''
+                    image_path = os.path.join(out_path, img_name or re.sub(r'^.*/', '', image_url)) + ''
                     print (image_path)
-                    utils.write_file(image_path, image)
+                    write_file(image_path, image)
 
         return ret
 
@@ -781,7 +788,7 @@ class Command(BaseCommand):
                 quality = self.get_arg(2, 50)
                 pause = self.get_arg(3, 0)
 
-                iipimage = self.getNormalisedPath(re.sub(ur'[^.]+$', '', file_relative)).replace('\\', '/')
+                iipimage = self.getNormalisedPath(re.sub(r'[^.]+$', '', file_relative)).replace('\\', '/')
                 recs = Image.objects.filter(iipimage__icontains=iipimage, item_part__isnull=False)
                 rec = None
 
@@ -798,7 +805,7 @@ class Command(BaseCommand):
                     fileout = self.getNormalisedPath('%s' % rec.display_label).lower() + '.jpg'
 
                 filein = join(get_originals_path().replace('/', os.sep), file_relative)
-                fileout = join(outpath, re.sub(ur'[^.]*$', 'jpg', os.path.basename(fileout)))
+                fileout = join(outpath, re.sub(r'[^.]*$', 'jpg', os.path.basename(fileout)))
                 if not os.path.exists(fileout):
                     cmd = 'convert -quiet -quality %s %s[0] %s' % (quality, filein, fileout)
                     if not self.is_dry_run():
@@ -824,7 +831,7 @@ class Command(BaseCommand):
                     status = 'COPIED+CONVERTED'
 
                     from iipimage.storage import CONVERT_TO_TIFF, CONVERT_TO_JP2
-                    shell_command = CONVERT_TO_JP2 % (join(original_path, file_relative), re.sub(ur'\.[^.]+$', ur'.'+settings.IMAGE_SERVER_EXT, target))
+                    shell_command = CONVERT_TO_JP2 % (join(original_path, file_relative), re.sub(r'\.[^.]+$', r'.'+settings.IMAGE_SERVER_EXT, target))
                     ret_shell = self.run_shell_command(shell_command)
                     if ret_shell:
                         status = 'CONVERSION ERROR: %s (command: %s)' % (ret_shell[0], ret_shell[1])
@@ -841,7 +848,7 @@ class Command(BaseCommand):
         path, basename = os.path.split(name)
         name = os.path.join(path, re.sub(r'(\s|,)+', '_' , basename.lower()))
         path, ext = os.path.splitext(name)
-        name = path + ur'.' + settings.IMAGE_SERVER_EXT
+        name = path + r'.' + settings.IMAGE_SERVER_EXT
 
         ret_shell = []
 
@@ -894,9 +901,9 @@ class Command(BaseCommand):
         name = os.path.join(path, re.sub(r'(\s|,)+', '_' , basename.lower()))
         path_name, ext = os.path.splitext(name)
 
-        name_tmp = path_name + ur'.tmp.bmp'
+        name_tmp = path_name + r'.tmp.bmp'
 
-        name_dst = path_name + ur'.' + settings.IMAGE_SERVER_EXT
+        name_dst = path_name + r'.' + settings.IMAGE_SERVER_EXT
 
         def absp(rel_path):
             return os.path.join(settings.IMAGE_SERVER_ROOT, rel_path)
@@ -1012,7 +1019,7 @@ class Command(BaseCommand):
             import shutil
             shutil.move(path_src, ret)
 
-            # update the image record (width & height) and save it
+            # update the file name in the image record
             dims = self.reset_image_dimensions(image_info)
 
             # remove original image
@@ -1059,7 +1066,7 @@ class Command(BaseCommand):
         # images/pim/jp2/1.bmp[0]=>images/pim/jp2/1.bmp BMP 1100x1134 1100x1134+0+0 8-bit sRGB 3.742MB 0.000u 0:00.000
         ret_shell = self.run_shell_command(command)
         if ret_shell is None:
-            content = utils.readFile(out_file)
+            content = readFile(out_file)
             dimss = re.findall(r' (\d+)x(\d+)\b', content)
             if dimss:
                 ret = [int(d) for d in dimss[0]]

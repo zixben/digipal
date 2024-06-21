@@ -207,7 +207,9 @@ INSTALLED_APPS = (
     'pagination',
     'tinymce',
     'easy_thumbnails',
+    'debug_toolbar',
 )
+
 
 ###############
 # MIDDLEWARES #
@@ -285,40 +287,41 @@ MIDDLEWARE = (
     'mezzanine.core.middleware.FetchFromCacheMiddleware',
     # Added by Luca for is_ajax
     'digipal.middleware.AjaxMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 )
-MIDDLEWARE_CLASSES = (
-    'pagination.middleware.PaginationMiddleware',
-    'digipal.middleware.HttpsAdminMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'mezzanine.core.middleware.UpdateCacheMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+# MIDDLEWARE_CLASSES = (
+#     'pagination.middleware.PaginationMiddleware',
+#     'digipal.middleware.HttpsAdminMiddleware',
+#     'django.contrib.messages.middleware.MessageMiddleware',
+#     'mezzanine.core.middleware.UpdateCacheMiddleware',
+#     'django.middleware.locale.LocaleMiddleware',
+#     'django.contrib.sessions.middleware.SessionMiddleware',
+#     'django.contrib.auth.middleware.AuthenticationMiddleware',
 
-    # Authentication using REMOTE_USER
-    # GN 09/05/13: Commented out, see Mantis #5585
-    # This was preventing us from testing the site as a non-staff user
-    # or log in as a different staff user.
-    # 'django.contrib.auth.middleware.RemoteUserMiddleware',
+#     # Authentication using REMOTE_USER
+#     # GN 09/05/13: Commented out, see Mantis #5585
+#     # This was preventing us from testing the site as a non-staff user
+#     # or log in as a different staff user.
+#     # 'django.contrib.auth.middleware.RemoteUserMiddleware',
 
-    'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
+#     'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
+#     'django.middleware.common.CommonMiddleware',
+#     'django.middleware.csrf.CsrfViewMiddleware',
+#     'django.contrib.messages.middleware.MessageMiddleware',
 
-    'mezzanine.core.request.CurrentRequestMiddleware',
-    'mezzanine.core.middleware.RedirectFallbackMiddleware',
-    # 'mezzanine.core.middleware.TemplateForDeviceMiddleware',
-    'mezzanine.core.middleware.AdminLoginInterfaceSelectorMiddleware',
-    'mezzanine.core.middleware.SitePermissionMiddleware',
-    'mezzanine.pages.middleware.PageMiddleware',
-    'mezzanine.core.middleware.FetchFromCacheMiddleware',
+#     'mezzanine.core.request.CurrentRequestMiddleware',
+#     'mezzanine.core.middleware.RedirectFallbackMiddleware',
+#     # 'mezzanine.core.middleware.TemplateForDeviceMiddleware',
+#     'mezzanine.core.middleware.AdminLoginInterfaceSelectorMiddleware',
+#     'mezzanine.core.middleware.SitePermissionMiddleware',
+#     'mezzanine.pages.middleware.PageMiddleware',
+#     'mezzanine.core.middleware.FetchFromCacheMiddleware',
 
-    # Uncomment the following if using any of the SSL settings:
-    # 'mezzanine.core.middleware.SSLRedirectMiddleware',
-    "django.middleware.gzip.GZipMiddleware",
-    'digipal.middleware.ErrorMiddleware',
-)
+#     # Uncomment the following if using any of the SSL settings:
+#     # 'mezzanine.core.middleware.SSLRedirectMiddleware',
+#     "django.middleware.gzip.GZipMiddleware",
+#     'digipal.middleware.ErrorMiddleware',
+# )
 
 TEMPLATE_CONTEXT_PROCESSORS = (
 
@@ -545,9 +548,17 @@ LOGGING = {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
         'django.request': {
             'handlers': ['digipal_error', 'mail_admins'],
             'level': 'ERROR',
@@ -912,3 +923,11 @@ else:
     set_dynamic_settings(globals())
 
 WHOOSH_INDEX = os.path.join(PROJECT_ROOT, 'search/unified')
+
+THUMBNAIL_ALIASES = {
+    '': {
+        'small': {'size': (60, 60), 'crop': True},
+    },
+}
+
+THUMBNAIL_DEBUG = True

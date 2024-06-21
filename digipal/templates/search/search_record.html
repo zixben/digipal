@@ -145,7 +145,7 @@
 
 
                                                 <span class="current">
-                                                    {% reset_recordids as recordids %}
+                                                    
                                                     {% if type.results_are_recordids %}
                                                         {% get_records_from_ids type recordids as records %}
 
@@ -196,7 +196,8 @@
     <script type="text/javascript" src="{{ STATIC_URL }}js/forms.reset.js"></script>
     <script type="text/javascript" src="{{ STATIC_URL }}digipal/scripts/drag_to_lightbox.js"></script>
     <script type="text/javascript">
-		init_search_page({{ search_page_options_json|safe }});
+        var searchPageOptions = {{ search_page_options_json|safe }};
+        init_search_page(searchPageOptions);
     </script>
 
     {% if can_edit %}

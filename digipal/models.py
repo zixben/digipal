@@ -2393,10 +2393,12 @@ Image.webpath_key = 'Page'
 
 
 def normalize_string(s):
+    import unicodedata
     """Converts non-ascii characters into ascii, removes punctuation,
     substitutes spaces with _, and converts to lowercase."""
     s = s.strip()
-    s = strdata.normalize('NFKD', u'%s' % s).encode('ascii', 'ignore')
+    # s = strdata.normalize('NFKD', u'%s' % s).encode('ascii', 'ignore')
+    s = unicodedata.normalize('NFKD', u'%s' % s).encode('ascii', 'ignore')
     s = s.translate(string.maketrans('', ''), string.punctuation)
     s = re.sub(r'\s+', '_', s)
     s = s.lower()

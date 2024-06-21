@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand, CommandError
-from dpbase import DPBaseCommand
+from .dpbase import DPBaseCommand
 from mezzanine.conf import settings
 from os.path import isdir
 import os
@@ -8,7 +7,6 @@ import sys
 import shlex
 import subprocess
 import re
-from optparse import make_option
 from django.db import IntegrityError
 from digipal.models import *
 from digipal.utils import natural_sort_key
@@ -16,6 +14,9 @@ from digipal.templatetags.hand_filters import chrono
 from django.template.defaultfilters import slugify
 from time import sleep
 
+from django.contrib import admin
+from django.urls import reverse
+from .utils import web_fetch
 
 class Command(DPBaseCommand):
     help = """
@@ -64,83 +65,65 @@ Commands:
         test date conversion during json parsing
 """
 
-    args = 'locus|email'
-    option_list = BaseCommand.option_list + (
-        make_option('--db',
-                    action='store',
-                    dest='db',
-                    default='default',
-                    help='Name of the target database configuration (\'default\' if unspecified)'),
-        make_option('--src',
-                    action='store',
-                    dest='src',
-                    default='hand',
-                    help='Name of the source database configuration (\'hand\' if unspecified)'),
-        make_option('--table',
-                    action='store',
-                    dest='table',
-                    default='',
-                    help='Name of the tables to backup. This acts as a name filter.'),
-        make_option('--dry-run',
-                    action='store_true',
-                    dest='dry-run',
-                    default=False,
-                    help='Dry run, don\'t change any data.'),
-    )
+    def add_arguments(self, parser):
+        parser.add_argument('command', type=str, help='The command to run')
+        parser.add_argument('args', nargs='*', help='Arguments for the command')
+        parser.add_argument('--db', action='store', dest='db', default='default', help='Name of the target database configuration (\'default\' if unspecified)')
+        parser.add_argument('--src', action='store', dest='src', default='hand', help='Name of the source database configuration (\'hand\' if unspecified)')
+        parser.add_argument('--table', action='store', dest='table', default='', help='Name of the tables to backup. This acts as a name filter.')
+        parser.add_argument('--dry-run', action='store_true', dest='dry_run', default=False, help='Dry run, don\'t change any data.')
+        parser.add_argument('root_url', type=str, help='The root URL, e.g., http://localhost:8080')
+        parser.add_argument('sessionid', type=str, help='The session ID for authentication')
 
     def handle(self, *args, **options):
-
         self.log_level = 3
-
         self.options = options
-
-        if len(args) < 1:
-            raise CommandError(
-                'Please provide a command. Try "python manage.py help dpmigrate" for help.')
-        command = args[0]
+        command = options['command']
 
         known_command = False
 
         if command == 'test_admin':
-            '''
-            Send web request to all admin change list, add, and change_form pages
-            Usage: DJANGO_SITE_ROOT_URL DJANGO_SESSIONID
-            Example: http://localhost:8080 6o436pngqgpjg0bqd46fhge3a458t92x
-            '''
             known_command = True
 
-            if len(args) < 3:
-                print ('Please provide a root URL, e.g. http://localhost:8080')
-                print ('And a sesion id, e.g. 6o436pngqgpjg0bqd46fhge3a458t92x')
-                exit()
+            # if len(args) < 2:
+            #     print('Please provide a root URL, e.g. http://localhost:8080')
+            #     print('And a session id, e.g. 6o436pngqgpjg0bqd46fhge3a458t92x')
+            #     exit()
 
-            root_url = args[1]
-            sessionid = args[2]
+            # root_url = args[0]
+            # sessionid = args[1]
+            root_url = options['root_url'].rstrip('/')
+            sessionid = options['sessionid']
 
-            from django.contrib import admin
-            from django.core import urlresolvers
-            from utils import web_fetch
-            for amodel, aadmin in admin.site._registry.iteritems():
-                print (amodel, aadmin)
-
+            for amodel, aadmin in admin.site._registry.items():
+                print(amodel, aadmin)
                 obj = amodel.objects.first()
-
-                url_part = '%s_%s' % (amodel._meta.app_label,
-                                      amodel._meta.model_name)
+                url_part = '%s_%s' % (amodel._meta.app_label, amodel._meta.model_name)
 
                 urls = [
-                    urlresolvers.reverse('admin:%s_add' % url_part),
-                    urlresolvers.reverse('admin:%s_changelist' % url_part)
+                    reverse('admin:%s_add' % url_part),
+                    reverse('admin:%s_changelist' % url_part)
                 ]
                 if obj:
-                    urls.append(urlresolvers.reverse(
-                        'admin:%s_change' % url_part, args=(obj.pk,)))
+                    urls.append(reverse('admin:%s_change' % url_part, args=(obj.pk,)))
 
                 for url in urls:
-                    url = root_url + url
-                    res = web_fetch(url, sessionid=sessionid, noredirect=True)
-                    if res['status'] != '200':
-                        print ('WARNING: %s code returned by %s' % (res['status'], url))
+                    full_url = root_url + url
+                    res = web_fetch(full_url, sessionid=sessionid, noredirect=True)
+                    status_code = res['status']
+                    print(f'Status {status_code} returned by {full_url}')
+                    if status_code == '200':
+                        print(f'SUCCESS: {status_code} code returned by {full_url}')
+                    else:
+                        print(f'WARNING: {status_code} code returned by {full_url}')
+                        if status_code == '302':
+                            print('Action Required: Ensure proper authentication and URL configuration.')
+                        elif status_code == '403':
+                            print('Action Required: Check user permissions and ensure correct user is logged in.')
+                        elif status_code == '500':
+                            print('Action Required: Check server logs for detailed error messages.')
+
+
 
         if command == 'hd':
             # 8546 </c> [1145, 1145, 1145, 1231, 1231, 1231, 1231, 1231, 1231, 1231]
@@ -170,7 +153,7 @@ Commands:
                 desc = hd.description
                 if desc and len(desc) > 0:
                     # print hd.id, len(desc)
-                    for el in re.findall(ur'(?ui)<[^>]+>', desc):
+                    for el in re.findall(r'(?ui)<[^>]+>', desc):
                         v = els.get(el, [])
                         v.append(hd.hand.id)
                         els[el] = v
@@ -180,11 +163,11 @@ Commands:
 
         if command == 'record_path':
             known_command = True
-            self.record_path(*args[1:])
+            self.record_path(*options['args'])
 
         if command == 'download_images':
             known_command = True
-            self.download_images(*args[1:])
+            self.download_images(*options['args'])
 
         if command == 'jsdates':
             known_command = True
@@ -195,11 +178,11 @@ Commands:
                 },
                 'l': ['v1', '2016-10-28T13:27:38.944298+00:00'],
             }
-            print (repr(d))
+            print(repr(d))
             ds = dputils.json_dumps(d)
-            print (repr(ds))
+            print(repr(ds))
             d2 = dputils.json_loads(ds)
-            print (repr(d2))
+            print(repr(d2))
 
         if command == 'mem':
             known_command = True
@@ -412,7 +395,7 @@ Commands:
                 for filename in files:
                     path = os.path.join(root, filename)
 
-                    ext = re.sub(ur'^.*\.', '', filename)
+                    ext = re.sub(r'^.*\.', '', filename)
                     if ext in ['less', 'ts']:
                         counts['left'] += 1
                         if is_verbose:
@@ -601,7 +584,7 @@ Commands:
         url = args[0]
         path = args[1]
 
-        rng = re.sub(ur'^.*\{([^}]*)\}.*$', ur'\1', url)
+        rng = re.sub(r'^.*\{([^}]*)\}.*$', r'\1', url)
         if rng == url:
             return 'ERROR: please specify a range in the URL. e.g. {1r-10v}'
 
@@ -611,10 +594,10 @@ Commands:
 
         locus = rng[0]
         while True:
-            aurl = re.sub(ur'\{[^}]*\}', locus, url)
+            aurl = re.sub(r'\{[^}]*\}', locus, url)
 
             filename = os.path.join(path, locus)
-            if not re.search(ur'\..{1,4}$', filename):
+            if not re.search(r'\..{1,4}$', filename):
                 filename += '.jpg'
 
             print ('downloading %s to %s' % (aurl, filename))
@@ -645,7 +628,7 @@ Commands:
                     return ('%0' + str(len(n)) + 'd') % (int(n) + 1)
 
                 # increment number
-                locus = re.sub(ur'\d+', incn, locus)
+                locus = re.sub(r'\d+', incn, locus)
 
     def reconstruct_image(self, *args):
         from utils import web_fetch, write_file
@@ -671,7 +654,7 @@ Commands:
                 for x in range(0, 10):
                     for y in range(0, 10):
                         print ('', x, y)
-                        url = re.sub(ur'\d+,\d+,\d+,\d+', '%d,%d,%d,%d' %
+                        url = re.sub(r'\d+,\d+,\d+,\d+', '%d,%d,%d,%d' %
                                      (y * max_length, x * max_length, max_length, max_length), url)
                         # print url
                         info = web_fetch(url)
@@ -1026,12 +1009,12 @@ Commands:
         from utils import readFile
         settings.DEV_SERVER = True
         # split into terms
-        terms = re.split(ur'(?ui)[^\w*]+', phrase)
+        terms = re.split(r'(?ui)[^\w*]+', phrase)
 
         chrono('search:')
         idx = readFile('ica.idx')
         matches = re.findall(
-            ur'(?ui)\b%s(?:[^|]{0,40}\|\||\w*\b)' % re.escape(phrase), idx)
+            r'(?ui)\b%s(?:[^|]{0,40}\|\||\w*\b)' % re.escape(phrase), idx)
         chrono(':search')
         print (u'\n'.join(set(matches))).encode('ascii', 'ignore')
         print (len(idx))
@@ -1078,11 +1061,13 @@ Commands:
         print (hi3.catalogue_numbers.all())
 
     def fetch_and_test(self, root=None):
-        from utils import web_fetch
+        # from utils import web_fetch
         from datetime import datetime
 
         if not root:
-            root = 'http://localhost/'
+            # root = 'http://localhost/'
+            root = 'http://127.0.0.1:8000/'
+            
         print ('Base URL: %s' % root)
 
         stats = []
@@ -1160,7 +1145,7 @@ Commands:
     def get_opening_tag(self, bs_element):
         ret = ''
         #ret = '<%s %s [..]' % (bs_element.name, ' '.join(['%s="%s"' % (k, v) for k,v in bs_element.attrs.iteritems()]))
-        ret = re.sub(ur'(?musi)>.*', '', ('%s' % bs_element))
+        ret = re.sub(r'(?musi)>.*', '', ('%s' % bs_element))
         return ret
 
     def find_errors(self, body):
@@ -1176,7 +1161,7 @@ Commands:
             ln += 1
             msg = ''
 
-            sheets_names = re.findall(ur'''[^'"/]+\.css''', line)
+            sheets_names = re.findall(r'''[^'"/]+\.css''', line)
             if sheets_names and sheets_names[0] in sheets:
                 msg = 'Stylesheet included twice: %s' % sheets_names[0]
                 sheets[sheets_names[0]] = 1
@@ -1185,7 +1170,7 @@ Commands:
                 if line.find('src') == -1:
                     script_open_line = ln
                 else:
-                    script_names = re.findall(ur'''[^'"/]+\.js''', line)
+                    script_names = re.findall(r'''[^'"/]+\.js''', line)
                     if script_names[0] in scripts:
                         msg = 'Script included twice: %s' % script_names[0]
                     scripts[script_names[0]] = 1
@@ -1193,16 +1178,16 @@ Commands:
                 msg = 'Inline script (%d lines, starts at %s)' % (
                     ln - script_open_line, script_open_line)
                 script_open_line = None
-            styles = re.findall(ur'''style\s*=\s*['"]([^"']*)''', line)
+            styles = re.findall(r'''style\s*=\s*['"]([^"']*)''', line)
             for style in styles:
-                style = re.sub(ur'(?:height|width)\s*:\s*[^;]*', ur'', style)
+                style = re.sub(r'(?:height|width)\s*:\s*[^;]*', r'', style)
                 style = style.replace(' ', '')
                 style = style.replace(';', '')
                 if style:
                     msg = 'Inline style'
 #             if re.search('style\s*=(\s*)"', line):
 #                 msg = 'Inline style'
-            if re.search('class.+\Wcontainer\W', line):
+            if re.search(r'class.+\Wcontainer\W', line):
                 containers += 1
             if msg:
                 ret.append('%6s: %s (%s)' % (ln, msg, line.strip()))
@@ -1213,14 +1198,14 @@ Commands:
         import bs4
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(body)
-        print (' title: %s' % re.sub(ur'\s+', ' ',
+        print (' title: %s' % re.sub(r'\s+', ' ',
                                      soup.title.string.replace('\n', ''))).encode('ascii', 'ignore')
 
         # find all the headers
         print ('heading:')
         for i in range(1, 7):
             for header in soup.find_all('h%s' % i):
-                print ('\t\t%s' % re.sub('\s+|\n', ' ', '%s' % header))
+                print ('\t\t%s' % re.sub(r'\s+|\n', ' ', '%s' % header))
 
         # check that all rows are under a container
         for row in soup.find_all('div', class_='row'):
@@ -1238,7 +1223,7 @@ Commands:
         # check that all cols are under a row
         for col in soup.find_all('div'):
             cl = ' '.join(col.get('class', []))
-            if re.search(ur'\bcol-\w\w-\d\b', cl):
+            if re.search(r'\bcol-\w\w-\d\b', cl):
                 if col.parent.name != 'div' or (
                         'row' not in col.parent.get('class', [])):
                     print ('    ? : Bootstrap ERROR: Content should be placed within columns, and only columns may be immediate children of rows\n\t\t[ %s ] under [ %s ]' % (
@@ -1481,7 +1466,7 @@ Commands:
                 o' = 0 if r = lx or ly or o < 0
                 r' = ((r * l) + o') / nl
         '''
-        match = re.search(ur'RGN=([^,]+),([^,]+),([^,]+),([^,]+)&', ret)
+        match = re.search(r'RGN=([^,]+),([^,]+),([^,]+),([^,]+)&', ret)
         #size = annotation.image.iipimage._get_image_dimensions()
         size = (image_info['x'], image_info['y'])
         rgn = []
@@ -1505,7 +1490,7 @@ Commands:
             rgn.append(r)
 
         # print rgn
-        ret = re.sub(ur'RGN=[^&]+', ur'RGN=' +
+        ret = re.sub(r'RGN=[^&]+', r'RGN=' +
                      ','.join(['%.6f' % r for r in rgn]), ret)
         # print ret
 
@@ -1768,7 +1753,7 @@ Commands:
                     file_relative = os.path.relpath(file, path)
 
                     st = os.stat(file)
-                    key = re.sub(ur'\.[^.]+$', ur'', file_relative)
+                    key = re.sub(r'\.[^.]+$', r'', file_relative)
                     ret[key] = {
                         'ext': extension[1:],
                         'size': st.st_size,
@@ -1802,20 +1787,20 @@ Commands:
                     first_line = False
                     continue
                 file_name_old = line[0]
-                matches = re.match(ur'(.*),(.*)', line[1])
+                matches = re.match(r'(.*),(.*)', line[1])
                 if not matches:
-                    matches = re.match(ur'(.*)(recto|verso)', line[1])
+                    matches = re.match(r'(.*)(recto|verso)', line[1])
                 if matches:
                     dir_name = matches.group(1).lower()
                     file_name = matches.group(2).lower().strip()
 
-                    file_name = re.sub(ur'^f\.\s*', '', file_name)
+                    file_name = re.sub(r'^f\.\s*', '', file_name)
                     file_name = file_name.replace('*', 'star')
-                    file_name = re.sub(ur'\s+', '_', file_name.strip())
+                    file_name = re.sub(r'\s+', '_', file_name.strip())
 
-                    dir_name = re.sub(ur'\b(\w)\s?\.\s?', ur'\1', dir_name)
-                    dir_name = re.sub(ur'\s+', '_', dir_name.strip())
-                    dir_name = re.sub(ur'\.', '', dir_name).strip()
+                    dir_name = re.sub(r'\b(\w)\s?\.\s?', r'\1', dir_name)
+                    dir_name = re.sub(r'\s+', '_', dir_name.strip())
+                    dir_name = re.sub(r'\.', '', dir_name).strip()
 
                     # create the dir
                     dir_name = os.path.join(base_dir, dir_name)
@@ -1823,7 +1808,7 @@ Commands:
                     if not os.path.exists(dir_name):
                         os.mkdir(dir_name)
                     file_name = os.path.join(
-                        dir_name, file_name) + re.sub(ur'^.*(\.[^.]+)$', ur'\1', file_name_old)
+                        dir_name, file_name) + re.sub(r'^.*(\.[^.]+)$', r'\1', file_name_old)
                     if not os.path.exists(file_name):
                         #shutil.copyfile(os.path.join(base_dir, file_name_old), file_name)
                         print (file_name)
@@ -1876,7 +1861,8 @@ Commands:
 
         # Send the message via our own SMTP server, but don't include the
         # envelope header.
-        s = smtplib.SMTP('localhost')
+        # s = smtplib.SMTP('localhost')
+        s = smtplib.SMTP('127.0.0.1:8000')
         s.sendmail(msg['From'], msg['To'].split(', '), msg.as_string())
         s.quit()
 
@@ -1945,3 +1931,5 @@ Commands:
 
 def hs(size):
     return '%.3f MB' % (1.0 * size / 1024.0 / 1024.0)
+
+

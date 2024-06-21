@@ -25,7 +25,7 @@ class ExecutionError(Exception):
 
 
 def show_help():
-    print '''Usage: python %s [OPTIONS] COMMAND
+    print ('''Usage: python %s [OPTIONS] COMMAND
 
 Commands:
 
@@ -66,7 +66,7 @@ Options:
   --nohg
      pull command ignores hg repo
      
-''' % os.path.basename(__file__)
+''' % os.path.basename(__file__))
     exit
 
 
@@ -138,22 +138,22 @@ def process_commands_main_dir():
 
         username = get_terminal_username()
 
-        print 'Project folder: %s' % project_folder
-        print 'GitHub folder: %s' % github_dir
+        print ('Project folder: %s' % project_folder)
+        print ('GitHub folder: %s' % github_dir)
 
         if command == 'nc':
             known_command = True
             dirs = ['django_cache', 'static/CACHE']
             for adir in dirs:
                 dir = os.path.join(project_folder, adir)
-                print 'Empty %s' % dir
+                print ('Empty %s' % dir)
                 if not os.path.isdir(dir):
-                    print 'WARNING: path not found.'
+                    print ('WARNING: path not found.')
                 else:
                     # TODO: windows command
                     cmd = 'sudo rm -r %s/*' % dir
                     res = system(cmd)
-            print 'done'
+            print ('done')
 
         if command == 'perms':
             known_command = True
@@ -162,7 +162,7 @@ def process_commands_main_dir():
         if command == 'g':
             known_command = True
             argms = sys.argv[2:]
-            print repr(argms)
+            print (repr(argms))
             os.chdir(github_dir)
 
             for pair in [['s', 'status'], ['p', 'pull'], ['l', 'log']]:
@@ -194,7 +194,7 @@ def process_commands_main_dir():
                 if has_local_change:
                     status += ' (%s)' % 'LOCAL CHANGES'
 
-                print 'digipal: %s ' % (status,)
+                print ('digipal: %s ' % (status,))
 
                 if not config.SELF_CONTAINED:
                     os.chdir(original_dir)
@@ -214,17 +214,17 @@ def process_commands_main_dir():
                     if has_local_change:
                         status += ' (%s)' % 'LOCAL CHANGES'
 
-                    print 'Mercurial: %s ' % (status, )
+                    print ('Mercurial: %s ' % (status, ))
             finally:
                 os.chdir(original_dir)
 
         if command == 'diff':
             known_command = True
             try:
-                print '> Diff main'
+                print ('> Diff main')
                 run_shell_command(['hg', 'diff'])
 
-                print '> Diff digipal'
+                print ('> Diff digipal')
                 os.chdir('digipal')
                 run_shell_command(['git', 'diff'])
 
@@ -238,15 +238,15 @@ def process_commands_main_dir():
 
         if command == 'cs':
             known_command = True
-            print '> Collect Static'
+            print ('> Collect Static')
             system('python manage.py collectstatic --noinput')
 
         if command == 'pull':
             known_command = True
             try:
-                print 'Main app folder: %s' % project_folder
+                print ('Main app folder: %s' % project_folder)
 
-                print '> check configuration (symlinks, repo branches, etc.)'
+                print('> check configuration (symlinks, repo branches, etc.)')
 #                 if not os.path.exists('iipimage') and os.path.exists('django-iipimage'):
 #                     if os.name == 'nt':
 #                         system('junction iipimage django-iipimage\iipimage')
@@ -255,7 +255,7 @@ def process_commands_main_dir():
 
                 for path in ('iipimage', 'django-iipimage'):
                     if os.path.exists(path):
-                        print '> remove %s' % path
+                        print ('> remove %s' % path)
                         if os.name == 'nt':
                             system('del /F /S /Q %s' % path)
                             system('rmdir /S /Q %s' % path)
@@ -263,7 +263,7 @@ def process_commands_main_dir():
                             system('rm -r %s' % path)
 
                 validation_git = r'(?i)error:'
-                print '> Pull digipal (%s)' % github_dir
+                print ('> Pull digipal (%s)' % github_dir)
                 os.chdir(github_dir)
                 git_status_info = {}
                 #system('git status', r'(?i)on branch ('+get_allowed_branch_names_as_str()+')', True, 'Digipal should be on branch master. Try \'cd digipal_github; git checkout master\' to fix the issue.', git_status_info)
@@ -275,7 +275,7 @@ def process_commands_main_dir():
                 os.chdir(original_dir)
 
                 if not config.SELF_CONTAINED and not options.nohg:
-                    print '> Pull main'
+                    print ('> Pull main')
                     validation_hg = r'(?i)error:|abort:'
                     system('hg pull', validation_hg)
                     # This would cause and 'abort: uncommitted local changes'
@@ -293,25 +293,25 @@ def process_commands_main_dir():
                 # FIX PERMISSIONS
                 fix_permissions(username, project_folder, options)
 
-                print '> South migrations'
+                print ('> South migrations')
                 system('python manage.py migrate --noinput',
                        r'(?i)!|exception|error')
 
                 if not get_config('DJANGO_WEB_SERVER'):
-                    print '> Collect Static'
+                    print ('> Collect Static')
                     system('python manage.py collectstatic --noinput')
                 else:
-                    print '> Collect Static (skipped: django webserver)'
+                    print ('> Collect Static (skipped: django webserver)')
 
-                print '> Validate'
+                print ('> Validate')
                 system('python manage.py check', r'no issues', True)
 
-                print '> Update build info'
+                print ('> Update build info')
                 system('python manage.py dpdb setbuild --branch "%s"' %
                        branch_name)
 
                 if os.name != 'nt':
-                    print '> Touch WSGI'
+                    print ('> Touch WSGI')
                     run_shell_command(['touch', '%s/wsgi.py' % project_folder])
 
             except ExecutionError as e:
@@ -320,9 +320,9 @@ def process_commands_main_dir():
                     server_name = 'HOSTNAME'
                     send_email(email, e.title + '\n\n' + e.message,
                                'Pull Script ERROR on %s' % server_name)
-                    print 'email sent to %s ' % email
-                print e.message
-                print e.title
+                    print ('email sent to %s ' % email)
+                print (e.message)
+                print (e.title)
 
             finally:
                 os.chdir(original_dir)
@@ -342,7 +342,7 @@ def fix_permissions(username, project_folder, options):
     if has_sudo:
         with_sudo = '(with sudo)'
         sudo = 'sudo '
-    print '> fix permissions %s' % with_sudo
+    print ('> fix permissions %s' % with_sudo)
 
     web_service_user = 'www-data'
     puller = username
@@ -441,7 +441,7 @@ def read_file(file_path):
         text_file = open(file_path, 'r')
         ret = text_file.read()
         text_file.close()
-    except Exception, e:
+    except Exception as e:
         pass
     return ret
 
@@ -493,7 +493,7 @@ def run_shell_command(command, sudo=False, aout=None):
                 sys.stdout.flush()
         #subprocess.check_output(command, stdin=subprocess.STD_INPUT_HANDLE, stdout=subprocess.STD_OUTPUT_HANDLE)
     # except subprocess.CalledProcessError, e:
-    except Exception, e:
+    except Exception as e:
         # os.remove(input_path)
         raise Exception('Error executing command: %s (%s)' % (e, command))
         ret = False

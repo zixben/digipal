@@ -77,7 +77,8 @@ Commands:
 			res = conn.getresponse()
 			headers = dict(res.getheaders()) 
 			status = '%s' % res.status
-			if headers.has_key('location') and headers['location'] != url:
+			# if headers.has_key('location') and headers['location'] != url:
+			if 'location' in headers and headers['location'] != url:
 				status = '%s+%s' % (status, self.testUrl(headers['location']))
 		except Exception as e:
 			print (e)

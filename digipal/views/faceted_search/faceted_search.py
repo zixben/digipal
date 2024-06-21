@@ -70,7 +70,7 @@ class FacetedModel(object):
     views = property(get_views)
 
     def get_record_label_html(self, record, request):
-        ret = u''.join([u'<tr><td>%s</td><td>%s</td></tr>' % (field['label'], self.get_record_field(record, field))
+        ret = r''.join([r'<tr><td>%s</td><td>%s</td></tr>' % (field['label'], self.get_record_field(record, field))
                         for field in self.get_columns(request) if field['type'] in ['id', 'code', 'title', 'date']])
         #ret = u''.join([u'<tr><td>%s</td><td>%s</td></tr>' % (field['label'], self.get_record_field(record, field)) for field in self.get_fields() if field['type'] in ['id', 'code', 'title', 'date']])
 
@@ -90,17 +90,41 @@ class FacetedModel(object):
         return ret
     selected_view_template = property(get_selected_views_template)
 
+    # def get_all_records(self, prefetch=False):
+    #     ret = self.model.objects.filter(
+    #         **self.get_option('django_filter', {})).order_by('id')
+    #     if prefetch:
+    #         if self.get_option('select_related'):
+    #             ret = ret.select_related(*self.get_option('select_related'))
+    #         if self.get_option('prefetch_related'):
+    #             ret = ret.prefetch_related(
+    #                 *self.get_option('prefetch_related'))
+
+    #     return ret
     def get_all_records(self, prefetch=False):
         ret = self.model.objects.filter(
             **self.get_option('django_filter', {})).order_by('id')
         if prefetch:
-            if self.get_option('select_related'):
-                ret = ret.select_related(*self.get_option('select_related'))
-            if self.get_option('prefetch_related'):
-                ret = ret.prefetch_related(
-                    *self.get_option('prefetch_related'))
+            # Ensure select_related uses only relational fields
+            select_related_fields = self.get_option('select_related', [])
+            # Add a check to ensure only valid relational fields are included
+            valid_select_related_fields = [f for f in select_related_fields if self.is_relational_field(f)]
+            if valid_select_related_fields:
+                ret = ret.select_related(*valid_select_related_fields)
+            # Ensure prefetch_related uses only valid fields
+            prefetch_related_fields = self.get_option('prefetch_related', [])
+            if prefetch_related_fields:
+                ret = ret.prefetch_related(*prefetch_related_fields)
 
         return ret
+
+    def is_relational_field(self, field_name):
+        # Utility method to check if a field is relational
+        try:
+            field = self.model._meta.get_field(field_name)
+            return field.is_relation
+        except:
+            return False
 
     @classmethod
     def _get_sortable_whoosh_field(cls, field):
@@ -536,7 +560,7 @@ class FacetedModel(object):
         mapping = afield.get('mapping')
         if_list = isinstance(ret, list)
         if if_list and len(ret) == 0:
-            ret = u''
+            ret = r''
         if mapping and not isinstance(ret, list):
             ret = mapping.get(ret, ret)
 
@@ -566,7 +590,7 @@ class FacetedModel(object):
                     v = getattr(v, part)
                 except ObjectDoesNotExist(e):
                     v = None
-                except Exception(e):
+                except Exception as e:
                     raise Exception(u'Model path not found. Record = [%s:%s], path = %s, part = %s, value = %s' % (
                         type(record), repr(record), path, part, repr(v)))
 
@@ -629,13 +653,13 @@ class FacetedModel(object):
                     '?' + request.META['QUERY_STRING'],
                     {'page': [1], facet['key']: []}
                 )
-                ret.append(u'<a href="%s" title="%s = \'%s\'" data-toggle="tooltip" class="label label-default">%s</a>' % (
+                ret.append(r'<a href="%s" title="%s = \'%s\'" data-toggle="tooltip" class="label label-default">%s</a>' % (
                     href, facet['label'], option['label'], option['label']
                 ))
 
         if passive:
             ret = ' + '.join(ret)
-            ret = re.sub(u'<[^>]*>', u' ', ret)
+            ret = re.sub(r'<[^>]*>', r' ', ret)
         else:
             ret = ' '.join(ret)
 
@@ -1284,7 +1308,7 @@ def search_whoosh_view(request, content_type='', objectid='', tabid=''):
 
     #ret = render_to_response('search/faceted/search_whoosh%s.html' %
 #                             fragment, context, context_instance=RequestContext(request))
-
+    
     ret = render(request, 'search/faceted/search_whoosh%s.html' % fragment, context)
 
     hand_filters.chrono(':TEMPLATE')

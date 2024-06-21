@@ -18,7 +18,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from digipal.utils import packager_cancel, get_packager_pid
 
 # added native paginator (Luca)
-from django.core.paginator import Paginator
+#from django.core.paginator import Paginator
 
 #added by Luca for compatibility python2 -> 3
 import sys
@@ -50,7 +50,7 @@ def get_search_types_display(content_types):
                 ret += ' and '
             else:
                 ret += ', '
-        ret += '\'%s\'' % type.label
+        ret += r'\'%s\'' % type.label
     return ret
 
 
@@ -416,6 +416,7 @@ def search_record_view(request):
     # check if the search was executed or not (e.g. form not submitted or
     # invalid form)
 
+    print(f"context after set_search_results_to_context: {context}")
 
     # 'dict' object has no attribute 'has_key',
     # is due to the use of the has_key() method, which was deprecated in Python 3.
@@ -453,7 +454,11 @@ def search_record_view(request):
         for type in context['types']:
             if not type.is_empty:
                 context['is_empty'] = False
+    # Ensure recordids are passed to the template
+    context['recordids'] = context.get('recordids', [])
 
+    print(f"Record IDs before rendering template: {context['recordids']}")
+    
     from digipal import utils
     context['search_help_url'] = utils.get_cms_url_from_slug(
         getattr(settings, 'SEARCH_HELP_PAGE_SLUG', 'search_help'))
@@ -489,12 +494,14 @@ def search_record_view(request):
     context['page_number'] = page_number
     context['page_obj'] = page_obj
 
+    print(f"Final context before rendering: {context} ||||| AND Request: {request}")  # Debug print
+    
     ret = render(request, 'search/search_record.html', context)
 
     hand_filters.chrono(':SEARCH TEMPLATE')
 
     hand_filters.chrono(':SEARCH VIEW')
-
+    
     return ret
 
 
@@ -508,6 +515,10 @@ def set_page_sizes_to_context(request, context, options=[10, 20, 50, 100]):
 
 
 def set_search_results_to_context(request, context={}, allowed_type=None, show_advanced_search_form=False):
+    import logging
+    logger = logging.getLogger(__name__)
+    # Ensure to include any necessary imports at the top of the file
+    print(f"set_search_results_to_context called with request: {request.GET}")
     ''' Read the information posted through the search form and create the queryset
         for each relevant type of content (e.g. MS, Hand) => context['results']
 
@@ -529,7 +540,7 @@ def set_search_results_to_context(request, context={}, allowed_type=None, show_a
 
     # list of query parameter/form fields which can be changed without
     # triggering a search
-    context['submitted'] = False
+    context['submitted'] = True
     non_search_params = ['basic_search_type', 'from_link', 'result_type']
     for param in request.GET:
         if param not in non_search_params and request.GET.get(param):
@@ -558,9 +569,11 @@ def set_search_results_to_context(request, context={}, allowed_type=None, show_a
         context['advanced_search_form'] = advanced_search_form
 
     if advanced_search_form.is_valid():
+        logger.debug("Advanced search form is valid.")
         # Read the inputs
         # - term
         term = advanced_search_form.cleaned_data['terms']
+        logger.debug("Search term: %s", term)
         context['terms'] = term or ' '
         context['query_summary'], context['query_summary_interactive'] = get_query_summary(
             request, term, context['submitted'], [type.get_form(request) for type in context['types']])
@@ -576,19 +589,38 @@ def set_search_results_to_context(request, context={}, allowed_type=None, show_a
                 context['search_type_defaulted'] = '?'
 
         has_result = False
-
+        all_record_ids = []
         if context['submitted']:
+            logger.debug("Form submitted, creating querysets for content types.")
             # Create the queryset for each allowed content type.
             # If allowed_types is None, search for each supported content type.
             for type in context['types']:
                 if allowed_type in [None, type.key]:
                     hand_filters.chrono('Search %s:' % type.key)
-                    context['results'] = type.build_queryset(
-                        request, term, not has_result)
+                    # context['results'] = type.build_queryset(
+                    #     request, term, not has_result)
+                    results = type.build_queryset(request, term, not has_result)
+                    # logger.debug("Results for %s: %s", type.key, context['results'])
+                    logger.debug("Results for %s: %s", type.key, results)
+                    # Convert results to a list if necessary
+                    results = list(results)
+                     # Check if results are IDs or objects
+                    if results and isinstance(results[0], int):
+                        # If results are IDs, fetch the objects
+                        model_class = type.get_model()
+                        results = model_class.objects.filter(id__in=results)
+                    all_record_ids.extend([result.id for result in results])
                     if type.is_empty == False:
                         has_result = True
                     hand_filters.chrono(':Search %s' % type.key)
 
+        context['results'] = all_record_ids
+        context['recordids'] = all_record_ids  # Explicitly set recordids in context
+        print(f"Record IDs set in context: {context['recordids']}")
+    else:
+        logger.debug("Advanced search form is not valid: %s", advanced_search_form.errors)
+     # Check how context is set and include recordids if applicable
+    print(f"context in set_search_results_to_context: {context}")
 
 def get_query_summary(request, term, submitted, forms):
     # Return two strings that summaries the query

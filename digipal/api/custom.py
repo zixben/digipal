@@ -38,7 +38,7 @@ class APICustom(object):
             else:
                 try:
                     value = getattr(record, field_name)
-                except ObjectDoesNotExist, e:
+                except ObjectDoesNotExist as e:
                     # E.g. a graph without an annotation
                     value = None
 

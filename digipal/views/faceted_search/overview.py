@@ -146,7 +146,7 @@ class Queries(object):
         ret = '?'
         for k, v in self.request.GET.items():
             ret += '&%s=%s' % (k, v)
-            if not re.match(u'^q\d+_.*$', k):
+            if not re.match(r'^q\d+_.*$', k):
                 ret += '&q%s_%s=%s' % (len(self.queries), k, v)
         return ret
 
@@ -156,7 +156,7 @@ class Queries(object):
     def get_hidden_inputs(self):
         ret = ''
         for k, v in self.request.GET.items():
-            if re.match(u'^q\d+_.*$', k):
+            if re.match(r'^q\d+_.*$', k):
                 from django.utils.html import escape
                 ret += u'<input type="hidden" name="%s" value="%s" />' % (
                     escape(k), escape(v))
@@ -319,7 +319,7 @@ class Overview(object):
                 # let's assume the path is already part of at least one field
                 for field in faceted_search.get_fields():
                     m = re.search(
-                        u'(?musi)(.*\.' + re.escape(self.conflate) + ')[._a-z]', field['path'])
+                        r'(?musi)(.*\.' + re.escape(self.conflate) + ')[._a-z]', field['path'])
                     if m:
                         ret['path'] = m.group(1) + '.id'
 
@@ -504,7 +504,7 @@ class Overview(object):
         # returns integer from a locus,
         # e.g. 2v => 2 * 2 + 1
         # returns 0 if not a number (e.g. unumbered)
-        n = utils.get_int(re.sub(u'^(\d+).*$', u'\1', x), 0) * 2
+        n = utils.get_int(re.sub(r'^(\d+).*$', u'\1', x), 0) * 2
         if len(x) and 'v' in x[-1]:
             n += 1
         return n
@@ -691,9 +691,9 @@ class Overview(object):
         date0 = self.mins[0] - (self.mins[0] % step)
 
         def get_xlabel_from_xvalue(x):
-            ret = '%s' % d
+            ret = '%s' % x
             if self.fields[0]['key'] == 'locus':
-                ret = '%s%s' % (d / 2, 'v' if d % 2 else 'r')
+                ret = '%s%s' % (x / 2, 'v' if x % 2 else 'r')
             return ret
 
         drawing['x'] = [[d - self.mins[0], xaxis_y,

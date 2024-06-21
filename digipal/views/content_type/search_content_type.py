@@ -53,7 +53,8 @@ class SearchContentType(object):
         # A code (e.g. K. 402, Royal 7.C.xii)
         # See JIRA 358
         self.FT_CODE = TEXT(analyzer=SimpleAnalyzer(
-            u'[.\s()\u2013\u2014-]', True))
+            # u'[.\s()\u2013\u2014-]', True))
+            r'[.\s()\u2013\u2014-]', True))
         # An ID (e.g. 708-AB)
         self.FT_ID = ID()
 
@@ -220,13 +221,14 @@ class SearchContentType(object):
             # prev
             if index > 0:
                 ret['previous_url'] = re.sub(
-                    u'\d+', '%s' % context['results'][index - 1], web_path) + query_string
+                    # u'\d+', '%s' % context['results'][index - 1], web_path) + query_string
+                    r'\d+', '%s' % context['results'][index - 1], web_path) + query_string
 
             # next
             if index < (ret['total'] - 1):
                 ret['next_url'] = re.sub(
-                    u'\d+', '%s' % context['results'][index + 1], web_path) + query_string
-
+                    # u'\d+', '%s' % context['results'][index + 1], web_path) + query_string
+                    r'\d+', '%s' % context['results'][index + 1], web_path) + query_string
             # TODO: the URL of the search page shoudn't be hard-coded here
             ret['index1'] = index + 1
             ret['no_record_url'] = u'/digipal/search/' + query_string
@@ -331,7 +333,7 @@ class SearchContentType(object):
                         [u'%s' % eval('record.' + field.replace('__', '.')) for field in sort_fields])
                 # remove non-words characters at the beginning
                 # e.g. 'Hemming' -> Hemming
-                sort_key = re.sub(u'(?u)^\W+', u'', sort_key)
+                sort_key = re.sub(r'(?u)^\W+', '', sort_key)
                 return natural_sort_key(sort_key, True)
             records = sorted(records, key=lambda record: sort_order(record))
 
@@ -360,7 +362,7 @@ class SearchContentType(object):
             for k in fields:
                 if not fields[k]['whoosh'].get('ignore', False) and not fields[k]['whoosh'].get('virtual', False):
                     val = u'%s' % k
-                    for field_name in re.findall(u'\w+', k):
+                    for field_name in re.findall(r'\w+', k):
                         if isinstance(record, dict):
                             v = record[field_name]
                         else:
@@ -410,7 +412,7 @@ class SearchContentType(object):
         django_fields = self.get_sort_fields()
         for k in fields:
             if not fields[k]['whoosh'].get('ignore', False) and not fields[k]['whoosh'].get('virtual', False):
-                django_fields.extend(re.findall(u'\w+', k))
+                django_fields.extend(re.findall(r'\w+', k))
 
         # Retrieve all the records from the database
         # Values turns individual results into dictionary of requested fields names and values
@@ -515,7 +517,7 @@ class SearchContentType(object):
             ret = {}
             exclude_list_lower = [strip_tags(s.lower()) for s in exclude_list]
 
-            for m in re.finditer(u'(?ui)\b%s(?:[^|]{0,40}\|\||[\w-]*\b)' % re.escape(utils.remove_accents(phrase)), settings.suggestions_index_canonical):
+            for m in re.finditer(r'(?ui)\b%s(?:[^|]{0,40}\|\||[\w-]*\b)' % re.escape(utils.remove_accents(phrase)), settings.suggestions_index_canonical):
                 m = settings.suggestions_index[m.start(0):m.end(0)]
                 m = m.strip('|')
                 if m.endswith(')') and '(' not in m:
@@ -536,7 +538,7 @@ class SearchContentType(object):
                     return -1
                 if d1 > 0:
                     return 1
-                return cmp(a, b)
+                return comp(a, b)
 
             ret.sort(comp)
             chrono(':sort')
@@ -624,22 +626,52 @@ class SearchContentType(object):
         '''
             Run a search with the provided query using Whoosh.
         '''
-        self.close_whoosh_searcher()
-        index = self.get_whoosh_index(index_name=index_name)
-        self.searcher = index.searcher()
+        import logging
+        logger = logging.getLogger(__name__)
 
-        parser = self.get_parser(index)
-        query = parser.parse(query)
+        logger.debug("Executing Whoosh query: %s", query)
+        results = []
 
-        # See http://pythonhosted.org/Whoosh/facets.html
-        from whoosh import sorting
-        sortedby = [sorting.FieldFacet("sort_order")]
-        if self.get_ordering() == 'relevance':
-            sortedby.insert(0, sorting.ScoreFacet())
-        ret = self.searcher.search(
-            query, limit=None, terms=matched_terms, sortedby=sortedby)
+        try:
+            self.close_whoosh_searcher()
+            index = self.get_whoosh_index(index_name=index_name)
+            self.searcher = index.searcher()
 
-        return ret
+            parser = self.get_parser(index)
+            query = parser.parse(query)
+
+            # See http://pythonhosted.org/Whoosh/facets.html
+            from whoosh import sorting
+            sortedby = [sorting.FieldFacet("sort_order")]
+            if self.get_ordering() == 'relevance':
+                sortedby.insert(0, sorting.ScoreFacet())
+            ret = self.searcher.search(
+                query, limit=None, terms=matched_terms, sortedby=sortedby)
+
+            logger.debug("Whoosh query results: %s", ret)
+
+            return ret
+        except Exception as e:
+            logger.error("Error executing Whoosh query: %s", e)
+
+        logger.debug("Whoosh query results: %s", results)
+        return results
+        # self.close_whoosh_searcher()
+        # index = self.get_whoosh_index(index_name=index_name)
+        # self.searcher = index.searcher()
+
+        # parser = self.get_parser(index)
+        # query = parser.parse(query)
+
+        # # See http://pythonhosted.org/Whoosh/facets.html
+        # from whoosh import sorting
+        # sortedby = [sorting.FieldFacet("sort_order")]
+        # if self.get_ordering() == 'relevance':
+        #     sortedby.insert(0, sorting.ScoreFacet())
+        # ret = self.searcher.search(
+        #     query, limit=None, terms=matched_terms, sortedby=sortedby)
+
+        # return ret
 
     def close_whoosh_searcher(self):
         searcher = getattr(self, 'searcher', None)
@@ -685,9 +717,15 @@ class SearchContentType(object):
         self.desired_view = view_key
 
     def build_queryset(self, request, term, force_search=False):
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.debug("Building queryset in SearchContentType with term: %s", term)
+
         ret = []
         self.set_ordering(request.GET.get('ordering'))
         term = SearchContentType.expand_query(term)
+
+        
         # only run slow searches if that tab is selected or forced search;
         # always run other searches
         if force_search or not(self.is_slow()) or (request.GET.get('result_type', '') == self.key) or (request.GET.get('basic_search_type', '') == self.key):
@@ -726,6 +764,8 @@ class SearchContentType(object):
         return query
 
     def _build_queryset(self, request, term):
+        import logging
+        logger = logging.getLogger(__name__)
         '''
             Returns an ordered list or record ids that match the query in the http request.
             The ids are retrieved using Whoosh or Django QuerySet or both.
@@ -739,6 +779,8 @@ class SearchContentType(object):
 
         term = term.strip()
         self.query_phrase = term
+
+        logger.debug("Starting _build_queryset with term: '%s'", term)
 
         from datetime import datetime
         t0 = datetime.now()
@@ -762,6 +804,9 @@ class SearchContentType(object):
                         django_filters['%s__iexact' % field_path] = val
                     else:
                         query_advanced += ' %s:"%s"' % (name, val)
+        
+        logger.debug("Django filters: %s", django_filters)
+        logger.debug("Advanced Whoosh query: '%s'", query_advanced)
 
         # Run the Whoosh search (if there is a query phrase or query_advanced)
         results = []
@@ -787,6 +832,8 @@ class SearchContentType(object):
             if term or query_advanced:
                 query = (u'%s %s' % (term, query_advanced)).strip()
             query = (query + u' type:%s' % self.key).strip()
+
+            logger.debug("Whoosh query: '%s'", query)
 
             # Run the search
             results = self.search_whoosh(query)
@@ -830,12 +877,14 @@ class SearchContentType(object):
             # Pure Whoosh search
             ret = self.whoosh_dict.keys()
 
+        logger.debug("Final queryset: %s", ret)
+
         # Cache the result
         self._queryset = ret
 
         t1 = datetime.now()
         # print t1 - t0, t01 - t0, t02 - t01, t1 - t02
-
+        logger.debug("Query execution time: %s", t1 - t0)
         self.close_whoosh_searcher()
 
         return self._queryset
@@ -857,6 +906,7 @@ class SearchContentType(object):
         return (self.get_model()).objects.in_bulk(recordids)
 
     def get_records_from_ids(self, recordids):
+        print(f'Parent get_records_from_ids called with recordids: {recordids}')
         # TODO: preload related objects?
         # Fetch all the records from the DB
         records = self.bulk_load_records(recordids)
@@ -866,6 +916,7 @@ class SearchContentType(object):
         chrono('group:')
         ret = [records[id] for id in recordids if id in records]
         chrono(':group')
+        print(f'Parent get_records_from_ids result: {ret}')
         return ret
 
     def get_whoosh_dict(self):

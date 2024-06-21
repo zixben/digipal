@@ -7,7 +7,7 @@ import re
 from inspect import getargs
 #from django.template.base import parse_bits
 from django.conf import settings
-
+from inspect import getfullargspec
 import html
 
 register = template.Library()
@@ -21,7 +21,7 @@ def spacify(value, autoescape=None):
 
         def esc(x): return x
 
-    return mark_safe(re.sub('\s', '%20', esc(value)))
+    return mark_safe(re.sub(r'\s', '%20', esc(value)))
 
 
 spacify.needs_autoescape = True
@@ -36,8 +36,8 @@ def sql_query(value):
     e.g. {{ my_query|sql_query }}
     """
     # value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-    value = re.sub(u'(?musi)\b(select|from|where|order\s+by|and|group|left\s+join|right\s+join)\b',
-                   u'<br/><strong>\1</strong>', value)
+    value = re.sub(r'(?musi)\b(select|from|where|order\s+by|and|group|left\s+join|right\s+join)\b',
+                   r'<br/><strong>\1</strong>', value)
     return mark_safe(value)
 
 
@@ -51,8 +51,8 @@ def anchorify(value):
     special char varies.
     """
     # value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-    value = re.sub(u'(?u)[^\w\s-]', u'', value).strip()
-    return mark_safe(re.sub(u'[-\s]+', u'-', value))
+    value = re.sub(r'(?u)[^\w\s-]', r'', value).strip()
+    return mark_safe(re.sub(r'[-\s]+', r'-', value))
 
 
 @register.filter()
@@ -67,14 +67,14 @@ def update_query_params(content, updates):
     '''
     return update_query_params_internal(content, updates)
 
-""" commented by Luca
+#commented by Luca
 @register.filter()
 def add_query_params(content, updates):
-     The query strings in the content are updated by the filter.
-        In case of conflict, the parameters in the content always win.
+    #  The query strings in the content are updated by the filter.
+    #     In case of conflict, the parameters in the content always win.
 
     return update_query_params_internal(html.escape(content), updates, True)
-"""
+
 
 def update_query_params_internal(content, updates, url_wins=False):
     '''
@@ -94,16 +94,16 @@ def update_query_params_internal(content, updates, url_wins=False):
         return content
 
     # find all the URLs in content
-    template = u'%s'
+    template = r'%s'
     matches = []
     if '"' in content or "'" in content:
-        template = u'href="%s"'
+        template = r'href="%s"'
         # we assume the content is HTML
-        for m in re.finditer(u'(?:src|href)\s*=\s*(?:"([^"]*?)"|\'([^\']*?)\')', content):
+        for m in re.finditer(r'(?:src|href)\s*=\s*(?:"([^"]*?)"|\'([^\']*?)\')', content):
             matches.append(m)
     else:
         # we assume the content is a single URL
-        m = re.search(u'^(.*)$', content)
+        m = re.search(r'^(.*)$', content)
         if m:
             matches.append(m)
 
@@ -214,13 +214,16 @@ def tag_terms(value, terms=None):
 
 @register.simple_tag
 def get_records_from_ids(search_type, recordids):
+    print(f'get_records_from_ids called with search_type: {search_type} and with recordids: {recordids}')
     '''
         Prepare the records before they are displayed on the search page
 
         Usage:
             {% prepare_search_result search_type recordids %}
     '''
-    return search_type.get_records_from_ids(recordids)
+    ret = search_type.get_records_from_ids(recordids)
+    print(f'get_records_from_ids result: {ret}')
+    return ret
 
 
 @register.simple_tag
@@ -361,7 +364,7 @@ def wrap_img(html_img, **kwargs):
                 <span %s class="droppable_image %s">
                     %s
                 </span>
-        ''' % (' '.join(['%s="%s"' % (name, value) for name, value in attributes.iteritems()]), type_class, ret)
+        ''' % (' '.join(['%s="%s"' % (name, value) for name, value in attributes.items()]), type_class, ret)
 
     if link_record or record:
         element = u'span'
@@ -432,7 +435,8 @@ def img(src, *args, **kwargs):
     if 'alt' in kwargs:
         more += u' alt="%s" ' % escape(kwargs['alt'])
 
-    for k, v in kwargs.iteritems():
+    # for k, v in kwargs.iteritems():
+    for k, v in kwargs.items():
         if k.startswith('a_'):
             more += u' %s="%s" ' % (k[2:].replace('_', '-'), escape(v))
 
@@ -601,7 +605,7 @@ def image_icon(count, message, url, template_type=None, request=None):
                 count.all(), request).count()
 
         if count:
-            m = re.match(u'(.*)(COUNT)(\s+)(\w*)(.*)', message)
+            m = re.match(r'(.*)(COUNT)(\s+)(\w*)(.*)', message)
             if m:
                 message = u'%s%s%s%s%s' % (m.group(1), count, m.group(
                     3), plural(m.group(4), count), m.group(5))
@@ -627,7 +631,7 @@ def mezzanine_page_active(request, page):
     path = request.path.strip('/')
 
     for p in cs:
-        page_path = re.sub(u'\?.*$', u'', p.get_absolute_url()).strip('/')
+        page_path = re.sub(r'\?.*$', u'', p.get_absolute_url()).strip('/')
         if page_path in path:
             ret = True
 
@@ -639,7 +643,7 @@ def record_field(content_type, record, field):
     '''
         {% record_field object field %}
     '''
-    return content_type.get_record_field_html(record, field)
+    return mark_safe(content_type.get_record_field_html(record, field))
 
 
 @register.tag
@@ -694,13 +698,17 @@ def dplink(parser, token):
 
     bits = token.split_contents()[1:]
 
-    params, varargs, varkw, defaults = getargspec(get_link_from_obj)
+    # params, varargs, varkw, defaults = getargspec(get_link_from_obj)
+    argspec = getfullargspec(get_link_from_obj)
+    params, varargs, varkw, defaults = argspec.args, argspec.varargs, argspec.varkw, argspec.defaults
+
+
     #args, kwargs = parse_bits(
 #        parser, bits, params, varargs, varkw, defaults,
 #        takes_context=False, name='dplink'
 #    )
-    return DPLinkNode(nodelist, args, kwargs)
-
+    # return DPLinkNode(nodelist, args, kwargs)
+    return DPLinkNode(nodelist, params, defaults)
 
 @register.filter
 def dpfootnotes(html):
@@ -719,13 +727,13 @@ def dpfootnotes(html):
 
     # 1. clean up: remove the existing anchors around [1]
     # MOA pollution
-    ret = re.sub(u'(?musi)<span\s+size="[^"]*"\s*>(.*?)</span>', u'\1', ret)
+    ret = re.sub(r'(?musi)<span\s+size="[^"]*"\s*>(.*?)</span>', u'\1', ret)
     # remove empty anchors
-    ret = re.sub(u'(?musi)<a\s+[^>]*?/>\s*(\s*\[\d+\])', u'\1', ret)
+    ret = re.sub(r'(?musi)<a\s+[^>]*?/>\s*(\s*\[\d+\])', u'\1', ret)
     # remove empty anchors
-    ret = re.sub(u'(?musi)<a\s+[^>]*>\s*</a>(\s*\[\d+\])', u'\1', ret)
+    ret = re.sub(r'(?musi)<a\s+[^>]*>\s*</a>(\s*\[\d+\])', u'\1', ret)
     # <a ...>[1] X</a> => [1] X
-    ret = re.sub(u'(?musi)<a\s+[^>]*>(\s*\[\d+\].*?)</a>', u'\1', ret)
+    ret = re.sub(r'(?musi)<a\s+[^>]*>(\s*\[\d+\].*?)</a>', u'\1', ret)
 
     # 2. add the new anchors
     def sub_footnote(match):
@@ -747,7 +755,7 @@ def dpfootnotes(html):
 
         return ret
 
-    ret = re.sub(u'(<p>|<br/>|<li>|<div>)?(\s*)\[(\d+)\]', sub_footnote, ret)
+    ret = re.sub(r'(<p>|<br/>|<li>|<div>)?(\s*)\[(\d+)\]', sub_footnote, ret)
 
     return ret
 
@@ -803,7 +811,7 @@ def archetype_version_message(*args, **kwargs):
     latest_version = dputils.get_latest_docker_version()
 
     upgrade_message = ''
-    if [int(n) for n in re.findall('\d+', current_version)] < [int(n) for n in re.findall('\d+', latest_version)]:
+    if [int(n) for n in re.findall(r'\d+', current_version)] < [int(n) for n in re.findall(r'\d+', latest_version)]:
         upgrade_message = '''
             <a target="_blank" href="https://hub.docker.com/r/gnoelddh/digipal/" style="background-color:green; color: white; font-weight: bold; font-size: 1.5em;">
                 Get the new Archetype (%s)

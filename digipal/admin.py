@@ -227,7 +227,7 @@ class AnnotationAdmin(DigiPalModelAdmin):
 
     def get_thumb_form(self, obj):
         ''' returns HTML of an image inside a span'''
-        from templatetags.html_escape import annotation_img
+        from digipal.templatetags.html_escape import annotation_img
         return annotation_img(
             obj, lazy=0, fixlen=self.CHANGE_FORM_THUMB_MAX_SIZE
         )
@@ -868,7 +868,7 @@ class ImageAdmin(DigiPalModelAdmin):
     get_annotations_count.short_description = '#A'
 
     def get_thumbnail(self, image):
-        from templatetags.html_escape import iip_img_a
+        from digipal.templatetags.html_escape import iip_img_a
         return iip_img_a(image, width=70, cls='img-expand', lazy=True)
     get_thumbnail.short_description = 'Thumbnail'
     get_thumbnail.allow_tags = True

@@ -25,6 +25,7 @@ from django.template.defaultfilters import stringfilter
 from urllib.parse import quote
 from hashlib import sha1
 from datetime import datetime
+from urllib.parse import unquote
 
 register = Library()
 
@@ -113,7 +114,8 @@ def richfield(val):
 
 @register.filter
 def entities_to_unicode(value):
-    from HTMLParser import HTMLParser
+    # from HTMLParser import HTMLParser
+    from html.parser import HTMLParser
     parser = HTMLParser()
     return parser.unescape(value)
 

@@ -3,7 +3,7 @@ import os
 import digipal.models
 from django.db import transaction
 from django.utils.text import slugify
-
+from functools import reduce
 
 class Image(digipal.models.Image):
     '''
@@ -141,7 +141,7 @@ class Image(digipal.models.Image):
                 if (best is None) or (best[2] > current[2]):
                     best = current
                     if 0 and save:
-                        print best
+                        print (best)
 
         save = 1
         if best and save:
@@ -149,7 +149,7 @@ class Image(digipal.models.Image):
             #print repr(best[0:2])
             imcmb.paste(im_small.convert('RGBA'), box=tuple(best[0:2]))
             #imcmb = Image.alpha_composite(base, over)
-            filename = slugify(unicode(repr(im_big.size) + repr(im_small.size)))
+            filename = slugify(str(repr(im_big.size) + repr(im_small.size)))
             disk_path = os.path.join(settings.IMAGE_CACHE_ROOT, '%s.jpg' % filename)
             imcmb.save(disk_path)
             #print 'saved %s' % disk_path
@@ -181,7 +181,7 @@ class Image(digipal.models.Image):
         annotations = self.annotation_set.filter().distinct()
         if annotations.count():
             for annotation in annotations:
-                print 'translate annotation #%s' % annotation.id
+                print ('translate annotation #%s' % annotation.id)
                 annotation.geo_json = self.get_uncropped_geo_json(annotation, offsets, new_image_size, old_image_size)
                 annotation.save()
         
@@ -387,10 +387,10 @@ class Image(digipal.models.Image):
         ans = self.annotation_set.exclude(type='text').order_by('?')
         
         diff = self.compare_with(image2)
-        print diff
+        print (diff)
         limit = 5
         for an in ans[:limit]:
-            print '#%s, %s' % (an.id, an)
+            print ('#%s, %s' % (an.id, an))
             info = self.get_annotation_offset(an, image2, diff)
             ret['annotations'] += info['urls']
             ret['offsets'] = info['offsets']
@@ -432,6 +432,8 @@ class Image(digipal.models.Image):
         if self.annotation_set.count() + image2.annotation_set.count() == 0:
             return ret
 
+
+        digipal_images = [self, Image.from_digipal_image(image2)]
         # ...
         
         # -------------------
@@ -520,8 +522,8 @@ class Image(digipal.models.Image):
         # multiplying factor
         offsets = [int(v / sample_factor) for v in offsets]
         
-        print 'offsets'
-        print offsets
+        print ('offsets')
+        print (offsets)
         
         # Now add local offset to the global estimate
         ret['offsets'] = [offsets[0] + ret['offsets'][0] - search_margin, offsets[1] + ret['offsets'][1] - search_margin]
@@ -539,6 +541,20 @@ class Image(digipal.models.Image):
 
         ret['annotations'] = [ann.get_cutout_url(fixlen=sample_factor), ann_img_2_url]
         
+        # Get PIL images of the thumbnails
+        ims = []
+        for image in digipal_images:
+            ims.append(image.get_pil_img(1.0/downsample_ratio, cache=True, grey=True))
+
+        # Make sure the largest image is ims[0]
+        sgn = -1
+        reverse_order = False
+        if ims[0].size[0] < ims[1].size[0]:
+            sgn = 1
+            ims = ims[::-1]
+            digipal_images = digipal_images[::-1]
+            reverse_order = True
+            
         # Adjust the crop signs
         if not reverse_order:
             ret['offsets'] = [-ret['offsets'][0], -ret['offsets'][1]]

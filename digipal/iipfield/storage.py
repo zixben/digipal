@@ -66,7 +66,8 @@ def get_image_path(instance, filename):
         # Reuse the existing filename. Unfortunately,
         # instance.image.name gives the filename of the image being
         # uploaded, so load the original record.
-        original = instance._default_manager.get(pk=instance.id)
+        # original = instance._default_manager.get(pk=instance.id)
+        original = instance.__class__.objects.get(pk=instance.id)
         image_path = original.iipimage.name
         if not image_path:
             # While the model instance exists, it previously had no

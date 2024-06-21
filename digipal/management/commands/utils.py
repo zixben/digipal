@@ -259,7 +259,8 @@ def web_fetch(url, username=None, password=None, sessionid=None, noredirect=Fals
         ret['reason'] = '%s' % ret['response'].reason
         ret['body'] = ret['response'].read()
 
-        if not noredirect and headers.has_key('location') and headers['location'] != url:
+        # if not noredirect and headers.has_key('location') and headers['location'] != url:
+        if not noredirect and 'location' in headers and headers['location'] != url:            
             # follow redirect
             ret = web_fetch(headers['location'])
         conn.close()

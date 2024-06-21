@@ -151,6 +151,10 @@ class SearchManuscripts(SearchContentType):
         return ItemPart
 
     def _build_queryset_django(self, request, term):
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.debug("Building queryset for manuscripts with term: %s", term)
+
         type = self.key
         query_manuscripts = ItemPart.objects.filter(
                 Q(locus__contains=term) | \
@@ -158,6 +162,8 @@ class SearchManuscripts(SearchContentType):
                 Q(current_item__repository__name__icontains=term) | \
                 Q(historical_items__catalogue_number__icontains=term) | \
                 Q(historical_items__description__description__icontains=term))
+
+        logger.debug("Initial query: %s", query_manuscripts.query)
 
         repository = request.GET.get('repository', '')
         index_manuscript = request.GET.get('index', '')
@@ -167,15 +173,23 @@ class SearchManuscripts(SearchContentType):
 
         if date:
             query_manuscripts = query_manuscripts.filter(historical_items__date=date)
+            logger.debug("Filtering by date: %s", date)
+
         if repository:
             repository_place = repository.split(',')[0]
             repository_name = repository.split(', ')[1]
             query_manuscripts = query_manuscripts.filter(current_item__repository__name=repository_name, urrent_item__repository__place__name=repository_place)
+            logger.debug("Filtering by repository: place=%s, name=%s", repository_place, repository_name)
+        else:
+            logger.warning("Repository filter format is incorrect: %s", repository)
 
         if index_manuscript:
             query_manuscripts = query_manuscripts.filter(historical_items__catalogue_number=index_manuscript)
+            logger.debug("Filtering by index: %s", index_manuscript)
 
-        self._queryset = query_manuscripts.distinct().order_by('folio_number', 'historical_items__catalogue_number', 'id')
+        self._queryset = query_manuscripts.distinct().order_by('historical_items__catalogue_number', 'id')
+
+        logger.debug("Final queryset: %s", self._queryset.query)
 
         return self._queryset
     
@@ -183,6 +197,7 @@ class SearchManuscripts(SearchContentType):
         return (self.get_model()).objects.select_related('current_item').prefetch_related('historical_items__catalogue_numbers', 'historical_items__description_set', 'images', 'current_item__repository').in_bulk(recordids)
 
     def get_records_from_ids(self, recordids):
+        print(f'get_records_from_ids called with recordids: {recordids}')
         ret = super(SearchManuscripts, self).get_records_from_ids(recordids)
         # Generate a meaningful snippet for each description,
         # one that includes the search terms.
@@ -218,6 +233,8 @@ class SearchManuscripts(SearchContentType):
                         record.description_snippet = self._truncate_text(text, location, snippet_length)
                         # add the description author (e.g. ' (G.)' for Gneuss)
                         record.description_snippet += u' (%s)' % description.source.get_authors_short()
+        print(f'get_records_from_ids result: {ret}')
+        print(f'get_records_from_ids ==> {ret}')
         return ret
 
     def _get_best_description_location(self, descriptions):
@@ -268,3 +285,16 @@ class SearchManuscripts(SearchContentType):
         
         return ret
 
+    # def build_queryset(self, request, term, get_all=False):
+    #     import logging
+    #     logger = logging.getLogger(__name__)
+        
+    #     logger.debug("Executing build_queryset for SearchManuscripts with term: %s", term)
+        
+    #     # Call the actual method to build the queryset
+    #     queryset = self._build_queryset_django(request, term)
+        
+    #     logger.debug("Queryset after build: %s", queryset.query)
+        
+    #     return queryset
+    
